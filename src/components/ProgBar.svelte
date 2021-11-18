@@ -12,7 +12,8 @@
     .innerBar {
         background-color: #666666;
         width: var(--progress, 0);
-        transition: width .25s ease-in-out
+        transition: width .25s ease-in-out;
+        height: inherit
     }
     .barLabel {
         text-align: center;
@@ -23,10 +24,13 @@
     }
 </style>
 
-<div class="outerContainer">
+<div>
+  <div class="outerContainer">
     <div class="innerBar">
         <span class="barLabel">
             <slot></slot>
         </span>
     </div>
+  </div>
 </div>
+

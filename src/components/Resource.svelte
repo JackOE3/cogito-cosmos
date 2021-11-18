@@ -10,35 +10,47 @@ $: bonus = (resource.active) ? resource.perAction : 0
 </script>
 
 <div class="container">
-  <span><b>{label}</b> +{resource.perSec + bonus}/s</span>
-  <button class:active={resource.active}
+  <b>{label}</b>
+  <span class="perSec"> +{resource.perSec + bonus}/s </span>
+  <span class="amount">{formatNumber(resource.amount,2)}/{formatWhole(resource.maxAmount)}</span>
+  
+  <span class="bar">
+    <ProgBar 
+    --width = 15rem
+    --height = 1rem 
+    --progress = "{100*resource.amount/resource.maxAmount}%"/>
+  </span>
+  
+
+  <button class="btn" class:active={resource.active}
     on:click={() => {
     resource.active = !resource.active;
-    }}>Collect</button>
+    }}>Collect
+  </button>
 </div>
-<ProgBar 
-  --width = 15rem
-  --height = 30px 
-  --progress = "{100*resource.amount/resource.maxAmount}%">
-  {formatNumber(resource.amount,2)}/{formatWhole(resource.maxAmount)}
-</ProgBar>
+
 
 <style>
  .container {
     display: flex;
- }
- .container span {
-    margin-top: auto;
-    margin-bottom: auto;
-    margin-left: 5px
- }
- .container button {
-   margin-left: auto;
-   margin-bottom: 0;
-   margin-right: 0
+    align-items: baseline;
  }
   .active{
    background-color: rgb(136, 136, 136);
    color: white
  }
+ .perSec{
+   margin-left: 1rem;
+ }
+ .amount{
+   margin-left: 1rem;
+ }
+ .bar{
+   margin-left: 1rem;
+ }
+ .btn{
+   margin-left: 1rem;
+ }
+ 
+
 </style>
