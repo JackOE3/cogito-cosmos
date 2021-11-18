@@ -3,12 +3,11 @@
   import {bones, essence} from './stores/ResourceStore.js'
   import {skeletons} from './stores/WorkerStore.js'
   import {boneHarvester, essenceGatherer} from './stores/JobStore.js'
-
 	import ProgBar from './components/ProgBar.svelte'
 	import Tabs from './components/Tabs.svelte'
   import Resource from './components/Resource.svelte'
 
-	let items = ['Tab1', 'Tab2', 'Tab3']
+	let items = ['Tab1', 'Tab2', 'Tab3', 'Tab4']
 	let activeItem = items[0]
   const tabChange = (e) => {
     activeItem = e.detail;
