@@ -1,56 +1,78 @@
 <script>
 import ProgBar from './ProgBar.svelte'
 import {formatNumber, formatWhole} from '../gamelogic/utils.js'
+import {strColor, spdColor, endColor} from '../constants.js'
 export let stat
 
-// capitalize 1st letter
+// capitalize 1st letter of label
 let label = stat.name.charAt(0).toUpperCase() + stat.name.slice(1)
 
 $: bonus = (stat.active) ? stat.perAction : 0
+
+// assign color to label according to stat type
+let textColor = strColor
+if (stat.name === "speed") textColor = spdColor
+if (stat.name === "endurance") textColor = endColor
 </script>
 
 <div class="container">
-  <b>{label}</b>
-  <span class="perSec"> +{stat.expPerSec + bonus}/s </span>
-  <span class="amount">{formatNumber(stat.exp,2)}/{formatWhole(stat.expToNextPoint)}</span>
-  
-  <span class="bar">
-    <ProgBar 
-    --width = 15rem
-    --height = 1rem 
-    --progress = "{100*stat.exp/stat.expToNextPoint}%"/>
-  </span>
-  
+  <div class="row">
+    <div class="col">
+      <span class="text">You have <b style="color: {textColor}">{stat.points} {label}</b> points.</span>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <span>+{formatNumber(stat.expPerSec + bonus, 2)}/s</span>
+    </div>
+  </div>
+  <div class="row">
+    <span class="bar">
+      <ProgBar 
+      --width = 20rem
+      --height = 1.5rem 
+      --progress = "{100*stat.exp/stat.expToNextPoint}%"
+      --barColor = "{textColor}">
+      {formatNumber(stat.exp,2)}/{formatWhole(stat.expToNextPoint)}
+    </ProgBar>
+    </span>
+  </div>
+  <div class="row">
+    <button class="btn mdc-elevation--z4" class:active={stat.active}
+      on:click={() => {
+      stat.active = !stat.active;
+      }}>{stat.action}
+    </button>
+  </div>
 
-  <button class="btn" class:active={stat.active}
-    on:click={() => {
-    stat.active = !stat.active;
-    }}>Gain
-  </button>
 </div>
 
 
+
 <style>
- .container {
+  .container {
     display: flex;
-    align-items: baseline;
- }
+    flex-direction: column;
+  }
+  .row {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    
+  }
+  .col {
+    margin: auto
+  }
+  .btn {
+    width: 60%;
+    margin: 0
+  }
   .active{
-   background-color: rgb(136, 136, 136);
-   color: white
+   color: white;
  }
- .perSec{
-   margin-left: 1rem;
- }
- .amount{
-   margin-left: 1rem;
- }
- .bar{
-   margin-left: 1rem;
- }
- .btn{
-   margin-left: 1rem;
- }
+ 
+ 
+
  
 
 </style>

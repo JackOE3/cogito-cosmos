@@ -4,20 +4,21 @@
       /*border-radius: .25rem;*/
     }
     .outerContainer {
-        background: var(--color, rgb(233, 233, 233));;
-        width: var(--width, 4rem);;
+        background: var(--barBgColor, #263238);
+        width: var(--width, 4rem);
         overflow: hidden;
         position: relative
     }
     .innerBar {
-        background-color: #666666;
+        background-color: var(--barColor, --primary);
         width: var(--progress, 0);
-        transition: width .25s ease-in-out;
+        /*transition: width .25s ease-in-out;*/
+        transition: linear 0.2s;
         height: inherit
     }
     .barLabel {
         text-align: center;
-        top: 0.25rem;
+        top: 0.2rem;
         left: 0;
         right: 0;
         position: absolute

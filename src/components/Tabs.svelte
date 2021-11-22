@@ -17,7 +17,7 @@
 
 <style>
   .tabs {
-    margin-bottom: 40px;
+    margin-bottom: 20px;
   }
   ul {
     display: flex;
@@ -31,8 +31,8 @@
     cursor: pointer;
   }
   .active {
-    color: brown;
-    border-bottom: 2px solid brown;
+    color: var(--secondary);
+    border-bottom: 2px solid var(--secondary);
     padding-bottom: 2px;
     
   }
