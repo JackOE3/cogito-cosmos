@@ -19,7 +19,8 @@ $: bonus = (resource.active) ? resource.perAction : 0
 <ProgBar 
   --width = 15rem
   --height = 30px 
-  --progress = "{100*resource.amount/resource.maxAmount}%">
+  --progress = "{100*resource.amount/resource.maxAmount}%"
+  >
   {formatNumber(resource.amount,2)}/{formatWhole(resource.maxAmount)}
 </ProgBar>
 
