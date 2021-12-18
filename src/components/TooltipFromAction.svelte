@@ -2,9 +2,9 @@
   import { fade } from 'svelte/transition';
   import { onMount, onDestroy } from 'svelte';
 
-	export let title;
-	export let x;
-	export let y;
+  export let title;
+  export let x;
+  export let y;
   let visible = false;
 
   onMount(() => {
@@ -21,11 +21,11 @@
 {/if}
 
 <style>
-	div {
-		border: 1px solid #455A64;
-		background: #263238;
-		border-radius: 4px;
-		padding: 10px;
-		position: absolute;
-	}
+  div {
+    border: 1px solid #455A64;
+    background: #263238;
+    border-radius: 4px;
+    padding: 10px;
+    position: absolute;
+  }
 </style>

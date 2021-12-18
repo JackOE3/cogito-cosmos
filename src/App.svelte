@@ -1,14 +1,14 @@
 <script>
   import { onMount } from 'svelte';
-  import {str, spd, end, capacity, capacityReq, updateStats} from './stores/MainStatStore'
+  import {str, spd, end, capacity, nextCapacityReq, updateStats} from './stores/MainStatStore'
   import {pushups, sidejumps, running} from './stores/ExerciseStore'
 	import ProgBar from './components/ProgBar.svelte'
 	import Tabs from './components/Tabs.svelte'
   import MainStat from './components/MainStat.svelte'
   import Exercise from './components/Exercise.svelte'
   import CapacityRequirement from './components/CapacityRequirement.svelte'
-  import { tooltip } from './components/tooltip';
-  
+  import { tooltip } from './components/tooltip';  
+  import {formatNumber, formatWhole} from './gamelogic/utils.js'
 
 	let items = ['Tab1', 'Tab2', 'Tab3', 'Tab4']
 	let activeItem = items[0]
@@ -18,12 +18,15 @@
   const TICKSPEED = 200
   const stats = [$str, $spd, $end]
   let maxCapacity = 1
+  var capReq = nextCapacityReq()
+  $: powerLevel = formatWhole(Math.log2($str.points+1) * Math.log2($spd.points+1) * Math.log2($end.points+1))
 
   let deltaT = 0
   let lastRunTime = Date.now()
   onMount(() => {
     console.log("App mounted")
     const interval = setInterval(() => {
+      //console.log(nextCapacityReq())
       const currentTime = Date.now()
       // calculate deltaT based on the current time and the last run time
       // we are using Math.max and Math.min to make sure deltaT is between 0 and 1 seconds
@@ -42,14 +45,14 @@
       })
       // check capacity requirement
       // if conditions met, increase
-      let capReq = capacityReq[maxCapacity-1]
       if (capReq) {
         if ($str.points >= capReq[0]) {
           if ($spd.points >= capReq[1]) {
             if ($end.points >= capReq[2]) {
               maxCapacity++
               $capacity++
-
+              capReq = nextCapacityReq() 
+              
             }
           }
         }
@@ -70,6 +73,7 @@
 
     <div class="mainStats">
       <h1 title="Your main stats which determine your power level." use:tooltip>Stats</h1>
+      <p>Powerlevel: {powerLevel}</p>
       <MainStat stat={$str}/>
       <MainStat stat={$spd}/>
       <MainStat stat={$end}/>
@@ -77,7 +81,7 @@
     <div class="workoutPlan">
       <h1>Workout Plan</h1>
       <span>You have <b>{$capacity}</b> Capacity.</span>
-      <span><CapacityRequirement item={capacityReq[maxCapacity-1]} /></span>
+      <span><CapacityRequirement item={capReq} /></span>
       <div class="exercises">
         <Exercise exercise={$pushups} />
         <Exercise exercise={$sidejumps} />

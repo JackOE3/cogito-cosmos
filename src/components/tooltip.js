@@ -21,7 +21,7 @@ export function tooltip(element) {
 		});
 	}
 
-	function mouseLeave() {
+  function mouseLeave() {
     outroAndDestroy(tooltipComponent);
 		//tooltipComponent.$destroy();
 		// NOTE: restore the `title` attribute
