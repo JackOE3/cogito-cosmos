@@ -9,31 +9,39 @@ let label = resource.name.charAt(0).toUpperCase() + resource.name.slice(1)
 $: bonus = (resource.active) ? resource.perAction : 0
 </script>
 
-<div class="container">
-  <span><b>{label}</b> +{resource.perSec + bonus}/s</span>
-  <button class:active={resource.active}
-    on:click={() => {
-    resource.active = !resource.active;
-    }}>Collect</button>
+<div class="component">
+  <div class="details">
+    <table>
+      <tr>
+        <td><b>{label}</b></td>
+        <td>{formatNumber(resource.amount,2)}/{formatWhole(resource.maxAmount)}</td>
+        <td>+{resource.perSec + bonus}/s</td>
+      </tr>
+    </table>
+    <button class:active={resource.active}
+      on:click={() => {
+      resource.active = !resource.active;
+      }}>Collect</button>
+  </div>
+  <ProgBar 
+    --width = 80%
+    --height = 4px 
+    --progress = "{100*resource.amount/resource.maxAmount}%"/>
 </div>
-<ProgBar 
-  --width = 15rem
-  --height = 30px 
-  --progress = "{100*resource.amount/resource.maxAmount}%"
-  >
-  {formatNumber(resource.amount,2)}/{formatWhole(resource.maxAmount)}
-</ProgBar>
+
 
 <style>
- .container {
+  table {
+    table-layout: fixed;
+    width: 100%;
+  }
+  table td {
+    width: 90px;
+  }
+ .details {
     display: flex;
  }
- .container span {
-    margin-top: auto;
-    margin-bottom: auto;
-    margin-left: 5px
- }
- .container button {
+ .details button {
    margin-left: auto;
    margin-bottom: 0;
    margin-right: 0
@@ -41,5 +49,8 @@ $: bonus = (resource.active) ? resource.perAction : 0
   .active{
    background-color: rgb(136, 136, 136);
    color: white
+ }
+ .component{
+   margin-bottom: 0.25rem;
  }
 </style>
