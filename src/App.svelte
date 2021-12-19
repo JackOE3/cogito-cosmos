@@ -55,7 +55,6 @@
       <h1>Resources</h1>
       <Resource resource={$bones}/>
       <Resource resource={$essence}/>
-      <p>Cool.</p>
     </div>
     <div class="workers">
       <h1>Workers</h1>
@@ -129,7 +128,7 @@
 
 <style>
 	main {
-		max-width: 80%;
+		max-width: 100%;
 		margin: auto;
 	}
   h1 {
@@ -139,25 +138,25 @@
   .display {
     display:flex;
     align-items: flex-start;
-    justify-content: center;
+    justify-content: left;
     margin-bottom: 20px
     
   }
   .resources {
     width: min-content;
-    margin: 0 10px;
-    border: 1px solid black;
+    margin: 0 20px;
+    /*border: 1px solid black;*/
 
   }
   .workers {
     width: min-content;
-    margin: 0 10px;
-    border: 1px solid black;
+    margin: 0 20px;
+    /*border: 1px solid black;*/
   }
   .jobs {
     width: 240px;
-    margin: 0 10px;
-    border: 1px solid black;
+    margin: 0 20px;
+    /*border: 1px solid black;*/
   }
   .job {
     display: flex
