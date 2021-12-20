@@ -9,7 +9,7 @@ const quadrilion = 1000000000000000;
  * @param input Number to format
  * @param decimals How many decimals do you want
  */
- export function formatNumber(input, decimals) {
+ export function formatNumber(input: number, decimals: number) {
   if (!input) input = 0;
   if (input < 0) return "-" + formatNumber(-1 * input, decimals);
   if (input >= quadrilion)
@@ -31,7 +31,7 @@ const quadrilion = 1000000000000000;
 * Will only show decimal places when the number is abbreviated.
 * @param input Number to format
 */
-export function formatWhole(input) {
+export function formatWhole(input: number) {
   if (!input) input = 0;
   if (input < 0) return "-" + formatWhole(-1 * input);
   if (input < thousand) return formatNumber(input, 0);

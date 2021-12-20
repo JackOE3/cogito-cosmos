@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
   import {bones, essence, wood, stones} from './stores/ResourceStore.js'
   import {graveyard, crypt} from './stores/BuildingStore.js'
@@ -63,8 +63,8 @@
       <h1>Resources</h1>
       <Resource resource={$gameModel.saveData.resource[0]}/>
       <Resource resource={$gameModel.saveData.resource[1]}/>
-      <Resource resource={$wood}/>
-      <Resource resource={$stones}/>
+      <Resource resource={$gameModel.saveData.resource[2]}/>
+      <Resource resource={$gameModel.saveData.resource[3]}/>
     </div>
 
     <div id="workers">
@@ -83,9 +83,9 @@
           if ($bones.amount >= $skeletons.cost.bones 
           && $essence.amount >= $skeletons.cost.essence
           && $skeletons.maxAmount > $skeletons.amount) {
-            $skeletons.amount += 1
-            $bones.amount -= $skeletons.cost.bones
-            $essence.amount -= $skeletons.cost.essence
+            $skeletons.amount += 1;
+            $bones.amount -= $skeletons.cost.bones;
+            $essence.amount -= $skeletons.cost.essence;
           }
           // TODO else: alert: you cant buy this
           }}>Summon</button>

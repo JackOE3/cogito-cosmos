@@ -1,8 +1,8 @@
-<script>
+<script lang="ts">
   import {createEventDispatcher} from 'svelte';
   const dispatch = createEventDispatcher();
-  export let items;
-  export let activeItem;
+  export let items: string[];
+  export let activeItem: string;
 </script>
 
 <div class="tabs">

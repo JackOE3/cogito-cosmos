@@ -1,7 +1,8 @@
-<script>
+<script lang="ts">
 import ProgBar from './ProgBar.svelte'
 import {formatNumber, formatWhole} from '../gamelogic/utils.js'
-export let resource
+import type { Resource } from '../stores/Resources';
+export let resource: Resource;
 
 // capitalize 1st letter
 let label = resource.name.charAt(0).toUpperCase() + resource.name.slice(1)

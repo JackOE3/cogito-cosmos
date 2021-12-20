@@ -46,7 +46,7 @@ import { sendMessage } from './notifications';
   * Saves the data to localstorage
   * @param saveData SaveData
   */
-export function saveSaveGame(saveData) {
+export function saveSaveGame(saveData: SaveData) {
 
   if (saveData) {
     // set the last saved time
@@ -69,7 +69,7 @@ export function saveSaveGame(saveData) {
   * This function will help to update any data that was saved before new variables were added.
   * Otherwise this can cause errors when something you expected to be there is not there.
   */
- function dataMigrate(saveData) {
+ function dataMigrate(saveData: SaveData) {
  
      // create a new saveData to use as a reference
      let master = new SaveData();
@@ -109,15 +109,15 @@ export function saveSaveGame(saveData) {
 export class SaveData {
 
     // Used to hold the current money the player has, initialized at 0
-    money = 0
+    public money: number = 0
     // JSON parse/stringify so javascript doesnt make a reference to the object, but instead a deedcopy
-    resource = JSON.parse(JSON.stringify(resources))
+    public resource: Resource[] = JSON.parse(JSON.stringify(resources))
     
     // Used to hold which upgrades have been bought, and the quantity
     // we will only save the id and the qty of each upgrade to avoiding wasting save game storage
-    upgradesBought = [];
+    public upgradesBought: number[] = [];
     // Used to hold when the game was last saved, needed to calculate offline progress
-    lastSaved = Date.now();
+    public lastSaved: number = Date.now();
 }
 
 /**
@@ -125,7 +125,7 @@ export class SaveData {
  * It will be accessible from anywhere in the game using svelte stores.
  */
 export class GameModel {
-    saveData;
+    public saveData: SaveData;
 
     constructor() {
         // when we first create the game model we need to load any save data from localstorage
@@ -136,7 +136,7 @@ export class GameModel {
      * Add money to the save data
      * @param value Amount of money to add
      */
-    addMoney(value) {
+    addMoney(value: number) {
         if (!isNaN(value)) {
             this.saveData.money += value;
         }
@@ -147,7 +147,7 @@ export class GameModel {
      * Returns true if there was enough money, false if not.
      * @param value Amount of money to spend
      */
-    spendMoney(value) {
+    spendMoney(value: number) {
         if (!isNaN(value) && this.saveData.money >= value) {
             this.saveData.money -= value;
             return true;

@@ -1,14 +1,14 @@
 
 export class Resource {
-  id;
-  name;
-  amount;
-  perSec;
-  perAction;
-  maxAmount;
-  active;
+  public id: number;
+  public name: string;
+  public amount: number;
+  public perSec: number;
+  public perAction: number;
+  public maxAmount: number;
+  public active: boolean;
 
-  constructor(id, name, amount, maxAmount) {
+  constructor(id: number, name: string, amount: number, maxAmount: number) {
     this.id = id;
     this.name = name;
     this.amount = amount;
@@ -22,7 +22,7 @@ export class Resource {
    * Update this resource
    * @param deltaT Time in seconds since last update
    */
-  update(deltaT) {
+  update(deltaT: number) {
     if (this.amount < this.maxAmount) {
       this.amount += this.perSec * deltaT
       if (this.active) this.amount += this.perAction * deltaT
@@ -41,4 +41,4 @@ export const resources = [
   new Resource(3, 'wood', 0, 100),
   new Resource(4, 'stones', 0, 100)
 ]
-//Maybe in future, store resources as a JSON file and directly parse it in SaveData()
+//Maybe in future, store resources as a JSON file and directly parse it in SaveData() 

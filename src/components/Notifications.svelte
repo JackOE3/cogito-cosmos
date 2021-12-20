@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { flip } from 'svelte/animate';
   import { messageQueue } from '../gamelogic/notifications';
   import Notification from './Notification.svelte';

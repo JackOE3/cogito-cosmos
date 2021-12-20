@@ -1,5 +1,5 @@
-import { resources } from "../stores/Resources";
-import { gameModel, saveSaveGame, updateGameModel } from "./gamemodel";
+import type { Resource } from "../stores/Resources";
+import { GameModel, gameModel, saveSaveGame, updateGameModel } from "./gamemodel";
 import { sendMessage } from "./notifications";
 import { formatWhole } from "./utils";
 
@@ -7,7 +7,7 @@ import { formatWhole } from "./utils";
  * Reference to the GameModel.
  * We use the subscribe function so if the store is updated our local instance will also update.
  */
-let gameModelInstance;
+let gameModelInstance: GameModel;
 gameModel.subscribe(m => gameModelInstance = m);
 
 /**
@@ -76,7 +76,7 @@ function gameLoop() {
  * used by the main loop and the offline progress function.
  * @param deltaT time in seconds since last update
  */
-function gameUpdate(deltaT) {
+function gameUpdate(deltaT: number) {
 
   // update each resource
   gameModelInstance.saveData.resource.forEach(resource => {
@@ -95,7 +95,7 @@ function gameUpdate(deltaT) {
 function calculateOfflineProgress() {
 
   // note how bones we had before
-  const bonesBefore = gameModelInstance.saveData.resource[0];
+  const bonesBefore = gameModelInstance.saveData.resource[0].amount;
 
   // calculate time in seconds since last saved
   const currentTime = Date.now();
@@ -108,12 +108,12 @@ function calculateOfflineProgress() {
   gameUpdate(offlineDeltaT);
 
   // calculate total earned
-  const bonesEarned = gameModelInstance.saveData.resource[0] - bonesBefore;
+  const bonesEarned = gameModelInstance.saveData.resource[0].amount - bonesBefore;
 
   sendMessage(`You have earned ${formatWhole(bonesEarned)} bones while offline!`);
 }
 
-function updateResource(resource) {
+function updateResource(resource: Resource) {
   if (resource.amount < resource.maxAmount) {
     resource.amount += resource.perSec * deltaT
     if (resource.active) resource.amount += resource.perAction * deltaT
