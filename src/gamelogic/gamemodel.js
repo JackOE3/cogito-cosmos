@@ -1,4 +1,6 @@
 import { writable } from 'svelte/store';
+import {resources, Resource} from '../stores/Resources'
+import { sendMessage } from './notifications';
 
 /**
  * This is the key the save data will be stored under inside localstorage
@@ -20,6 +22,7 @@ import { writable } from 'svelte/store';
              // get data from localstorage, decompress it using lz-string, then parse it back into a javascript object
              let saveData = JSON.parse(localStorage.getItem(storageName));
  
+             sendMessage("Savefile loaded.")
              console.log('SaveData loaded:');
              console.log(saveData);
  
@@ -29,8 +32,9 @@ import { writable } from 'svelte/store';
              return saveData;
          }
  
-         // if nothing in storage just create a new one
-         return new SaveData();
+        console.log("no save found, creating new one...")
+        // if nothing in storage just create a new one
+        return new SaveData();
  
      } catch (error) {
          console.error(error); // log the error so at least we can see it
@@ -42,26 +46,24 @@ import { writable } from 'svelte/store';
   * Saves the data to localstorage
   * @param saveData SaveData
   */
- export function saveSaveGame(saveData) {
-     // if save data exists
-     if (saveData) {
- 
-         // set the last saved time
-         saveData.lastSaved = Date.now();
- 
-         try {
-             // Use JSON.stringify to turn the object into a string, then compress with lz-string,
-             // before setting it in localstorage
-             localStorage.setItem(storageName, JSON.stringify(saveData));
-             console.log('SaveData saved:');
-             console.log(saveData);
- 
-         } catch (error) {
-             console.error(error); // log the error so at least we can see it
-         }
- 
-     }
- }
+export function saveSaveGame(saveData) {
+
+  if (saveData) {
+    // set the last saved time
+    saveData.lastSaved = Date.now();
+
+    try {
+      // Use JSON.stringify to turn the object into a string, then compress with lz-string,
+      // before setting it in localstorage
+      localStorage.setItem(storageName, JSON.stringify(saveData));
+      console.log('SaveData saved:');
+      console.log(saveData);
+
+    } catch (error) {
+        console.error(error); // log the error so at least we can see it
+    }
+  }
+}
  
  /**
   * This function will help to update any data that was saved before new variables were added.
@@ -94,9 +96,10 @@ import { writable } from 'svelte/store';
      localStorage.removeItem(storageName);
  
      // update the stored gameModel with a new one
-     gameModel.update(g => new GameModel());
- }
+     gameModel.set(new GameModel());
 
+     sendMessage("Game reset.")
+ }
 
 
 /**
@@ -107,12 +110,12 @@ export class SaveData {
 
     // Used to hold the current money the player has, initialized at 0
     money = 0
-    resources = [];
-
+    // JSON parse/stringify so javascript doesnt make a reference to the object, but instead a deedcopy
+    resource = JSON.parse(JSON.stringify(resources))
+    
     // Used to hold which upgrades have been bought, and the quantity
     // we will only save the id and the qty of each upgrade to avoiding wasting save game storage
     upgradesBought = [];
-
     // Used to hold when the game was last saved, needed to calculate offline progress
     lastSaved = Date.now();
 }

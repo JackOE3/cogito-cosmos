@@ -9,7 +9,7 @@
   import Resource from './components/Resource.svelte'
   import Building from './components/Building.svelte'
   import Notifications from './components/Notifications.svelte';
-  import { gameModel, saveSaveGame } from "./gamelogic/gamemodel";
+  import { gameModel, saveSaveGame, resetSaveGame } from "./gamelogic/gamemodel";
 
 	let items = ['Tab1', 'Tab2', 'Tab3', 'Tab4']
 	let activeItem = items[0]
@@ -35,7 +35,7 @@
         if ($bones.amount > $bones.maxAmount) $bones.amount = $bones.maxAmount
       }
       if ($essence.amount < $essence.maxAmount) {
-        if(!$essence.requirements()) $essence.active = false
+        if($bones.amount < 10) $essence.active = false
         if($essence.active) {
           $essence.amount += $essence.perAction
           $bones.amount -= 10
@@ -61,8 +61,8 @@
 
     <div id="resources">
       <h1>Resources</h1>
-      <Resource resource={$bones}/>
-      <Resource resource={$essence}/>
+      <Resource resource={$gameModel.saveData.resource[0]}/>
+      <Resource resource={$gameModel.saveData.resource[1]}/>
       <Resource resource={$wood}/>
       <Resource resource={$stones}/>
     </div>
@@ -136,7 +136,8 @@
 
     
   </div>
-  <button on:click={saveSaveGame($gameModel.saveData)}>Save Game</button>
+  <button on:click={() => {saveSaveGame($gameModel.saveData)}}>Save Game</button>
+  <button on:click={resetSaveGame}>Reset Game</button>
     
   {:else}
   <p>Another tab.</p>

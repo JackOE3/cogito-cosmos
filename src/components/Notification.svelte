@@ -1,7 +1,6 @@
 <script>
   import { fly } from 'svelte/transition';
   import { sineInOut } from 'svelte/easing';
-  import {Message} from '../gamelogic/notifications';
   export let message;
 </script>
 
@@ -16,8 +15,8 @@
   span {
       display: inline-block;
       padding: 1rem 2rem;
-      border:1px solid #ccc;
+      border:1px solid rgb(0, 0, 0);
       margin-bottom: 1rem;
-      background-color: #eee;
+      background-color: rgb(49, 49, 49);
   }
 </style>

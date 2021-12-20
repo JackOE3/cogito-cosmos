@@ -1,6 +1,6 @@
-import { gameModel, saveSaveGame } from "./gamemodel";
+import { resources } from "../stores/Resources";
+import { gameModel, saveSaveGame, updateGameModel } from "./gamemodel";
 import { sendMessage } from "./notifications";
-//import { generators } from "./upgrades";
 import { formatWhole } from "./utils";
 
 /**
@@ -31,11 +31,11 @@ let interval;
  */
 export function startGameLoop() {
     
-    console.log('calculating offline progess')
-    calculateOfflineProgress();
+  console.log('calculating offline progess')
+  calculateOfflineProgress();
 
-    console.log('starting the game loop');
-    interval = setInterval(gameLoop, ms);
+  console.log('starting the game loop');
+  interval = setInterval(gameLoop, ms);
 }
 
 // some datetime values we will be using to calculate how much time has passed
@@ -51,22 +51,22 @@ let deltaT = 0;
  * The game loop function that runs multiple times per second in the background.
  */
 function gameLoop() {
-    const currentTime = Date.now();
+  const currentTime = Date.now();
 
-    // if lastSaved was more than 60 seconds ago we should save the game
-    if (currentTime - lastSaved > autoSaveTime) {
-        lastSaved = currentTime;
-        saveSaveGame(gameModelInstance.saveData);
-        sendMessage("Game auto-saved");
-    }
+  // if lastSaved was more than 60 seconds ago we should save the game
+  if (currentTime - lastSaved > autoSaveTime) {
+    lastSaved = currentTime;
+    saveSaveGame(gameModelInstance.saveData);
+    sendMessage("Game auto-saved");
+  }
 
-    // calculate deltaT based on the current time and the last run time
-    // we are using Math.max and Math.min to make sure deltaT is between 0 and 1 seconds
-    deltaT = Math.max(Math.min((currentTime - lastRunTime) / 1000, 1), 0);
-    lastRunTime = currentTime;
+  // calculate deltaT based on the current time and the last run time
+  // we are using Math.max and Math.min to make sure deltaT is between 0 and 1 seconds
+  deltaT = Math.max(Math.min((currentTime - lastRunTime) / 1000, 1), 0);
+  lastRunTime = currentTime;
 
-    // Now we know what deltaT is we can update the game
-    gameUpdate(deltaT);
+  // Now we know what deltaT is we can update the game
+  gameUpdate(deltaT);
 }
 
 
@@ -78,8 +78,14 @@ function gameLoop() {
  */
 function gameUpdate(deltaT) {
 
-    // update each generator
-    //generators.forEach(generator => generator.update(deltaT));
+  // update each resource
+  gameModelInstance.saveData.resource.forEach(resource => {
+    updateResource(resource)
+  })
+
+  // force update the game
+  updateGameModel()
+ 
 }
 
 
@@ -88,21 +94,29 @@ function gameUpdate(deltaT) {
  */
 function calculateOfflineProgress() {
 
-    // note how much we had before
-    const moneyBefore = gameModelInstance.saveData.money;
+  // note how bones we had before
+  const bonesBefore = gameModelInstance.saveData.resource[0];
 
-    // calculate time in seconds since last saved
-    const currentTime = Date.now();
- 
-    const offlineDeltaT = Math.max((currentTime - gameModelInstance.saveData.lastSaved) / 1000, 0);
+  // calculate time in seconds since last saved
+  const currentTime = Date.now();
 
-    console.log(`Offline for ${offlineDeltaT} seconds`);
+  const offlineDeltaT = Math.max((currentTime - gameModelInstance.saveData.lastSaved) / 1000, 0);
 
-    // perform the game update for the total time
-    gameUpdate(offlineDeltaT);
+  console.log(`Offline for ${offlineDeltaT} seconds`);
 
-    // calculate total earned
-    const moneyEarned = gameModelInstance.saveData.money - moneyBefore;
+  // perform the game update for the total time
+  gameUpdate(offlineDeltaT);
 
-    sendMessage(`You have earned $${formatWhole(moneyEarned)} while offline!`);
+  // calculate total earned
+  const bonesEarned = gameModelInstance.saveData.resource[0] - bonesBefore;
+
+  sendMessage(`You have earned ${formatWhole(bonesEarned)} bones while offline!`);
+}
+
+function updateResource(resource) {
+  if (resource.amount < resource.maxAmount) {
+    resource.amount += resource.perSec * deltaT
+    if (resource.active) resource.amount += resource.perAction * deltaT
+    if (resource.amount > resource.maxAmount) resource.amount = resource.maxAmount
+  }
 }
