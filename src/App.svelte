@@ -1,11 +1,15 @@
 <script>
   import { onMount } from 'svelte';
-  import {bones, essence} from './stores/ResourceStore.js'
+  import {bones, essence, wood, stones} from './stores/ResourceStore.js'
+  import {graveyard, crypt} from './stores/BuildingStore.js'
   import {skeletons} from './stores/WorkerStore.js'
   import {boneHarvester, essenceGatherer} from './stores/JobStore.js'
 	import ProgBar from './components/ProgBar.svelte'
 	import Tabs from './components/Tabs.svelte'
   import Resource from './components/Resource.svelte'
+  import Building from './components/Building.svelte'
+  import Notifications from './components/Notifications.svelte';
+  import { gameModel, saveSaveGame } from "./gamelogic/gamemodel";
 
 	let items = ['Tab1', 'Tab2', 'Tab3', 'Tab4']
 	let activeItem = items[0]
@@ -48,15 +52,22 @@
 </script>
 
 <main>
+  <!-- Add the Notifications component so messages appear on every page -->
+  <Notifications/>
+  
 	<Tabs {items} {activeItem} on:tabChange={tabChange}/>
   {#if activeItem === 'Tab1'}
   <div class="display">
-    <div class="resources">
+
+    <div id="resources">
       <h1>Resources</h1>
       <Resource resource={$bones}/>
       <Resource resource={$essence}/>
+      <Resource resource={$wood}/>
+      <Resource resource={$stones}/>
     </div>
-    <div class="workers">
+
+    <div id="workers">
       <h1>Workers</h1>
 
       <div class="worker">
@@ -82,7 +93,7 @@
       
     </div>
 
-    <div class="jobs">
+    <div id="jobs">
       <h1>Jobs</h1>
       <p>Unemployed: {unemployed}</p>
       <div class="job">
@@ -91,7 +102,6 @@
           <button on:click={() => {
             if (unemployed === 0) return
             $boneHarvester.employed += 1
-            console.log(unemployed)
           }}>Hire</button>
           <button on:click={() => {
             if ($boneHarvester.employed === 0) return
@@ -114,11 +124,19 @@
         </div>
       </div>
       
-      
     </div>
 
-  </div>
+    <div id="infrastructure">
+      <h1>Infrastructure</h1>
+      <Building building={$graveyard} cost={[$bones.amount, $stones.amount]}/>
+      <Building building={$crypt} cost={[$bones.amount, $stones.amount]}/>
+    </div>
+
     
+
+    
+  </div>
+  <button on:click={saveSaveGame($gameModel.saveData)}>Save Game</button>
     
   {:else}
   <p>Another tab.</p>
@@ -142,18 +160,23 @@
     margin-bottom: 20px
     
   }
-  .resources {
+  #resources {
     width: min-content;
     margin: 0 20px;
     /*border: 1px solid black;*/
 
   }
-  .workers {
+  #workers {
     width: min-content;
     margin: 0 20px;
     /*border: 1px solid black;*/
   }
-  .jobs {
+  #jobs {
+    width: 240px;
+    margin: 0 20px;
+    /*border: 1px solid black;*/
+  }
+  #infrastructure {
     width: 240px;
     margin: 0 20px;
     /*border: 1px solid black;*/

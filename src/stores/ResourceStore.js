@@ -21,3 +21,18 @@ export const essence = writable({
     return true
   }
 })
+
+export const wood = writable({
+  name: 'wood',
+  amount: 0,
+  perSec: 0,
+  perAction: 0,
+  maxAmount: 100,
+})
+export const stones = writable({
+  name: 'stones',
+  amount: 0,
+  perSec: 0,
+  perAction: 0,
+  maxAmount: 50,
+})

@@ -22,6 +22,9 @@ $: bonus = (resource.active) ? resource.perAction : 0
       on:click={() => {
       resource.active = !resource.active;
       }}>Collect</button>
+    <button on:click={() => {
+    resource.amount += 5
+    }}>incr</button>
   </div>
   <ProgBar 
     --width = 80%
