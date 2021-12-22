@@ -19,10 +19,6 @@ $: bonus = (resource.active) ? resource.perAction : 0
         <td>+{formatNumber(resource.perSec + bonus,2)}/s</td>
       </tr>
     </table>
-    <button class:active={resource.active}
-      on:click={() => {
-      resource.active = !resource.active;
-      }}>Collect</button>
     <button on:click={() => {
     resource.amount += 5
     }}>incr</button>
@@ -49,10 +45,6 @@ $: bonus = (resource.active) ? resource.perAction : 0
    margin-left: auto;
    margin-bottom: 0;
    margin-right: 0
- }
-  .active{
-   background-color: rgb(136, 136, 136);
-   color: white
  }
  .component{
    margin-bottom: 0.25rem;

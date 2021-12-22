@@ -1,6 +1,16 @@
 
+export enum ResourceType {
+  BONES,
+  ESSENCE,
+  WOOD,
+  STONES
+}
+
+/**
+ * The resource object.
+ */
 export class Resource {
-  public id: number;
+  public resourceType: ResourceType;
   public name: string;
   public amount: number;
   public perSec: number;
@@ -8,15 +18,14 @@ export class Resource {
   public maxAmount: number;
   public active: boolean;
 
-  constructor(id: number, name: string, amount: number, maxAmount: number) {
-    this.id = id;
+  constructor(resourceType: ResourceType, name: string, amount: number, maxAmount: number) {
+    this.resourceType = resourceType;
     this.name = name;
     this.amount = amount;
     this.maxAmount = maxAmount;
 
     this.perSec = 0;
     this.perAction = 1;
-    this.active = false;
   }
   /**
    * Update this resource
@@ -25,7 +34,6 @@ export class Resource {
   update(deltaT: number) {
     if (this.amount < this.maxAmount) {
       this.amount += this.perSec * deltaT
-      if (this.active) this.amount += this.perAction * deltaT
       if (this.amount > this.maxAmount) this.amount = this.maxAmount
     }
   }
@@ -36,9 +44,9 @@ export class Resource {
  * Test desc.
  */
 export const resources = [
-  new Resource(1, 'bones', 0, 50),
-  new Resource(2, 'essence', 0, 10),
-  new Resource(3, 'wood', 0, 100),
-  new Resource(4, 'stones', 0, 100)
+  new Resource(ResourceType.BONES, 'bones', 0, 50),
+  new Resource(ResourceType.ESSENCE, 'essence', 0, 10),
+  new Resource(ResourceType.WOOD, 'wood', 0, 100),
+  new Resource(ResourceType.STONES, 'stones', 0, 100)
 ]
 //Maybe in future, store resources as a JSON file and directly parse it in SaveData() 

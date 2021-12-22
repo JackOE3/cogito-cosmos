@@ -1,6 +1,10 @@
 import { writable } from 'svelte/store';
 import {resources, Resource} from '../stores/Resources'
+import {workers} from '../stores/Workers'
+import {buildings} from '../stores/Buildings'
+import type {Building} from '../stores/Buildings'
 import { sendMessage } from './notifications';
+
 
 /**
  * This is the key the save data will be stored under inside localstorage
@@ -101,18 +105,19 @@ export function saveSaveGame(saveData: SaveData) {
      sendMessage("Game reset.")
  }
 
-
 /**
  * This class holds any data that needs to be saved when the player saves their game.
  * It should only be used for values that must be saved. Anything transient should go directly on the GameModel.
  */
 export class SaveData {
-
+    
     // Used to hold the current money the player has, initialized at 0
     public money: number = 0
     // JSON parse/stringify so javascript doesnt make a reference to the object, but instead a deedcopy
     public resource: Resource[] = JSON.parse(JSON.stringify(resources))
-    
+    public worker = JSON.parse(JSON.stringify(workers))
+    public building: Building[] = JSON.parse(JSON.stringify(buildings))
+
     // Used to hold which upgrades have been bought, and the quantity
     // we will only save the id and the qty of each upgrade to avoiding wasting save game storage
     public upgradesBought: number[] = [];

@@ -116,7 +116,6 @@ function calculateOfflineProgress() {
 function updateResource(resource: Resource) {
   if (resource.amount < resource.maxAmount) {
     resource.amount += resource.perSec * deltaT
-    if (resource.active) resource.amount += resource.perAction * deltaT
     if (resource.amount > resource.maxAmount) resource.amount = resource.maxAmount
   }
 }
