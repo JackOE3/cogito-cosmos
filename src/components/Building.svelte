@@ -2,6 +2,7 @@
   import type {Building} from '../stores/Buildings'
   import {gameModel} from '../gamelogic/gamemodel'
   import { get } from 'svelte/store';
+  import { tooltip }from './tooltips/buildingTooltip'
   export let building: Building
 
   function purchaseBuilding() {
@@ -12,8 +13,9 @@
       affordable[i] = false
       //get better here because you dont need subscribe to the store?
       if(get(gameModel).saveData.resource[cost.resourceType].amount >= cost.amount) {
-        affordable[i++] = true
+        affordable[i] = true
       }
+      i++
     })
 
     // checks if all entries are true, if yes then makes the purchase
@@ -28,13 +30,34 @@
 
 </script>
 
-<!--TODO: make CSS beautiful-->
-<div class="component">
-  <b>{building.name}</b>
-  <span>{building.level}</span>
-  {#each building.cost as cost}
-    <span>{cost.resourceType}: {cost.amount}--</span>
-  {/each}
-  
-  <button on:click={purchaseBuilding}>Upgrade</button>
-</div>
+<button class="building" on:click={purchaseBuilding} use:tooltip data-buildingtype={building.buildingType}>
+  <div class="right">
+    LVL {building.level}
+  </div>
+  <div class="center">
+    {building.name}
+  </div>
+</button>
+
+<style>
+  .building {
+    width: 240px;
+    margin-bottom: 0.5rem;
+    color: white;
+    background-color: var(--Gray900);
+    text-align: center;
+    position: relative;
+  }
+  .building div  {
+    display: inline-block;
+  }
+  .center {
+   position: absolute;
+   left: 0;
+   right: 0
+  }
+  .right {
+    scale: .75;
+    float: right
+  }
+</style>
