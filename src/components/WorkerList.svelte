@@ -1,6 +1,8 @@
 <script lang="ts">
   import ProgBar from './ProgBar.svelte'
   import type {Resource} from '../stores/Resources'
+  import {gameModel} from "../gamelogic/gamemodel";
+  $: g = $gameModel.saveData
   export let workers
   export let resources: Resource[]
 </script>

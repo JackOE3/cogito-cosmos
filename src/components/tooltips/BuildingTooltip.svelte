@@ -1,35 +1,26 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
-  import { onMount } from 'svelte';
   import { gameModel } from '../../gamelogic/gamemodel'
   import { formatNumber } from '../../gamelogic/utils'
 
-	export let buildingType: number;
+	export let data: number;
 	export let x: number;
 	export let y: number;
-  let visible = false;
+
+  let buildingType = data
   $: building = $gameModel.saveData.building[buildingType]
 
-  onMount(() => {
-    // needed for fading in properly
-    visible = true
-  })
-  
 </script>
  
-{#if visible}
-  <div transition:fade="{{duration: 100}}" 
-    style="top: {y}px; left: {x + 5}px;">
-    <table>
-      {#each building.cost as cost}
-        <tr>
-          <td>{$gameModel.saveData.resource[cost.resourceType].name}</td>
-          <td>{formatNumber(cost.amount, 2)}</td>
-        </tr>
-      {/each}
-    </table>
-  </div>
-{/if}
+<div style="top: {y + 5}px; left: {x + 5}px;">
+  <table>
+    {#each building.cost as cost}
+      <tr>
+        <td>{$gameModel.saveData.resource[cost.resourceType].name}</td>
+        <td>{formatNumber(cost.amount, 2)}</td>
+      </tr>
+    {/each}
+  </table>
+</div>
 
 <style>
 	div {

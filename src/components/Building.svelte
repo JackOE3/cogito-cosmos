@@ -2,7 +2,8 @@
   import type {Building} from '../stores/Buildings'
   import {gameModel} from '../gamelogic/gamemodel'
   import { get } from 'svelte/store';
-  import { tooltip }from './tooltips/buildingTooltip'
+  import { tooltip }from './tooltips/tooltip'
+  import BuildingTooltip from './tooltips/BuildingTooltip.svelte'
   export let building: Building
 
   function purchaseBuilding() {
@@ -30,7 +31,8 @@
 
 </script>
 
-<button class="building" on:click={purchaseBuilding} use:tooltip data-buildingtype={building.buildingType}>
+<button class="building" on:click={purchaseBuilding} 
+  use:tooltip={{content: BuildingTooltip, data: building.buildingType}}>
   <div class="right">
     LVL {building.level}
   </div>

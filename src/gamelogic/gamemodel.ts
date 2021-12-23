@@ -26,7 +26,7 @@ import { sendMessage } from './notifications';
              // get data from localstorage, decompress it using lz-string, then parse it back into a javascript object
              let saveData = JSON.parse(localStorage.getItem(storageName));
  
-             sendMessage("Savefile loaded.")
+             //sendMessage("Savefile loaded.")
              console.log('SaveData loaded:');
              console.log(saveData);
  
@@ -118,6 +118,16 @@ export class SaveData {
     public worker = JSON.parse(JSON.stringify(workers))
     public building: Building[] = JSON.parse(JSON.stringify(buildings))
 
+    /**
+     * Holds the key to the current set of actions which are displayed.
+     * Usage: actionTree.get(key)
+     */
+    public currentActions: string = "baseActions"
+
+    public lockedActions = {
+      'baseActions': [false, false, false, false, true, true],
+      'secondaryActions': [false, false, false, false]
+    }
     // Used to hold which upgrades have been bought, and the quantity
     // we will only save the id and the qty of each upgrade to avoiding wasting save game storage
     public upgradesBought: number[] = [];

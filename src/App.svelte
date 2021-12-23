@@ -1,11 +1,11 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import {boneHarvester, essenceGatherer} from './stores/JobStore.js'
 	import ProgBar from './components/ProgBar.svelte'
 	import Tabs from './components/Tabs.svelte'
   import ResourceList from './components/ResourceList.svelte'
   import WorkerList from './components/WorkerList.svelte'
   import BuildingList from './components/BuildingList.svelte'
+  import ActionTree from './components/ActionTree.svelte'
   import Notifications from './components/Notifications.svelte';
   import { gameModel, saveSaveGame, resetSaveGame } from "./gamelogic/gamemodel";
 
@@ -14,7 +14,6 @@
   const tabChange = (e) => {
     activeItem = e.detail;
   } 
-  const TICKSPEED = 500
   //$: unemployed = $skeletons.amount - $boneHarvester.employed - $essenceGatherer.employed
       
 </script>
@@ -30,6 +29,8 @@
       <ResourceList/>
       <WorkerList resources={$gameModel.saveData.resource} workers={$gameModel.saveData.worker}/>
       <BuildingList/>
+
+      <ActionTree/>
       
       <!--
       <div id="jobs">
@@ -63,12 +64,6 @@
           </div>
         </div>
         
-      </div>
-
-      <div id="infrastructure">
-        <h1>Infrastructure</h1>
-        <Building building={$graveyard} cost={[$bones.amount, $stones.amount]}/>
-        <Building building={$crypt} cost={[$bones.amount, $stones.amount]}/>
       </div>
 
       -->
@@ -106,25 +101,5 @@
     display:flex;
     justify-content: center;
   }
-  #jobs {
-    width: 240px;
-    margin: 0 20px;
-    /*border: 1px solid black;*/
-  }
-  #infrastructure {
-    width: 240px;
-    margin: 0 20px;
-    /*border: 1px solid black;*/
-  }
-  .job {
-    display: flex
-  }
-  .actions {
-    margin-left: auto;
-    margin-bottom: 0;
-    margin-right: 0
-  }
-
-
 
 </style>

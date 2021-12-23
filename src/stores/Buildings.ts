@@ -40,7 +40,10 @@ const crypt = {
 }
 
 
-
+/**
+ * Ideally, only @param buildingType and @param level should be saved to saveData,
+  everything else is transient.
+ */
 export const buildings: Building[] = [
   {
     buildingType: BuildingType.GRAVEYARD,

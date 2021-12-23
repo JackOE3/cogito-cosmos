@@ -53,12 +53,12 @@ let deltaT = 0;
 function gameLoop() {
   const currentTime = Date.now();
 
-  // if lastSaved was more than 60 seconds ago we should save the game
-  if (currentTime - lastSaved > autoSaveTime) {
+  // if lastSaved was more than 60 seconds ago we should save the game DEACTIVATED!!!!
+  /*if (currentTime - lastSaved > autoSaveTime) {
     lastSaved = currentTime;
     saveSaveGame(gameModelInstance.saveData);
     sendMessage("Game auto-saved");
-  }
+  }*/ 
 
   // calculate deltaT based on the current time and the last run time
   // we are using Math.max and Math.min to make sure deltaT is between 0 and 1 seconds
@@ -110,7 +110,7 @@ function calculateOfflineProgress() {
   // calculate total earned
   const bonesEarned = gameModelInstance.saveData.resource[0].amount - bonesBefore;
 
-  sendMessage(`You have earned ${formatWhole(bonesEarned)} bones while offline!`);
+  //sendMessage(`You have earned ${formatWhole(bonesEarned)} bones while offline!`);
 }
 
 function updateResource(resource: Resource) {
