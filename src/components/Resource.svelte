@@ -14,7 +14,7 @@ $: bonus = (resource.active) ? resource.perAction : 0
   <div class="details">
     <table>
       <tr>
-        <td><b>{label}</b></td>
+        <td><b>{resource.name}</b></td>
         <td>{formatNumber(resource.amount,2)}/{formatWhole(resource.maxAmount)}</td>
         <td>+{formatNumber(resource.perSec + bonus,2)}/s</td>
       </tr>

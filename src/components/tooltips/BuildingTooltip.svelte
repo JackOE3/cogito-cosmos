@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { gameModel } from '../../gamelogic/gamemodel'
+  import { building as buildingStore, resourceStore } from '../../stores/mainStore'
   import { formatNumber } from '../../gamelogic/utils'
 
 	export let data: number;
@@ -7,7 +7,7 @@
 	export let y: number;
 
   let buildingType = data
-  $: building = $gameModel.saveData.building[buildingType]
+  $: building = $buildingStore[buildingType]
 
 </script>
  
@@ -15,7 +15,7 @@
   <table>
     {#each building.cost as cost}
       <tr>
-        <td>{$gameModel.saveData.resource[cost.resourceType].name}</td>
+        <td>{$resourceStore[cost.resourceType].name}</td>
         <td>{formatNumber(cost.amount, 2)}</td>
       </tr>
     {/each}

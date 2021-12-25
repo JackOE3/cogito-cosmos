@@ -1,15 +1,14 @@
 <script lang="ts">
-  import {gameModel} from "../gamelogic/gamemodel";
+  import { currentActions, lockedActionsStore } from '../stores/mainStore'
   import {actionTree} from '../stores/Actions'
 
-  $: gmsd = $gameModel.saveData
 </script>
 
 
 <div id="actions">
   <h1>Actions</h1>
-  {#each actionTree.get(gmsd.currentActions) as action}
-    {#if gmsd.lockedActions[gmsd.currentActions][action.id] == false}
+  {#each actionTree.get($currentActions) as action}
+    {#if $lockedActionsStore[$currentActions][action.id] == false}
     <div class="action" on:click={() => action.execute()}>
       <span>{action.label}</span>
     </div>

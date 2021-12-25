@@ -37,3 +37,10 @@ export function formatWhole(input: number) {
   if (input < thousand) return formatNumber(input, 0);
   return formatNumber(input, 2);
 }
+
+/**
+ * Removes all references to an object or variable.
+ * @param obj 
+ * @returns real copy of obj
+ */
+export const noRef = (obj: any) => {return JSON.parse(JSON.stringify(obj))}

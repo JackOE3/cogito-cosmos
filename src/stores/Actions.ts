@@ -1,9 +1,10 @@
-import { gameModel, updateGameModel } from "../gamelogic/gamemodel";
-import type { GameModel } from "../gamelogic/gamemodel";
-import { writable } from "svelte/store";
+import { currentActions, lockedActionsStore, resourceStore } from "./mainStore";
+import type { Resource } from "./Resources";
 
-let gm: GameModel;
-gameModel.subscribe(m => gm = m);
+let lActions: object;
+lockedActionsStore.subscribe(m => lActions = m);
+let resource: Resource[];
+resourceStore.subscribe(m => resource = m);
 
 export interface Action {
   id: number,
@@ -16,7 +17,9 @@ const baseActions: Action[] = [
     id: 0,
     label: "collect bones",
     execute: function() {
-      gm.saveData.resource[0].amount++
+      // TODO:
+      resource[0].amount++
+      resourceStore.update(m => m)
     }
   },
   {
@@ -30,16 +33,17 @@ const baseActions: Action[] = [
     id: 2,
     label: "Go left",
     execute: function() {
-      gm.saveData.currentActions = "secondaryActions"
+      currentActions.set("secondaryActions")
     }
   },
   {
     id: 3,
     label: "look around",
     execute: function() {
-      gm.saveData.lockedActions['baseActions'][4] = false
-      gm.saveData.lockedActions['baseActions'][5] = false
-      gm.saveData.lockedActions['baseActions'][3] = true
+      lActions['baseActions'][4] = false
+      lActions['baseActions'][5] = false
+      lActions['baseActions'][3] = true
+      lockedActionsStore.update(m => m)
     }
   },
   {
@@ -76,7 +80,7 @@ const secondaryActions: Action[] = [
     id: 2,
     label: "<= return",
     execute: function() {
-      gm.saveData.currentActions = "baseActions"
+      currentActions.set("baseActions")
     }
   }
 ]
@@ -86,6 +90,7 @@ export const actionTree = new Map<string, Action[]>([
   ["baseActions", baseActions],
   ["secondaryActions", secondaryActions]
 ])
+
 
 //actionTree.set("baseActions", baseActions)
 //actionTree.set("secondaryActions", secondaryActions)

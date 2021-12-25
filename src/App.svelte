@@ -7,7 +7,8 @@
   import BuildingList from './components/BuildingList.svelte'
   import ActionTree from './components/ActionTree.svelte'
   import Notifications from './components/Notifications.svelte';
-  import { gameModel, saveSaveGame, resetSaveGame } from "./gamelogic/gamemodel";
+  import { saveSaveGame, resetSaveGame } from "./gamelogic/saveload";
+  import { resourceStore, worker } from "./stores/mainStore";
 
 	let items = ['World', 'Stats', 'Achievements', 'Options']
 	let activeItem = items[0]
@@ -27,7 +28,7 @@
     <div class="display">
 
       <ResourceList/>
-      <WorkerList resources={$gameModel.saveData.resource} workers={$gameModel.saveData.worker}/>
+      <WorkerList resources={$resourceStore} workers={$worker}/>
       <BuildingList/>
 
       <ActionTree/>
@@ -70,12 +71,12 @@
 
       
     </div>
-    <button on:click={() => {saveSaveGame($gameModel.saveData)}}>Save Game</button>
+    <button on:click={() => {saveSaveGame()}}>Save Game</button>
     <button on:click={resetSaveGame}>Reset Game</button>
     
   {:else if activeItem === 'Options'}
     <div id="options">
-      <button on:click={() => {saveSaveGame($gameModel.saveData)}}>Save Game</button>
+      <button on:click={() => {saveSaveGame()}}>Save Game</button>
       <button on:click={resetSaveGame}>Reset Game</button>
     </div>
     

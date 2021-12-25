@@ -1,6 +1,6 @@
 <script lang="ts">
   import type {Building} from '../stores/Buildings'
-  import {gameModel} from '../gamelogic/gamemodel'
+  import {resourceStore} from '../stores/mainStore'
   import { get } from 'svelte/store';
   import { tooltip }from './tooltips/tooltip'
   import BuildingTooltip from './tooltips/BuildingTooltip.svelte'
@@ -13,7 +13,7 @@
     building.cost.forEach(cost => {
       affordable[i] = false
       //get better here because you dont need subscribe to the store?
-      if(get(gameModel).saveData.resource[cost.resourceType].amount >= cost.amount) {
+      if(get(resourceStore)[cost.resourceType].amount >= cost.amount) {
         affordable[i] = true
       }
       i++
@@ -22,7 +22,7 @@
     // checks if all entries are true, if yes then makes the purchase
     if(affordable.every(Boolean)) {
       building.cost.forEach(cost => {
-        $gameModel.saveData.resource[cost.resourceType].amount -= cost.amount
+        $resourceStore[cost.resourceType].amount -= cost.amount
         cost.amount *= cost.multiplier
       })
       building.level++

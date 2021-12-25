@@ -1,12 +1,12 @@
 <script lang="ts">
   import Building from './Building.svelte'
-  import {gameModel} from "../gamelogic/gamemodel";
+  import {building} from "../stores/mainStore";
 </script>
 
 
 <div id="infrastructure">
   <h1>Infrastructure</h1>
-  {#each $gameModel.saveData.building as building}
+  {#each $building as building}
     <Building {building} />
   {/each}
 </div>

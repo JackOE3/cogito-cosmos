@@ -1,14 +1,13 @@
 <script lang="ts">
   import Resource from './Resource.svelte'
-  import {gameModel} from "../gamelogic/gamemodel";
-  //$gameModel.saveData.resource needs to be passed down as a prop,
+  import {resourceStore} from "../stores/mainStore";
+  //$resource needs to be passed down as a prop,
   //because the Resource component needs a specific resource, not the whole list
-
 </script>
 
 <div id="resources">
   <h1>Resources</h1>
-  {#each $gameModel.saveData.resource as resource}
+  {#each $resourceStore as resource}
     <Resource {resource}/>
   {/each}
 </div>
