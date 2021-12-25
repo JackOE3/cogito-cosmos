@@ -1,8 +1,7 @@
 <script lang="ts">
-  import {gameModel, SaveData} from "../gamelogic/gamemodel";
+  import {gameModel} from "../gamelogic/gamemodel";
   import {actionTree} from '../stores/Actions'
-  //console.log(actionTree.get($gameModel.saveData.currentActions))
-  console.log($gameModel.saveData.lockedActions['baseActions'][0])
+
   $: gmsd = $gameModel.saveData
 </script>
 

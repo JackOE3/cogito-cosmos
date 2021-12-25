@@ -81,6 +81,7 @@ const secondaryActions: Action[] = [
   }
 ]
 
+// IF made into a store, could probably be a derived store from currentActions and LockedActions (for the methods)
 export const actionTree = new Map<string, Action[]>([
   ["baseActions", baseActions],
   ["secondaryActions", secondaryActions]
