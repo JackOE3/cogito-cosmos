@@ -4,25 +4,26 @@
     border-radius: .25rem;
   }
   .outerContainer {
-      background: var(--barBgColor, #263238);
+      background: var(--barBgColor, var(--Gray900));
       width: var(--width, 4rem);
       overflow: hidden;
       position: relative;
   }
   .innerBar {
-      background-color: var(--barColor, var(--primary));
+      background-color: var(--barColor, var(--secondary));
       width: var(--progress, 0);
       /*transition: width .25s ease-in-out;*/
       transition: linear 0.2s;
       height: inherit;
-      border-radius: inherit
+      border-radius: inherit;
   }
   .barLabel {
-      text-align: center;
-      top: 0.2rem;
-      left: 0;
-      right: 0;
-      position: absolute
+    position: absolute;
+    text-align: center;
+    font-size: 1rem;
+    left: 0;
+    right: 0;
+    top: calc(var(--height)/2 - 0.65rem);
   }
 </style>
 

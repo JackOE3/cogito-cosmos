@@ -1,6 +1,6 @@
 <script lang="ts">
   import Resource from './Resource.svelte'
-  import {resourceStore} from "../stores/mainStore";
+  import {resourceStore} from "../stores/Resources";
   //$resource needs to be passed down as a prop,
   //because the Resource component needs a specific resource, not the whole list
 </script>

@@ -1,5 +1,6 @@
 import type { Resource } from "../stores/Resources"
-import { resourceStore, lastSaved as lastSavedStore } from '../stores/mainStore'
+import {  lastSaved as lastSavedStore } from '../stores/mainStore'
+import { resourceStore } from '../stores/Resources'
 import { saveSaveGame } from './saveload'
 import { sendMessage } from "./notifications"
 import { formatWhole } from "./utils"
@@ -60,7 +61,7 @@ function gameLoop() {
   if (currentTime - lastSaved > autoSaveTime) {
     lastSaved = currentTime;
     //saveSaveGame()
-    sendMessage("Game auto-saved")
+    //sendMessage("Game auto-saved")
   }
 
   // calculate deltaT based on the current time and the last run time

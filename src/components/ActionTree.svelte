@@ -1,15 +1,39 @@
 <script lang="ts">
-  import { currentActions, lockedActionsStore } from '../stores/mainStore'
-  import {actionTree} from '../stores/Actions'
+  import { currentActionSet, actionFlagStore } from '../stores/Actions'
+  import { actionTree } from '../stores/Actions'
+  import { get } from 'svelte/store';
+  import { saveData  } from '../gamelogic/saveload'
+
+  // keep track of which action is on cooldown, to assign a class conditionally
+  let isOnCooldown: boolean[] = []
 
 </script>
 
 
 <div id="actions">
-  <h1>Actions</h1>
-  {#each actionTree.get($currentActions) as action}
-    {#if $lockedActionsStore[$currentActions][action.id] == false}
-    <div class="action" on:click={() => action.execute()}>
+  <label class="switch">
+    <span>hide disabled options</span>
+    <input type="checkbox" bind:checked={saveData.hideDisabledActions}>
+  </label>
+
+  {#each actionTree.get($currentActionSet) as action (action.id)}
+    {#if !$actionFlagStore[get(currentActionSet)].locked[action.id]
+      && !($actionFlagStore[get(currentActionSet)].disabled[action.id] && saveData.hideDisabledActions)}
+    <div class="action" 
+      on:click={() => {
+        // if no cooldown, instantly execute the action and exit the onClick function
+        if (!action.cooldown) {
+          action.execute()
+          return
+        }
+        // else:
+        isOnCooldown[action.id] = true
+        setTimeout(() => {
+          action.execute()
+          isOnCooldown[action.id] = false
+        }, action.cooldown)
+      }} 
+      class:disabled={$actionFlagStore[$currentActionSet].disabled[action.id] || isOnCooldown[action.id]}>
       <span>{action.label}</span>
     </div>
     {/if}
@@ -18,10 +42,6 @@
 </div>
 
 <style>
-  h1 {
-    font-size: 20px;
-    text-align: center;
-  }
   #actions {
     display: flex;
     flex-direction: column;
@@ -39,11 +59,16 @@
     border-style: none none none solid;
     margin: 2px 0;
   }
+  .disabled{
+    opacity: var(--disabled);
+    pointer-events: none;
+  }
   .action:hover {
     background-color: var(--Gray800);
+    font-weight: bold;
   }
   .action:active{
-    color: var(--primary)
+    color: var(--primary);
   }
-  
+
 </style>

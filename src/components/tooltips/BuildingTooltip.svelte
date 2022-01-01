@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { building as buildingStore, resourceStore } from '../../stores/mainStore'
+  import { building as buildingStore } from '../../stores/mainStore'
+  import { resourceStore } from '../../stores/Resources'
   import { formatNumber } from '../../gamelogic/utils'
 
 	export let data: number;

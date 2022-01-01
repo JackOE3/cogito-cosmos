@@ -20,7 +20,7 @@
 <style>
   div {
       position: fixed;
-      top: 1rem;
+      top: 3rem;
       right:1rem;
       display: grid;
       justify-items: end;

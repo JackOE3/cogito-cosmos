@@ -44,3 +44,21 @@ export function formatWhole(input: number) {
  * @returns real copy of obj
  */
 export const noRef = (obj: any) => {return JSON.parse(JSON.stringify(obj))}
+
+
+/**
+ * Only executes a function once.
+ * @param fn function to be executed
+ * @param context 
+ * @returns 
+ */
+export function once(fn: Function, context) { 
+	var result: Function;
+	return function() { 
+		if(fn) {
+			result = fn.apply(context || this, arguments);
+			fn = null;
+		}
+		return result;
+	};
+}

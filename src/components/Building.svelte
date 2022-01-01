@@ -1,6 +1,6 @@
 <script lang="ts">
   import type {Building} from '../stores/Buildings'
-  import {resourceStore} from '../stores/mainStore'
+  import {resourceStore} from '../stores/Resources'
   import { get } from 'svelte/store';
   import { tooltip }from './tooltips/tooltip'
   import BuildingTooltip from './tooltips/BuildingTooltip.svelte'
