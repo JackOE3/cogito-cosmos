@@ -1,12 +1,6 @@
 import { writable, get} from 'svelte/store';
 import { sendMessage } from './notifications';
-
-import type { Resource } from '../stores/Resources';
-import { resourceStore } from '../stores/Resources';
-import type { Building } from '../stores/Buildings';
 import {
-  worker,
-  building,
   lastSaved
 } from '../stores/mainStore'
 import {currentActionSet, actionFlagStore, storyBookStore} from '../stores/Actions'
@@ -26,9 +20,6 @@ export class SaveData {
   // maybe make private with getters? throws error though...
 
   // ALL STORE-RELATED DATA
-  public resource: Resource[]
-  public worker: object
-  public building: Building[]
   public currentActionSet: ActionSet
   public actionFlag: object
   public storyBook: object
@@ -38,9 +29,6 @@ export class SaveData {
   public hideDisabledActions: boolean
 
   public updateFromStores() {
-    this.resource = get(resourceStore)
-    this.worker = get(worker)
-    this.building = get(building)
     this.currentActionSet = get(currentActionSet)
     this.actionFlag = get(actionFlagStore)
     this.storyBook = get(storyBookStore)
@@ -95,9 +83,6 @@ export function loadSaveGame(){
 * Loads the data from localStorage into the stores.
 */
 function hydrateStores(fromStorage: SaveData){
-  resourceStore.set(fromStorage.resource)
-  worker.set(fromStorage.worker)
-  building.set(fromStorage.building)
   currentActionSet.set(fromStorage.currentActionSet)
   actionFlagStore.set(fromStorage.actionFlag)
   storyBookStore.set(fromStorage.storyBook)
@@ -177,7 +162,6 @@ export function resetSaveGame() {
 function resetStores(){
   // TODO: make each store custom, so you can do store.reset() for all stores here
 
-  resourceStore.reset()
   currentActionSet.reset()
   actionFlagStore.reset()
   storyBookStore.reset()

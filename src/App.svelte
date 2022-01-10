@@ -2,19 +2,14 @@
   import { onMount } from 'svelte';
 	import ProgBar from './components/ProgBar.svelte'
 	import Tabs from './components/Tabs.svelte'
-  import ResourceList from './components/ResourceList.svelte'
-  import WorkerList from './components/WorkerList.svelte'
-  import BuildingList from './components/BuildingList.svelte'
   import ActionTree from './components/ActionTree.svelte'
   import Notifications from './components/Notifications.svelte';
   import { saveSaveGame, resetSaveGame } from "./gamelogic/saveload";
-  import { resourceStore } from "./stores/Resources";
-  import Inventory from './components/Inventory.svelte';
-  import Character from './components/Character.svelte';
   import Log from './components/Log.svelte'
+  import Transistor from './components/Transistor.svelte'
+  import IdlePrototype from './components/IdlePrototype.svelte'
+  import RandomIdea from './components/RandomIdea.svelte'
 
-
-  //$: unemployed = $skeletons.amount - $boneHarvester.employed - $essenceGatherer.employed
       
 </script>
 
@@ -29,51 +24,14 @@
 
   <div class="display">
 
-    <!--ResourceList/-->
-    <!--WorkerList resources={$resourceStore} workers={$worker}/-->
-    <!--BuildingList/-->
     <Log/>
-    <ActionTree/>
-    <Character/>
-    <Inventory/>
+    <!-- <ActionTree/> -->
+    <!-- <IdlePrototype/> -->
+    <!-- <Transistor/> -->
+    <RandomIdea/>
+
     
-    <!--
-    <div id="jobs">
-      <h1>Jobs</h1>
-      <p>Unemployed: {unemployed}</p>
-      <div class="job">
-        Bone Harvester ({$boneHarvester.employed})
-        <div class="actions">
-          <button on:click={() => {
-            if (unemployed === 0) return
-            $boneHarvester.employed += 1
-          }}>Hire</button>
-          <button on:click={() => {
-            if ($boneHarvester.employed === 0) return
-            $boneHarvester.employed -= 1
-          }}>Fire</button>
-        </div>
-        
-      </div>
-      <div class="job">
-        Essence Gatherer ({$essenceGatherer.employed})
-        <div class="actions">
-          <button on:click={() => {
-            if (unemployed === 0) return
-            $essenceGatherer.employed += 1
-          }}>Hire</button>
-          <button on:click={() => {
-            if ($essenceGatherer.employed === 0) return
-            $essenceGatherer.employed -= 1
-          }}>Fire</button>
-        </div>
-      </div>
       
-    </div>
-
-    -->
-
-    
   </div>
   
  

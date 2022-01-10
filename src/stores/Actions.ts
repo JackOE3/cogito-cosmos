@@ -1,13 +1,11 @@
 import { resourceStore } from "./Resources";
 import { writable, get } from 'svelte/store';
-import { ResourceType, type Resource } from "./Resources";
 import {noRef} from '../gamelogic/utils'
+import {currentCPU} from '../stores/mainStore'
 
 // global cooldown time
 const GCD = 500
 
-let resource: Resource[];
-resourceStore.subscribe(m => resource = m);
 
 export enum ActionSet {
   BASE_ACTIONS,
@@ -47,281 +45,44 @@ class ActionProto {
   }
 }
 const baseActions: Action[] = [
-  /*new ActionProto(
-    15,
-    ActionSet.BASE_ACTIONS,
-    false,
-    "\"Whut!?\"",
-    "A good story man wooo!",
-    () => {
-      console.log("fn called")
-    }
-  ),*/
-  {
-    id: 11,
-    locked: false,
-    label: "open your eyes",
-    execute: function() {
-      actionFlagStore.toggle('locked', {id: 0, set: false})
-      actionFlagStore.toggle('disabled', {id: 11, set: true})
-      storyBookStore.add(this.storyId, ActionSet.BASE_ACTIONS)
-    },
-    storyId: 8
-  },
   {
     id: 0,
-    locked: true,
-    label: "\"Where am I?\"",
+    locked: false,
+    label: "switch to next core",
     execute: function() {
-      actionFlagStore.toggle('locked', {id: 1, set: false}, {id: 2, set: false})
-      actionFlagStore.toggle('disabled', {id: 0, set: true})
-      storyBookStore.add(this.storyId, ActionSet.BASE_ACTIONS)
+      currentCPU.update(c => {
+        c.activeCore++
+        return c
+      })
+      //storyBookStore.add(this.storyId, ActionSet.BASE_ACTIONS)
     },
     storyId: 0
   },
   {
     id: 1,
-    locked: true,
-    label: "punch the wall",
-    execute: function() {
-      storyBookStore.add(this.storyId, ActionSet.BASE_ACTIONS)
-    },
-    storyId: 1
-  },
-  {
-    id: 2,
-    locked: true,
-    label: "look around",
-    execute: function() {
-      actionFlagStore.toggle('locked', {id: 3, set: false}, {id: 6, set: false})
-      actionFlagStore.toggle('disabled', {id: 2, set: true})
-      storyBookStore.add(this.storyId, ActionSet.BASE_ACTIONS)
-    },
-    storyId: 2
-  },
-  {
-    id: 3,
-    locked: true,
-    label: "look down",
-    execute: function() {
-      actionFlagStore.toggle('locked', {id: 4, set: false}, {id: 5, set: false})
-      actionFlagStore.toggle('disabled', {id: 3, set: true})
-      storyBookStore.add(this.storyId, ActionSet.BASE_ACTIONS)
-    },
-    storyId: 3
-  },
-  {
-    id: 4,
-    locked: true,
-    label: "collect bones",
-    execute: function() {
-      resourceStore.addResource(ResourceType.BONES, 1)
-      storyBookStore.add(this.storyId, ActionSet.BASE_ACTIONS)
-    },
-    storyId: 4,
-    cooldown: GCD
-  },
-  {
-    id: 5,
-    locked: true,
-    label: "pick up stones",
-    execute: function() {
-      resourceStore.addResource(ResourceType.STONES, 1)
-      storyBookStore.add(this.storyId, ActionSet.BASE_ACTIONS)
-    },
-    storyId: 5,
-    cooldown: GCD
-  },
-  {
-    id: 6,
-    locked: true,
-    label: "go forwards",
-    execute: function() {
-      actionFlagStore.toggle('locked', {id: 7, set: false}, {id: 8, set: false}, {id: 9, set: false})
-      actionFlagStore.toggle('disabled', {id: 6, set: true})
-      storyBookStore.add(this.storyId, ActionSet.BASE_ACTIONS)
-    },
-    storyId: 6
-  },
-  
-  {
-    id: 7,
-    locked: true,
-    label: "follow the left corridor",
-    execute: function() {
-      currentActionSet.set(ActionSet.CAVE_CHAMBER)
-      storyBookStore.add(this.storyId, ActionSet.CAVE_CHAMBER)
-    },
-    storyId: 0
-  },
-  {
-    id: 8,
-    locked: true,
-    label: "follow the right corridor",
-    execute: function() {
-      currentActionSet.set(ActionSet.FOREST_VILLAGE)
-      storyBookStore.add(this.storyId, ActionSet.FOREST_VILLAGE)
-    },
-    storyId: 0
-  },
-  {
-    id: 9,
-    locked: true,
-    label: "flip an imaginary coin",
-    execute: function() {
-      console.log("heads!")
-      storyBookStore.add(this.storyId, ActionSet.BASE_ACTIONS)
-    },
-    storyId: 7
-  },
-  {
-    id: 10,
-    locked: true,
-    label: "open your inventory",
-    execute: function() {
-      console.log("opened")
-    }
-  }
-]
-
-const caveChamber: Action[] = [
-  {
-    id: 0,
     locked: false,
-    label: "go back",
+    label: "reset current core",
     execute: function() {
-      currentActionSet.set(ActionSet.BASE_ACTIONS)
-    }, 
-  },
-  {
-    id: 1,
-    locked: false,
-    label: "examine your surroundings",
-    execute: function() {
-      actionFlagStore.toggle('locked', {id: 2, set: false}, {id: 3, set: false})
-      actionFlagStore.toggle('disabled', {id: 1, set: true})
-      storyBookStore.add(this.storyId, ActionSet.CAVE_CHAMBER)
-    },
-    storyId: 1
-  },
-  {
-    id: 2,
-    locked: true,
-    label: "open the gate",
-    execute: function() {
-      storyBookStore.add(this.storyId, ActionSet.CAVE_CHAMBER)
-    },
-    storyId: 2
-  },
-  {
-    id: 3,
-    locked: true,
-    label: "knock on the gate",
-    execute: function() {
-      storyBookStore.add(this.storyId, ActionSet.CAVE_CHAMBER)
-    },
-    storyId: 3
-  }
-  
-]
-const forestVillage: Action[] = [
-  {
-    id: 0,
-    locked: false,
-    label: "return to the cave",
-    execute: function() {
-      currentActionSet.set(ActionSet.BASE_ACTIONS)
-    },
-  },
-  {
-    id: 1,
-    locked: false,
-    label: "\"Is this heaven?\"",
-    execute: function() {
-      storyBookStore.add(this.storyId, ActionSet.FOREST_VILLAGE)
-      actionFlagStore.toggle('locked', {id: 2, set: false}, {id: 3, set: false}, {id: 4, set: false})
-      actionFlagStore.toggle('disabled', {id: 1, set: true})
-    },
-    storyId: 1
-  },
-  {
-    id: 2,
-    locked: true,
-    label: "examine yourself",
-    execute: function() {
-      storyBookStore.add(this.storyId, ActionSet.FOREST_VILLAGE)
-      actionFlagStore.toggle('disabled', {id: 2, set: true})
-    },
-    storyId: 2
-  },
-  {
-    id: 3,
-    locked: true,
-    label: "\"How do I play this… ehm I mean survive in this world?\"",
-    execute: function() {
-      storyBookStore.add(this.storyId, ActionSet.FOREST_VILLAGE)
-      actionFlagStore.toggle('locked', {id: 5, set: false})
-      actionFlagStore.toggle('disabled', {id: 3, set: true})
-    },
-    storyId: 3
-  },
-  {
-    id: 4,
-    locked: true,
-    label: "gather wood",
-    execute: function() {
-      resourceStore.addResource(ResourceType.WOOD, 1)
-      storyBookStore.add(this.storyId, ActionSet.FOREST_VILLAGE)
-    },
-    storyId: 4,
-    cooldown: GCD
-  },
-  {
-    id: 5,
-    locked: true,
-    label: "use some bones",
-    execute: function() {
-      // TODO: if essence < 10, send message/log that not enough essence!
       
-      if (get(resourceStore)[0].amount < 5) {
-        //TODO: send message that not enough bones!
-        return
-      }
-      storyBookStore.add(this.storyId, ActionSet.FOREST_VILLAGE)
-      actionFlagStore.toggle('locked', {id: 6, set: false})
-      resourceStore.addResource(ResourceType.ESSENCE, 1)
-      resourceStore.addResource(ResourceType.BONES, -5)
+      //storyBookStore.add(this.storyId, ActionSet.BASE_ACTIONS)
     },
-    storyId: 5,
-    cooldown: GCD
+    storyId: 1
   },
   {
-    id: 6,
-    locked: true,
-    label: "summon an undead",
+    id: 2,
+    locked: false,
+    label: "do other stuff",
     execute: function() {
-      storyBookStore.add(this.storyId, ActionSet.FOREST_VILLAGE)
+      
+      //storyBookStore.add(this.storyId, ActionSet.BASE_ACTIONS)
     },
-    storyId: 6,
-    cooldown: GCD
-  },
-  {
-    id: 7,
-    locked: true,
-    label: "build a home for your skeletons",
-    execute: function() {
-      storyBookStore.add(this.storyId, ActionSet.FOREST_VILLAGE)
-    },
-    storyId: 7
+    storyId: 2
   },
 ]
-
 
 // IF made into a store, could probably be a derived store from currentActionSet and LockedActions (for the methods)
 export const actionTree = new Map<ActionSet, Action[]>([
   [ActionSet.BASE_ACTIONS, baseActions],
-  [ActionSet.CAVE_CHAMBER, caveChamber],
-  [ActionSet.FOREST_VILLAGE, forestVillage],
 ])
 
 /**
@@ -349,14 +110,6 @@ export const actionFlagStore = (
         locked: initLockedArray(ActionSet.BASE_ACTIONS),
         disabled: initDisabledArray(ActionSet.BASE_ACTIONS)
       },
-      [ActionSet.CAVE_CHAMBER]: {
-        locked: initLockedArray(ActionSet.CAVE_CHAMBER),
-        disabled: initDisabledArray(ActionSet.CAVE_CHAMBER)
-      },
-      [ActionSet.FOREST_VILLAGE]: {
-        locked: initLockedArray(ActionSet.FOREST_VILLAGE),
-        disabled: initDisabledArray(ActionSet.FOREST_VILLAGE)
-      }
     }
 
     const store = writable(noRef(initial))
@@ -384,8 +137,6 @@ export const storyBookStore = (
   function() {
     const initial = {
       [ActionSet.BASE_ACTIONS]: [],
-      [ActionSet.CAVE_CHAMBER]: [],
-      [ActionSet.FOREST_VILLAGE]: [],
     }
     const store = writable(noRef(initial))
     const reset = () => store.set(noRef(initial))

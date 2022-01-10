@@ -2,14 +2,16 @@ const thousand = 1_000;
 const million = 1_000_000;
 const billion = 1_000_000_000;
 const trillion = 1_000_000_000_000;
-const quadrilion = 1000000000000000;
+const quadrilion = trillion * 1000;
+const quintilion = quadrilion * 1000;
+const sextilion = quintilion * 1000;
 
 /**
  * Function to format a number for display on screen.
  * @param input Number to format
  * @param decimals How many decimals do you want
  */
- export function formatNumber(input: number, decimals: number) {
+export function formatNumber(input: number, decimals: number) {
   if (!input) input = 0;
   if (input < 0) return "-" + formatNumber(-1 * input, decimals);
   if (input >= quadrilion)
@@ -22,6 +24,26 @@ const quadrilion = 1000000000000000;
       return (input / million).toFixed(decimals) + 'M';
   if (input >= thousand)
       return (input / thousand).toFixed(decimals) + 'K';
+
+  return input.toFixed(decimals);
+}
+ export function formatNumber2(input: number, decimals: number) {
+  if (!input) input = 0;
+  if (input < 0) return "-" + formatNumber(-1 * input, decimals);
+  if (input >= sextilion)
+      return input.toExponential(decimals).replace("+", "");
+  if (input >= quintilion)
+    return (input / quintilion).toFixed(decimals) + ' E';
+  if (input >= quadrilion)
+    return (input / quadrilion).toFixed(decimals) + ' P';
+  if (input >= trillion)
+      return (input / trillion).toFixed(decimals) + ' T';
+  if (input >= billion)
+      return (input / billion).toFixed(decimals) + ' G';
+  if (input >= million)
+      return (input / million).toFixed(decimals) + ' M';
+  if (input >= thousand)
+      return (input / thousand).toFixed(decimals) + ' k';
 
   return input.toFixed(decimals);
 }

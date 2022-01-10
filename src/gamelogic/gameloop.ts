@@ -18,7 +18,7 @@ lastSavedStore.subscribe(m => lastSaved = m)
  * how often to run the loop. 200ms = 5 times per second 
  * 200ms or 100ms is usually fast enough to feel responsive without wasting too much CPU time
  */ 
-const ms = 1000
+const ms = 200
 
 /**
  * How often to auto save the game. 60_000 = 60 seconds.
@@ -94,8 +94,6 @@ function gameUpdate(deltaT: number) {
  */
 function calculateOfflineProgress() {
 
-  // note how bones we had before
-  const bonesBefore = resource[0].amount
 
   // calculate time in seconds since last saved
   const currentTime = Date.now()
@@ -107,8 +105,4 @@ function calculateOfflineProgress() {
   // perform the game update for the total time
   gameUpdate(offlineDeltaT)
 
-  // calculate total earned
-  const bonesEarned = resource[0].amount - bonesBefore;
-
-  //sendMessage(`You have earned ${formatWhole(bonesEarned)} bones while offline!`);
 }

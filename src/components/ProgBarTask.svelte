@@ -1,32 +1,60 @@
+<script lang="ts">
+  import { createEventDispatcher, onDestroy, onMount } from "svelte";
+
+  let container: HTMLElement
+  let element: HTMLElement
+  let label: HTMLElement
+
+  const dispatch = createEventDispatcher()
+
+  onMount(() => {
+    // 'animationiteration' triggers every time the animation completes an iteration
+    element.addEventListener('animationiteration', listener, false)
+    // let the barLabel "inherit" the width from the container
+    label.style.width = window.getComputedStyle(container).getPropertyValue('width')
+  })
+  onDestroy(() => {
+    element.removeEventListener('animationiteration', listener, false)
+  })
+  
+  function listener(e: Event) {
+    //console.log(e.target, element)
+    dispatch('completed')
+  }
+</script>
+
 <style>
-    .outerContainer {
-        background: var(--color, rgb(233, 233, 233));;
-        height: 5px;
-        width: var(--width, 4rem);;
-        border-radius: .25rem;
+    #outerContainer {
+        background: var(--barBgColor, var(--Gray800));
+        height: var(--height);
+        width: var(--width, 4rem);
+        border-radius: .2rem;
         overflow: hidden;
         position: relative
     }
-    .innerBar {
-        background-color: #666666;
+    #innerBar {
+        background-color: var(--barColor, var(--secondary));
         height: inherit;
-        width: var(--progress, 0);
+        width: 0;
         border-radius: inherit;
+        animation: linear var(--duration, 1s) infinite doTask var(--playState);
     }
-
-    .barLabel {
-        text-align: center;
-        top: 0.25rem;
-        left: 0;
-        right: 0;
-        position: absolute
+    #barLabel {
+        display: flex;
+        height: inherit;
+        justify-content: center;
+        align-items: center;
+    }
+    @keyframes doTask {
+      from {width: 0}
+      to {width: 100%}
     }
 </style>
 
-<div class="outerContainer">
-    <div class="innerBar">
-        <span class="barLabel">
-            <slot></slot>
-        </span>
-    </div>
+<div id="outerContainer" bind:this={container}>
+    <div id="innerBar" bind:this={element}>
+      <span id="barLabel" bind:this={label}>
+        <slot></slot>
+      </span>
+    </div>  
 </div>
