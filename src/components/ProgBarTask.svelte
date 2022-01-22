@@ -17,7 +17,7 @@
     element.removeEventListener('animationiteration', listener, false)
   })
   
-  function listener(e: Event) {
+  function listener(_e: Event) {
     //console.log(e.target, element)
     dispatch('completed')
   }

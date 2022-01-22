@@ -6,11 +6,17 @@
   import Iconify from '@iconify/iconify';
   import ProgBarTask from './ProgBarTask.svelte';
   import InputRange from './InputRange.svelte'
-  import { slide } from "svelte/transition";
+  import { fade, slide } from "svelte/transition";
   import { writable } from "svelte/store";
   import TableComponent from "./TableComponent.svelte";
+  import { tooltip } from "./tooltips/tooltip";
+  import UpgradeTooltip from "./tooltips/UpgradeTooltip.svelte";
+  import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
+  import { addLogEntry, logQueue } from "../gamelogic/log";
+  import { story } from "../stores/Story";
 
-
+  // return false if key is 'Enter'
+  window.document.onkeydown = (e: KeyboardEvent) => e.key !== 'Enter'
 
   let LORCA_OVERRIDE = false
 
@@ -25,8 +31,8 @@
     BASIC_STATS = 1,
     AUTO_THINK,
     THINK_FASTER,
+    THINK_MULTIPLIER,
     CHEESE,
-    CHEESE_QUEUE,
     CHEESE_MONSTER,
     CHEESE_MONSTER_UPGRADE,
     CHEESE_MONSTER_MODE
@@ -39,56 +45,83 @@
     FASTER_CHEESE
   }
   const upgradeUnlocked = new Array(Object.keys(Upgrade).length/2).fill(false)
-  const unlockUpgradeOLD = (_node: HTMLElement, id: number) => {upgradeUnlocked[id] = true}
   const unlockUpgrade = (id: number) => {upgradeUnlocked[id] = true}
 
   $: {
     // execute scope when one of these variables changes: cheese, moldyCheese
     if(!cheeseCreated && cheese) cheeseCreated = true
-    if(!moldyCheeseCreated && moldyCheese) moldyCheeseCreated = true
+    if(!moldyCheeseCreated && moldyCheese) {
+      addLogEntry(story[10])
+      moldyCheeseCreated = true
+    }
 
-    if(!upgradeUnlocked[Upgrade.THOUGHT_CAP] && cheese >= 8) unlockUpgrade(Upgrade.THOUGHT_CAP)
-    if(!upgradeUnlocked[Upgrade.UNLOCK_CHEESE_QUEUE] && cheese >= 4) unlockUpgrade(Upgrade.UNLOCK_CHEESE_QUEUE)
-    if(!upgradeUnlocked[Upgrade.CHEESE_YIELD] && (cheese >= 5 && moldyCheese >= 1)) unlockUpgrade(Upgrade.CHEESE_YIELD)
-    if(!upgradeUnlocked[Upgrade.MOLDY_CHANCE] && moldyCheese >= 3) unlockUpgrade(Upgrade.MOLDY_CHANCE)
+    if(!upgradeUnlocked[Upgrade.THOUGHT_CAP] && cheese >= 8) {
+      addLogEntry(story[9])
+      unlockUpgrade(Upgrade.THOUGHT_CAP)
+    }
+    if(!upgradeUnlocked[Upgrade.UNLOCK_CHEESE_QUEUE] && cheese >= 4) {
+      unlockUpgrade(Upgrade.UNLOCK_CHEESE_QUEUE)
+      addLogEntry(story[6])
+    }
+    if(!upgradeUnlocked[Upgrade.CHEESE_YIELD] && (cheese >= 5 && moldyCheese >= 1)) {
+      addLogEntry(story[8])
+      unlockUpgrade(Upgrade.CHEESE_YIELD)
+    }
+    if(!upgradeUnlocked[Upgrade.MOLDY_CHANCE] && (moldyCheese > 1 || cheese >= 30)) {
+      addLogEntry(story[11])
+      unlockUpgrade(Upgrade.MOLDY_CHANCE)
+    }
   }
   $: {
     // execute scope when one of these variables changes: cheeseBrain
 
-    if(!upgradeUnlocked[Upgrade.FASTER_CHEESE] && cheeseBrain >= 5) unlockUpgrade(Upgrade.FASTER_CHEESE)
-    if(!cheeseBrainCreated && cheeseBrain) cheeseBrainCreated = true
+    if(!upgradeUnlocked[Upgrade.FASTER_CHEESE] && cheeseBrain >= 3) {
+      addLogEntry(story[14])
+      unlockUpgrade(Upgrade.FASTER_CHEESE)
+    }
+    if(!cheeseBrainCreated && cheeseBrain) {
+      addLogEntry(story[13])
+      cheeseBrainCreated = true
+    }
   }
   $: if(!cheeseMonsterCreated && cheeseMonster.amount) cheeseMonsterCreated = true
 
   let thoughts = 0
-  let thoughtsPerSec = 12
+  let thoughtsPerSec = 0
+  $: thoughtsPerSecEff = thoughtsPerSec * thoughtsBonus
   let thoughtsCap = 100
+  let thoughtsCapDelta = 300
   let thoughtsCapCost = 10 // in cheese
-  let thoughtsToNextIdea = [5, 10, 12, 100, 1000]
+  let thoughtsToNextIdea = [5, 10, 12, 50, 100, 1000, 50000]
 
   let thinkFasterCost = 10
   let thinkFasterCostMult = 1.2
   let thinkFasterPerSec = 1
   
-  let ideas = 4
+  let ideas = 0
 
   let cheeseCreated = false
   let moldyCheeseCreated = false
   let cheeseMonsterCreated = false
   let cheeseBrainCreated = false
   
+  let thoughtsExtended = false
   let cheeseExtended = false
   let moldyCheeseExtended = false
   let cheeseMonsterExtended = false
   let cheeseBrainExtended = false
 
   let cheese = 0
-  $: cheesePerSec = (cheeseBrain * cheeseBrainGenerates) - (cheeseMonster.consumes.cheese * cheeseMonster.amount)
+  // 1 if it's active, 0 when not
+  $: cheeseQueueActive = cheeseQueue.state === 'running' ? 1 : 0
+  $: cheesePerSecFromQueue = (cheeseQueueActive * 1000 * cheeseQueue.yield/cheeseQueue.cycleDuration)
+  $: cheesePerSecDisplayed = cheesePerSecFromQueue + cheesePerSec
+  // these reactive values can be made into derived stores down the road
+  $: cheesePerSec = 0 - (cheeseMonster.consumes.cheese * cheeseMonster.amount)
   let moldyCheese = 0
   let moldyChance = 0.03
 
   let cheeseBrain = 0
-  let cheeseBrainGenerates = 0.5
 
   function getResourceAmount(type: string) {
     switch(type){
@@ -122,7 +155,19 @@
     yield: 1,
     cost: 20
   }
-  const cheeseUpgrades = {
+  const monsterQueue = {
+    unlocked: false,
+    infinite: false,
+    state: 'initial',
+    current: 0,
+    cycleDuration: 3000, // milliseconds
+    yield: 1,
+    cost: {
+      thoughts: 20,
+      moldyCheese: 1
+    }
+  }
+  let cheeseUpgrades = {
     [Upgrade.CHEESE_YIELD]: {
       label: "increase cheese yield",
       effectLabel() {
@@ -131,7 +176,7 @@
       effect: {yield: 1.35, duration: 1.2},
       cost: [
         {resourceType: ResourceType.CHEESE, amount: 10},
-        {resourceType: ResourceType.MOLDY_CHEESE, amount: 0.5}
+        {resourceType: ResourceType.THOUGHTS, amount: 50}
       ],
       costMult: 1.2
     },
@@ -161,7 +206,6 @@
     }
   }
   
-
   const cheeseMonster = {
     amount: 0,
     cost: {
@@ -192,13 +236,14 @@
     consumes: {
       cheese: 0.05
     },
-    // logistical curve, at 40 monsters ~ 1% chance each dies every sec => 1 monster dies every 2 sec
-    // will require some tweaking for sure...
-    // at 500, chance is exactly 1/2
+    // 2 logistic curves superposed, 1st one determins behavior near x = 0 and 2nd one for large x.
+    // needs to be a function for this-keyword to work (to get other properties)
     chanceToDie() {
-      return 1/(1 + Math.exp(-this.deathRate * (this.amount-500)))
+      return (1/(1 + Math.exp(-this.lambda1 * (this.amount-this.offset)))) * (2/(1 + Math.exp(-this.lambda2 * this.amount)) - 1)
     },
-    deathRate: 0.01,
+    lambda1: 0.001,
+    lambda2: 0.0005,
+    offset: 500,
     chanceToStarve: 0.0,
     loot: {
       cheeseBrain: 1
@@ -206,19 +251,47 @@
     brainMode: 2
   }
 
-  
+  type BrainMode = "peaceful" | "normal" | "hostile"
+  // rough guesses here
+  function handleCheeseMonsterBrainMode(type: BrainMode) {
+    switch(type){
+      case "peaceful": {
+        cheeseMonster.lambda1 = 0.001
+        cheeseMonster.lambda2 = 0.0001
+        cheeseMonster.offset = 1000
+        break
+      }
+      case "normal": {
+        cheeseMonster.lambda1 = 0.001
+        cheeseMonster.lambda2 = 0.0005
+        cheeseMonster.offset = 500
+        break
+      }
+      case "hostile": {
+        cheeseMonster.lambda1 = 0.005
+        cheeseMonster.lambda2 = 0.01
+        cheeseMonster.offset = 100
+        break
+      }
+    }
+  }
 
+  
   let lastRunTime = Date.now()
   let lastSecond = Date.now()
   let deltaT = 0
   const GAME_INTERVAL = 200
-
+  let devToolsEnabled = true
 
   onMount(() => {
     window.addEventListener('keypress', (e) => {
       if (e.key === "f") LORCA_OVERRIDE = !LORCA_OVERRIDE
     })
-
+    
+    window.addEventListener('keypress', (e) => {
+      if (e.key === "g") devToolsEnabled = !devToolsEnabled
+    })
+ 
     setInterval(() => {
       let currentTime = Date.now()
       if(currentTime - lastSecond >= 1000) lastSecond = currentTime
@@ -231,23 +304,31 @@
   })
 
   function gameUpdate(deltaT: number, currentTime: number) {
-    thoughts += thoughtsPerSec * deltaT
+    thoughts += thoughtsPerSec * thoughtsBonus * deltaT
     if (thoughts > thoughtsCap) thoughts = thoughtsCap
 
     cheese += cheesePerSec * deltaT
     //if (cheese > cheeseCap) cheese = cheeseCap
     if (cheese < 0) cheese = 0
 
-
     updateCheeseMonsters(deltaT, currentTime)
     
   }
 
   /**
-   * This function will be called whenever the animation of the cheese bar completes a cycle
+   * Triggered when manually starting the cheese generation (with button or input range)
+  */
+  function handleCheeseGenerationInit() {
+    if (thoughts < cheeseQueue.cost || cheeseQueue.state === 'running') return
+    thoughts -= cheeseQueue.cost
+    if(cheeseQueue.current >= 1) cheeseQueue.current--
+    cheeseQueue.state = 'running'
+  }
+  /**
+   * This function will be called whenever the animation of the cheese bar completes a cycle.
    * ProgBarTask dispatches custom event 'completed', which triggers this function
    */
-  function handleCheeseBar() {
+  function handleCheeseGeneration() {
     //console.log("completed")
     if (Math.random() < moldyChance) moldyCheese += cheeseQueue.yield
     else cheese += cheeseQueue.yield
@@ -338,21 +419,15 @@
     }
   }
 
-  function handleCheeseGeneration() {
-    if (thoughts < cheeseQueue.cost || cheeseQueue.state === 'running') return
-    thoughts -= cheeseQueue.cost
-    if(cheeseQueue.current >= 1) cheeseQueue.current--
-    cheeseQueue.state = 'running'
-  }
+  
   function handleCheeseUpgrade(type: Upgrade) {
 
     let affordable = cheeseUpgrades[type].cost.every(({resourceType, amount}) => getResourceAmount(resourceType) >= amount)
     if (!affordable) return
-    cheeseUpgrades[type].cost.forEach(({resourceType, amount}) => {
-      addResourceAmount(resourceType, -amount)
-      amount *= cheeseUpgrades[type].costMult
+    cheeseUpgrades[type].cost.forEach((cost: { resourceType: string; amount: number; }) => {
+      addResourceAmount(cost.resourceType, -cost.amount)
+      cost.amount *= cheeseUpgrades[type].costMult
     })
-  
 
     if (type === Upgrade.CHEESE_YIELD) {
       cheeseQueue.yield *= cheeseUpgrades[Upgrade.CHEESE_YIELD].effect.yield
@@ -364,23 +439,60 @@
       moldyChance += cheeseUpgrades[Upgrade.MOLDY_CHANCE].effect.moldyChancePlus
     }
 
+    // has to be done to force DOM updates...
+    cheeseUpgrades = {...cheeseUpgrades}
   }
-
+  let thinkBtnDisabled = false
+  let thoughtsBonus = 1
+  let thoughtsBonusMax = 1
+  let thoughtsBonusDuration = 1500
+  let thoughtsBonusDecay = 3000
+  const FPS = 60
+  let thoughtsBonusIntervalId: number
+  let thoughtsBonusTimeoutId: number
+  
   function handleThink() {
     thoughts += 1
+    if (thoughtsBonusMax === 1) return
+    thoughtsBonus = thoughtsBonusMax
+    clearInterval(thoughtsBonusIntervalId)
+    clearTimeout(thoughtsBonusTimeoutId)
+    
+    // if clicked, set multiplier, which expires after a time and starts decaying
+    thoughtsBonusTimeoutId = setTimeout(() => {    
+      thoughtsBonusIntervalId = setInterval(() => {
+        console.log("z") 
+        // decrement evenly over {thoughtsBonusDecay} milliseconds
+        thoughtsBonus -= (thoughtsBonusMax - 1)/(thoughtsBonusDecay) * FPS
+        if (thoughtsBonus < 1) {
+          // spooky
+          clearInterval(thoughtsBonusIntervalId)
+          thoughtsBonus = 1
+        }
+      }, 1000/FPS)
+    }, thoughtsBonusDuration)
+
+    
   }
 
+  let thinkFasterStoryAdded = false
   function thinkFaster() {
     if (thoughts < thinkFasterCost) return
     thoughts -= thinkFasterCost
     thinkFasterCost *= thinkFasterCostMult
     thoughtsPerSec += thinkFasterPerSec
+
+    if (!thinkFasterStoryAdded && thoughtsPerSec >= 3) {
+      addLogEntry(story[3])
+      thinkFasterStoryAdded = true
+    }
   }
+
   function handleThoughtCap() {
     if (cheese < thoughtsCapCost) return
     cheese -= thoughtsCapCost
     thoughtsCapCost *= 1.2
-    thoughtsCap += 100
+    thoughtsCap += thoughtsCapDelta
   }
 
   function generateNewIdea() {
@@ -391,14 +503,39 @@
     ideas++
     console.log(ideas)
     switch (ideas) {
+      case Idea.BASIC_STATS : {
+        addLogEntry(story[0])
+        break;
+      }
       case Idea.AUTO_THINK: {
         thoughtsPerSec += 1
         // log: You now automatically think! The idea isn't very original of course, but you also didn't think much for it.
+        addLogEntry(story[1])
+        break
+      }
+      case Idea.THINK_FASTER: {
+        addLogEntry(story[2])
+        break
+      }
+      case Idea.THINK_MULTIPLIER: {
+        thoughtsBonusMax = 2
+        addLogEntry(story[4])
+        break
+      }
+      case Idea.CHEESE: {
+        addLogEntry(story[5])
+        break
+      }
+      case Idea.CHEESE_MONSTER: {
+        addLogEntry(story[12])
+        break
+      }
+      case Idea.CHEESE_MONSTER_UPGRADE: {
+        addLogEntry(story[15])
+        break
       }
 
     }
-
-    
   }
 
   function handleQueueUpgrade() {
@@ -410,11 +547,55 @@
     }
   }
   
-  
-  
+
+ 
+
 </script>
 
 <div class="container">
+  {#if devToolsEnabled}
+  <!-- in future have this in a separate component and access the variables thru their stores -->
+    <div id="devTools">
+      <div id="devControls">
+        <h1>Developer Tools</h1>
+        <label for="DEV-ideas">change idea count</label>
+        <input id="DEV-ideas" type="number" min=0 step=1 bind:value={ideas}>
+    
+        <span>add thoughts</span>
+        <div style="display:flex;">
+          <button on:click={() => thoughts += 1}>+1</button>
+          <button on:click={() => thoughts += 10}>+10</button>
+          <button on:click={() => thoughts += 100}>+100</button>
+          <button on:click={() => thoughts += 1000}>+1K</button>
+        </div>
+    
+        <span>add cheese</span>
+        <div style="display:flex;">
+          <button on:click={() => cheese += 1}>+1</button>
+          <button on:click={() => cheese += 10}>+10</button>
+          <button on:click={() => cheese += 100}>+100</button>
+          <button on:click={() => cheese += 1000}>+1K</button>
+        </div>
+    
+        <span>add moldy cheese</span>
+        <div style="display:flex;">
+          <button on:click={() => moldyCheese += 1}>+1</button>
+          <button on:click={() => moldyCheese += 10}>+10</button>
+          <button on:click={() => moldyCheese += 100}>+100</button>
+          <button on:click={() => moldyCheese += 1000}>+1K</button>
+        </div>
+    
+        <span>add cheese monster</span>
+        <div style="display:flex;">
+          <button on:click={() => cheeseMonster.amount += 1}>+1</button>
+          <button on:click={() => cheeseMonster.amount += 10}>+10</button>
+          <button on:click={() => cheeseMonster.amount += 100}>+100</button>
+          <button on:click={() => cheeseMonster.amount += 1000}>+1K</button>
+        </div>
+    
+      </div>
+    </div>
+  {/if}
   
   <div id="thoughtComponent">
     <h1>thought factory</h1>
@@ -430,61 +611,130 @@
         {thoughts >= thoughtsToNextIdea[ideas] ? thoughtsToNextIdea[ideas] : formatNumber(thoughts,2)}/{thoughtsToNextIdea[ideas]}
       </ProgBar>
       {#if thoughts >= thoughtsToNextIdea[0] || ideas >= Idea.BASIC_STATS || LORCA_OVERRIDE}
-        <button class:ideaComplete={thoughts >= thoughtsToNextIdea[ideas]} class:disabled={thoughts < thoughtsToNextIdea[ideas]} on:click={generateNewIdea}><span class="iconify" data-icon="el:idea"></span></button>
+        <button 
+          class:ideaComplete={thoughts >= thoughtsToNextIdea[ideas]} 
+          class:disabled={thoughts < thoughtsToNextIdea[ideas]} 
+          on:click={generateNewIdea}
+          use:tooltip={{
+            content: SimpleTooltip,
+            data: "Generate a new idea. <br> Unlocks {HintForNextIdea}"
+          }}>
+          <span class="iconify" data-icon="el:idea"></span>
+        </button>
       {:else}
         <button class=disabled>??</button>
       {/if}
     </div>
 
     {#if ideas >= Idea.BASIC_STATS || LORCA_OVERRIDE}
-      <table>
-        <tr>
-          <td class="label">total ideas</td>
-          <td class="amount">{ideas}</td>
-        </tr>
-        <tr>
-          <td class="label">thoughts</td>
-          <td class="amount">{formatNumber(thoughts,2)}/100</td>
-          <td class="perSec"> {#if ideas >= Idea.AUTO_THINK || LORCA_OVERRIDE}+{formatNumber(thoughtsPerSec,2)}/s{/if} </td>
-        </tr>
-      </table>
+      <div transition:slide={{duration: 500}}>
+        <table>
+          <tr>
+            <td class="label">
+              total ideas
+            </td>
+            <td class="amount">{ideas}</td>
+            <td></td>
+          </tr>
+        </table>
+
+        <table>
+          <tr>
+            <td class="label expandable" on:click={() => thoughtsExtended = !thoughtsExtended} aria-expanded={thoughtsExtended}>
+              <span class="breadcrumb">
+                thoughts
+                <span class="iconify" data-icon="fa-solid:angle-right"></span>
+              </span>
+            </td>
+            <td class="amount">{formatNumber(thoughts,2)}</td>
+            <td class="perSec">
+               {#if ideas >= Idea.AUTO_THINK || LORCA_OVERRIDE}
+                <span transition:fade={{duration: 500}} class:red={thoughtsBonus > 1}>
+                  +{formatNumber(thoughtsPerSec * thoughtsBonus,2)}/s
+                </span>
+               {/if} 
+            </td>
+          </tr>
+        </table>
+
+        {#if thoughtsExtended}
+          <div transition:slide={{duration: 300}}>
+            <TableComponent rows={[
+              { label: "multiplier", value: formatNumber(thoughtsBonus,2), rate:"" },
+              { label: "capacity", value: formatWhole(thoughtsCap), rate:"" },
+            ]}/>
+          </div>
+       {/if}
+
+      </div>
     {/if}
-    <button on:click={handleThink}>
-      think <span class="iconify" data-icon="icon-park-outline:brain"/><br>
-      +1 thoughts 
-    </button>
-    {#if ideas >= Idea.THINK_FASTER || LORCA_OVERRIDE}
-      <button on:click={thinkFaster} class:disabled={thoughts < thinkFasterCost} >
-        think faster <span class="iconify" data-icon="fa-solid:angle-double-up"/><span class="iconify" data-icon="icon-park-outline:brain"/><br>
-        +{thinkFasterPerSec} thoughts/s <br>
-        {formatNumber(thinkFasterCost,2)} thoughts
+
+    {#if ideas >= Idea.THINK_MULTIPLIER}
+      <button on:click={handleThink}>
+          thought boost <span class="iconify" data-icon="icon-park-outline:brain"/><br>
+          x2 thoughts/s
+      </button>
+    {:else}
+      <button on:click={handleThink}>
+        think <span class="iconify" data-icon="icon-park-outline:brain"/><br>
+        +1 thoughts 
       </button>
     {/if}
+
+
+    {#if ideas >= Idea.THINK_FASTER || LORCA_OVERRIDE}
+      <button 
+        on:click={thinkFaster} 
+        class:disabled={thoughts < thinkFasterCost} 
+        transition:slide={{duration: 500}}
+        use:tooltip={{
+          content: UpgradeTooltip,
+          data: {
+            desc: "Increase your rate of thinking.",
+            effects: [`+${thinkFasterPerSec} thoughts/s`],
+            costs: [`${formatNumber(thinkFasterCost,2)} thoughts`]
+          }
+        }}
+      >
+        thought acceleration <span class="iconify" data-icon="fa-solid:angle-double-up"/><span class="iconify" data-icon="icon-park-outline:brain"/><br>
+      </button>
+
+    {/if}
     {#if upgradeUnlocked[Upgrade.THOUGHT_CAP] || LORCA_OVERRIDE}
-      <button on:click={handleThoughtCap} class:disabled={cheese < thoughtsCapCost}>
-        expand your mind <br>
-        +{100} thought capacity <br>
-        {formatNumber(thoughtsCapCost,2)} cheese
+      <button 
+        on:click={handleThoughtCap} 
+        class:disabled={cheese < thoughtsCapCost} 
+        transition:slide={{duration: 500}}
+        use:tooltip={{
+          content: UpgradeTooltip,
+          data: {
+            desc: "Increase your capacity to think more broadly.",
+            effects: [`+${thoughtsCapDelta} thought capacity`],
+            costs: [`${formatNumber(thoughtsCapCost,2)} cheese`]
+          }
+        }}
+      >
+        mental growth
       </button>
     {/if}
   </div>
 
   {#if ideas >= Idea.CHEESE || LORCA_OVERRIDE}
-    <div id="cheeseComponent">
+    <div id="cheeseComponent" transition:slide={{duration: 500}}>
       <h1>switzerland simulator</h1>
       <div class="cheeseBar" class:before={!upgradeUnlocked[Upgrade.UNLOCK_CHEESE_QUEUE] && !LORCA_OVERRIDE}>
-        <button on:click={handleCheeseGeneration} class:active={cheeseQueue.state === 'running'}>
+        <button on:click={handleCheeseGenerationInit} class:active={cheeseQueue.state === 'running'}>
           <span class="iconify" data-icon="fa-solid:cheese"/>
         </button>
 
         <ProgBarTask
-        on:completed={handleCheeseBar}
-        --width = 100%
-        --height = 100%
-        --barColor = yellow
-        --duration = {cheeseQueue.cycleDuration/1000}s
-        --playState = {cheeseQueue.state}
-        >
+          on:completed={handleCheeseGeneration}
+          --width = 100%
+          --height = 100%
+          --barColor = yellow
+          --duration = {cheeseQueue.cycleDuration/1000}s
+          --playState = {cheeseQueue.state}
+          >
         </ProgBarTask>
 
 
@@ -506,35 +756,35 @@
       {#if cheeseQueue.unlocked || LORCA_OVERRIDE}
         <div class="slidecontainer">
           <span>{cheeseQueue.current}</span>
-          <InputRange min={0} max={cheeseQueue.cap} bind:value={cheeseQueue.current} onChange={handleCheeseGeneration}/>
+          <InputRange min={0} max={cheeseQueue.cap} bind:value={cheeseQueue.current} onChange={handleCheeseGenerationInit}/>
         </div>
       {/if}
 
 
       {#if cheeseCreated || LORCA_OVERRIDE}
-        <div>
+        <div transition:slide={{duration: 500}}>
           <table>
             <tr>
               <td class="label expandable" on:click={() => cheeseExtended = !cheeseExtended} aria-expanded={cheeseExtended}>
                 <span class="breadcrumb">cheese <span class="iconify" data-icon="fa-solid:angle-right"></span></span>
               </td>
               <td class="amount">{formatNumber(cheese,2)}</td>
-              <td class="perSec"> {#if cheesePerSec || LORCA_OVERRIDE}+{formatNumber(cheesePerSec,2)}/s{/if} </td>
+              <td class="perSec"> {#if cheesePerSecDisplayed || LORCA_OVERRIDE}{cheesePerSecDisplayed > 0 ? "+": ""}{formatNumber(cheesePerSecDisplayed,2)}/s{/if} </td>
             </tr>
           </table>
 
           {#if cheeseExtended}
             <div transition:slide={{duration: 300}}>
               <TableComponent rows={[
-                { label: "yield", value: formatNumber(cheeseQueue.yield,2) },
-                { label: "cost", value: formatNumber(cheeseQueue.cost,2) },
-                { label: "cycle", value: formatWhole(cheeseQueue.cycleDuration) },
+                { label: "yield", value: formatNumber(cheeseQueue.yield,2), rate:"" },
+                { label: "cost", value: formatNumber(cheeseQueue.cost,2), rate:"" },
+                { label: "duration", value: formatWhole(cheeseQueue.cycleDuration), rate:"" },
               ]}/>
             </div>
           {/if}
 
           {#if moldyCheeseCreated || LORCA_OVERRIDE}
-          <div>
+          <div transition:slide={{duration: 500}}>
             <table>
               <tr>
                 <td class="label expandable" on:click={() => moldyCheeseExtended = !moldyCheeseExtended} aria-expanded={moldyCheeseExtended}>
@@ -550,7 +800,7 @@
             {#if moldyCheeseExtended}
               <div transition:slide={{duration: 300}}>
                 <TableComponent rows={
-                  [{label: "chance", value: `${moldyChance*100}%`}]
+                  [{label: "chance", value: `${formatWhole(moldyChance*100)}%`, rate:""}]
                 }/>
               </div>
             {/if}
@@ -562,7 +812,7 @@
 
 
       {#if upgradeUnlocked[Upgrade.CHEESE_YIELD] || LORCA_OVERRIDE}
-        <div id="cheeseUpgrades">
+        <div id="cheeseUpgrades" transition:slide={{duration: 500}}>
           <!-- could make component for these... -->
           <!-- the use: directive from svelte executes the function once the component is rendererd -->
           <button type="button" on:click={() => handleCheeseUpgrade(Upgrade.CHEESE_YIELD)}>
@@ -570,29 +820,30 @@
             {#each cheeseUpgrades[Upgrade.CHEESE_YIELD].effectLabel() as effectLabel}
               {effectLabel} <br>
             {/each}
+              <!-- {cheeseUpgrades[Upgrade.CHEESE_YIELD].cost[0].amount} {cheeseUpgrades[Upgrade.CHEESE_YIELD].cost[0].resourceType} <br> -->
             {#each cheeseUpgrades[Upgrade.CHEESE_YIELD].cost as cost}
-              {cost.amount} {cost.resourceType} <br>
+              {formatNumber(cost.amount,2)} {cost.resourceType} <br>
             {/each}
           </button>
           {#if upgradeUnlocked[Upgrade.MOLDY_CHANCE] || LORCA_OVERRIDE}
-            <button type="button" on:click={() => handleCheeseUpgrade(Upgrade.MOLDY_CHANCE)}>
+            <button type="button" on:click={() => handleCheeseUpgrade(Upgrade.MOLDY_CHANCE)} transition:slide={{duration: 500}}>
               {cheeseUpgrades[Upgrade.MOLDY_CHANCE].label} <br>
               {#each cheeseUpgrades[Upgrade.MOLDY_CHANCE].effectLabel() as effectLabel}
                 {effectLabel} <br>
               {/each}
               {#each cheeseUpgrades[Upgrade.MOLDY_CHANCE].cost as cost}
-                {cost.amount} {cost.resourceType} <br>
+                {formatNumber(cost.amount,2)} {cost.resourceType} <br>
               {/each}
             </button>
           {/if}
           {#if upgradeUnlocked[Upgrade.FASTER_CHEESE] || LORCA_OVERRIDE}
-            <button type="button" on:click={() => handleCheeseUpgrade(Upgrade.FASTER_CHEESE)}>
+            <button type="button" on:click={() => handleCheeseUpgrade(Upgrade.FASTER_CHEESE)} transition:slide={{duration: 500}}>
               {cheeseUpgrades[Upgrade.FASTER_CHEESE].label} <br>
               {#each cheeseUpgrades[Upgrade.FASTER_CHEESE].effectLabel() as effectLabel}
                 {effectLabel} <br>
               {/each}
               {#each cheeseUpgrades[Upgrade.FASTER_CHEESE].cost as cost}
-                {cost.amount} {cost.resourceType} <br>
+                {formatNumber(cost.amount,2)} {cost.resourceType} <br>
               {/each}
             </button>
           {/if}
@@ -602,13 +853,29 @@
   {/if}
 
   {#if ideas >= Idea.CHEESE_MONSTER || LORCA_OVERRIDE}
-    <div id="monsterComponent">
+    <div id="monsterComponent" transition:slide={{duration: 500}}>
+      <h1>cheese laboratory</h1>
+      <div class="monsterBar">
+        <button class:active={cheeseQueue.state === 'running'}>
+          <span class="iconify" data-icon="icomoon-free:magic-wand"/>
+        </button>
+        <ProgBarTask
+          on:completed={() => console.log("test")}
+          --width = 100%
+          --height = 100%
+          --barColor = var(--primary)
+          --duration = {4}s
+          --playState = paused
+          >
+        </ProgBarTask>
+      </div>
+     
       <button on:click={buyCheeseMonster}>summon cheese monster <span class="iconify" data-icon="icomoon-free:magic-wand"></span><br>
         cost: {cheeseMonster.cost.thoughts} thoughts,
         {cheeseMonster.cost.moldyCheese} moldy cheese</button>
 
       {#if cheeseMonsterCreated || LORCA_OVERRIDE}
-        <div>
+        <div transition:slide={{duration: 500}}>
           <table>
             <tr>
               <td class="label expandable" on:click={() => cheeseMonsterExtended = !cheeseMonsterExtended} aria-expanded={cheeseMonsterExtended}>
@@ -625,10 +892,10 @@
           {#if cheeseMonsterExtended}
             <div transition:slide={{duration: 300}}>
               <TableComponent rows={[
-                { label: "thoughts", value: formatNumber(cheeseMonster.generates.thoughts, 2) + "/s" },
-                { label: "cheese", value: "-" + formatNumber(cheeseMonster.consumes.cheese, 2)  + "/s" },
-                { label: "death_rate", value: formatNumber(cheeseMonster.chanceToDie()*100 , 2)  + "%" },
-                { label: "drop", value: 1 },
+                { label: "thoughts", value: formatNumber(cheeseMonster.generates.thoughts, 2) + "/s", rate: "" },
+                { label: "cheese", value: "-" + formatNumber(cheeseMonster.consumes.cheese, 2)  + "/s", rate: ""  },
+                { label: "death_rate", value: formatNumber(cheeseMonster.chanceToDie()*100 , 2)  + "%", rate: ""  },
+                { label: "drop", value: 1, rate: ""  },
               ]}/>
             </div>
           {/if}
@@ -674,13 +941,19 @@
         <fieldset>
           <legend>monster brain wave controller</legend>
           <label>
-            <input type=radio name=mode bind:group={cheeseMonster.brainMode} value={1}> capybara
+            <input type=radio name=mode bind:group={cheeseMonster.brainMode} value={1} 
+              on:change={() => handleCheeseMonsterBrainMode("peaceful")}>
+              capybara
           </label>
           <label>
-            <input type=radio name=mode bind:group={cheeseMonster.brainMode} value={2}> neutral
+            <input type=radio name=mode bind:group={cheeseMonster.brainMode} value={2}
+            on:change={() => handleCheeseMonsterBrainMode("normal")}>
+            neutral
           </label>
           <label>
-            <input type=radio name=mode bind:group={cheeseMonster.brainMode} value={3}> destruction
+            <input type=radio name=mode bind:group={cheeseMonster.brainMode} value={3}
+            on:change={() => handleCheeseMonsterBrainMode("hostile")}>
+            destruction
           </label>
         </fieldset>
       {/if}
@@ -701,7 +974,8 @@
  
   .disabled{
     opacity: var(--medium-emphasis);
-    pointer-events: none;
+    /* pointer-events: none; */
+    cursor: default;
   }
   button {
     background-color: var(--Gray800);
@@ -755,6 +1029,19 @@
     grid-template-columns: 2rem auto 2rem;
     column-gap: 0.5rem;
   }
+  .monsterBar {
+    height: 2rem;
+    display: grid;
+    grid-template-columns: 2rem auto;
+    column-gap: 0.5rem;
+  }
+  .monsterBar button:first-child {
+    color: var(--primary);
+  }
+  .monsterBar button:first-child:hover, .monsterBar button:first-child.active {
+    outline-width: 1px;
+    outline-style: solid;
+  }
   .ideaComplete:hover {
     color: var(--secondary);
     outline: var(--secondary) solid 1px;
@@ -765,11 +1052,7 @@
   .cheeseBar button:first-child {
     color: yellow;
   }
-  .cheeseBar button:first-child:hover {
-    outline-width: 1px;
-    outline-style: solid;
-  }
-  .cheeseBar button:first-child.active {
+  .cheeseBar button:first-child:hover, .cheeseBar button:first-child.active {
     outline-width: 1px;
     outline-style: solid;
   }
@@ -807,10 +1090,11 @@
   td.label {
     width: 45%;
   }
-  td.label.expandable[aria-expanded=true]{
+  td.label.expandable[aria-expanded=true] > span {
     text-decoration: underline;
   }
-  td.label.expandable:hover{
+  
+  td.label.expandable:hover > span {
     color: var(--primary);
     text-decoration: underline;
   }
@@ -832,12 +1116,27 @@
   [aria-expanded=true] .iconify {
      transform: rotate(0.25turn); 
   }
-
-  
+  .red {
+    color: green
+  }
+   
   
   #cheeseUpgrades {
     display: flex;
     flex-direction: column;
     gap: .75rem;
+  }
+
+  #devTools {
+    position: absolute;
+    right: 0;
+    top: 24px;
+    background-color: rgb(0,0,0,.8);
+  }
+  #devTools > #devControls {
+    margin: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 </style>

@@ -1,21 +1,32 @@
 <script lang="ts">
 
-	export let data: string
-	export let x: number
-	export let y: number
-
-
+  type Data = {
+    desc: string,
+    effects: string[],
+    costs: string[]
+  }
+	export let data: Data;
+	export let x: number;
+	export let y: number;
+  
 </script>
 
-
+ 
 <div style="top: {y + 5}px; left: {x + 5}px;">
-  {@html data}
+  <span>{data.desc}</span>
+  {#each data.effects as effect}
+    <span>{effect}</span>
+  {/each}
+  <span><hr></span>
+  {#each data.costs as cost}
+    <span>{cost}</span>
+  {/each}
 </div>
 
 
 <style>
-  div {
-    width: max-content;
+	div {
+    width: 300px;
 		border: 1px solid var(--secondary);
     /* border-radius: 4px; */
 		background: #263238;
@@ -32,5 +43,6 @@
     color:  var(--Gray500);
     background-color: var(--Gray500);;
     height: 1px;
+    /* margin: auto 120px; */
   }
 </style>

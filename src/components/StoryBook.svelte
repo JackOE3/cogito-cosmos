@@ -1,26 +1,20 @@
 <script lang="ts">
-  import { get } from 'svelte/store';
-  import { currentActionSet, storyBookStore, ActionSet } from '../stores/Actions'
-  import { story } from '../stores/Story'
+  import { onMount } from 'svelte';
+  import { logQueue, addLogEntry } from '../gamelogic/log';
 
-  let blockTransitions = false
-  let lastActionSet: ActionSet
+  let blockTransitions = true
 
-    // when you switch the action set, block all transitions for 100ms
-  $: {
-    if($currentActionSet !== lastActionSet) {
-      blockTransitions = true
-      setTimeout(() => {
-        blockTransitions = false
-      }, 100)
-      lastActionSet = get(currentActionSet)
-    }
-  }
+  onMount(() => {
+    setTimeout(() => {
+      blockTransitions = false
+    }, 100)
+  })
+ 
 
   function fadingIn(node: HTMLElement, {duration}) {
     const o = +getComputedStyle(node).opacity;
- 
     if(blockTransitions) return
+
     return {
       duration,
       css: (t: number) => `opacity: ${t * o}` // t goes from 0 to 1
@@ -29,8 +23,8 @@
 </script>
 
 <div id="storyBook">
-  {#each $storyBookStore[$currentActionSet] as paragraphId}
-    <div class="story" in:fadingIn={{duration: 1000}}>{story[$currentActionSet][paragraphId]}</div>
+  {#each $logQueue as log}
+    <div class="story" in:fadingIn={{duration: 1000}}>{log.entry}</div>
   {/each}
 </div>
 
@@ -51,6 +45,5 @@
     margin-bottom:8px;
     border-style: none none none solid;
   }
-  
   
 </style>

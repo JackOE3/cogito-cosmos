@@ -6,11 +6,12 @@ export function tooltip(element: HTMLElement, options: {
 }) {
   
 	let tooltipComponent: SvelteComponent;
+  let tooltipData = options.data
 
 	function mouseEnter(event: MouseEvent) {
 		tooltipComponent = new options.content({
 			props: {
-				data: options.data,
+				data: tooltipData,
 				x: event.pageX,
 				y: event.pageY,
 			},
@@ -32,6 +33,17 @@ export function tooltip(element: HTMLElement, options: {
   element.addEventListener('mouseleave', mouseLeave);
 	
 	return {
+    // is called whenever the parameter (options) changes
+    // argument is the new parameter
+    update({data}) {
+      // update the local variable from here, else the tooltip would reset
+      // to the starting value if it's destroyed and created again
+      tooltipData = data
+      // programmatically sets props on an instance. component.$set({ x: 1 })
+      // is equivalent to x = 1 inside the component's <script> block.
+      tooltipComponent.$set({data: data})
+     
+    },
 		destroy() {
 			element.removeEventListener('mouseenter', mouseEnter);
       element.removeEventListener('mousemove', mouseMove);

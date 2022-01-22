@@ -2,7 +2,7 @@
   
   import StoryBook from './StoryBook.svelte';
 
-  let logTypes = ['Log', 'Story',]
+  let logTypes = ['Log', 'Prestige', 'Achievements',]
 	let active = logTypes[0]
 
 </script>
@@ -20,12 +20,14 @@
   </div>
 
   <div id="logText">
-    {#if active === 'Story'}
-    <StoryBook/>
-    {:else}
-      smth else.
-
+    {#if active === 'Log'}
+      <StoryBook/>
+    {:else if active === 'Prestige'}
+      Prestige stuff
+    {:else if active === 'Achievements'}
+      Achievement stuff
     {/if}
+
   </div>
  
 </div>
@@ -61,8 +63,8 @@
     cursor: pointer;
   }
   .active {
-    color: var(--primary);
-    border-bottom: 2px solid var(--primary);
+    color: var(--secondary);
+    border-bottom: 1px solid var(--secondary);
     padding-bottom: 2px;
     
   }
