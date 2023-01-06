@@ -6,9 +6,7 @@
   import Notifications from './components/Notifications.svelte';
   import { saveSaveGame, resetSaveGame } from "./gamelogic/saveload";
   import Log from './components/Log.svelte'
-  import Transistor from './components/Transistor.svelte'
-  import IdlePrototype from './components/IdlePrototype.svelte'
-  import RandomIdea from './components/RandomIdea.svelte'
+  import BaseGame from './components/RandomIdea.svelte'
 
       
 </script>
@@ -24,14 +22,9 @@
 
   <div class="display">
 
-    <Log/>
-    <!-- <ActionTree/> -->
-    <!-- <IdlePrototype/> -->
-    <!-- <Transistor/> -->
-    <RandomIdea/>
+    <!--<Log/>-->
+    <BaseGame/>
 
-    
-      
   </div>
   
  
@@ -44,8 +37,8 @@
 	}
   .display {
     display:flex;
-    align-items: flex-start;
-    justify-content: left;
+    align-items: flex-center;
+    justify-content: center;
     margin-bottom: 20px
     
   }

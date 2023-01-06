@@ -50,7 +50,7 @@ body {
 	margin: 0;
 	padding: 8px;
 	box-sizing: border-box;
-  font-family: 'Share Tech Mono', monospace, 'Inter', Arial, sans-serif;
+  font-family: /*'Share Tech Mono'*/ 'Inter', monospace, 'Inter', Arial, sans-serif;
   font-size: 1rem;
   opacity: var(--high-emphasis)
 }

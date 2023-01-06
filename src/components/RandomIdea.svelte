@@ -28,8 +28,7 @@
     CHEESE_BRAIN: "cheese brain",
   }
   enum Idea {
-    BASIC_STATS = 1,
-    AUTO_THINK,
+    AUTO_THINK = 1,
     THINK_FASTER,
     THINK_MULTIPLIER,
     CHEESE,
@@ -503,10 +502,6 @@
     ideas++
     console.log(ideas)
     switch (ideas) {
-      case Idea.BASIC_STATS : {
-        addLogEntry(story[0])
-        break;
-      }
       case Idea.AUTO_THINK: {
         thoughtsPerSec += 1
         // log: You now automatically think! The idea isn't very original of course, but you also didn't think much for it.
@@ -548,7 +543,11 @@
   }
   
 
- 
+  let ideaText = [
+    "Learn to think passively",
+    "Unlock thought acceleration",
+    "Unlock thought boost",
+    "Unlock switzerland"]
 
 </script>
 
@@ -598,76 +597,23 @@
   {/if}
   
   <div id="thoughtComponent">
-    <h1>thought factory</h1>
-    <span>
-      <span class="iconify" data-icon="el:idea"/>
-       idea bar
-    </span>
-    <div class="ideaBar">
-      <ProgBar
-        --width = 100%
-        --height = 100% 
-        --progress = "{100*thoughts/thoughtsToNextIdea[ideas]}%">
-        {thoughts >= thoughtsToNextIdea[ideas] ? thoughtsToNextIdea[ideas] : formatNumber(thoughts,2)}/{thoughtsToNextIdea[ideas]}
-      </ProgBar>
-      {#if thoughts >= thoughtsToNextIdea[0] || ideas >= Idea.BASIC_STATS || LORCA_OVERRIDE}
-        <button 
-          class:ideaComplete={thoughts >= thoughtsToNextIdea[ideas]} 
-          class:disabled={thoughts < thoughtsToNextIdea[ideas]} 
-          on:click={generateNewIdea}
-          use:tooltip={{
-            content: SimpleTooltip,
-            data: "Generate a new idea. <br> Unlocks {HintForNextIdea}"
-          }}>
-          <span class="iconify" data-icon="el:idea"></span>
-        </button>
-      {:else}
-        <button class=disabled>??</button>
-      {/if}
-    </div>
+    <h1>cogito ergo otiosus</h1>
 
-    {#if ideas >= Idea.BASIC_STATS || LORCA_OVERRIDE}
-      <div transition:slide={{duration: 500}}>
-        <table>
-          <tr>
-            <td class="label">
-              total ideas
-            </td>
-            <td class="amount">{ideas}</td>
-            <td></td>
-          </tr>
-        </table>
+    <span>You thought {formatNumber(thoughts,2)} times</span>
 
-        <table>
-          <tr>
-            <td class="label expandable" on:click={() => thoughtsExtended = !thoughtsExtended} aria-expanded={thoughtsExtended}>
-              <span class="breadcrumb">
-                thoughts
-                <span class="iconify" data-icon="fa-solid:angle-right"></span>
-              </span>
-            </td>
-            <td class="amount">{formatNumber(thoughts,2)}</td>
-            <td class="perSec">
-               {#if ideas >= Idea.AUTO_THINK || LORCA_OVERRIDE}
-                <span transition:fade={{duration: 500}} class:red={thoughtsBonus > 1}>
-                  +{formatNumber(thoughtsPerSec * thoughtsBonus,2)}/s
-                </span>
-               {/if} 
-            </td>
-          </tr>
-        </table>
+    {#if ideas >= Idea.AUTO_THINK || LORCA_OVERRIDE}
+      <span class:red={thoughtsBonus > 1}>
+        ({formatNumber(thoughtsPerSec * thoughtsBonus,2)}/s)
+      </span>
+    {/if} 
 
-        {#if thoughtsExtended}
-          <div transition:slide={{duration: 300}}>
-            <TableComponent rows={[
-              { label: "multiplier", value: formatNumber(thoughtsBonus,2), rate:"" },
-              { label: "capacity", value: formatWhole(thoughtsCap), rate:"" },
-            ]}/>
-          </div>
-       {/if}
+    <button on:click={generateNewIdea}>
+      cogito ergo sum <br>
+      {ideaText[ideas]} <br>
+      Costs {thoughtsToNextIdea[ideas]} thoughts
+    </button>
 
-      </div>
-    {/if}
+
 
     {#if ideas >= Idea.THINK_MULTIPLIER}
       <button on:click={handleThink}>
@@ -677,7 +623,7 @@
     {:else}
       <button on:click={handleThink}>
         think <span class="iconify" data-icon="icon-park-outline:brain"/><br>
-        +1 thoughts 
+        +1 thought 
       </button>
     {/if}
 
@@ -978,7 +924,7 @@
     cursor: default;
   }
   button {
-    background-color: var(--Gray800);
+    background-color: var(--Gray600);
     color: white
   }
   #thoughtComponent {
@@ -986,10 +932,10 @@
     display: flex;
     flex-direction: column;
     row-gap: 16px;
-    background-color: rgba(0, 33, 87, 0.19);
+    background-color: var(--Gray800);
     box-shadow: 0 0 4px .25px black;
     padding: 16px;
-    border-radius: 8px;
+    /*border-radius: 8px;*/
   }
   #cheeseComponent {
     width: 300px;
@@ -1005,7 +951,7 @@
     margin: 0;
     font-size: 1.25rem;
     font-weight: normal;
-    text-align: center;
+    text-align: left;
   }
   #monsterComponent {
     width: 300px;
