@@ -5,7 +5,7 @@
   export let onChange: Function
 </script>
 
-<input type=range min={min} max={max} bind:value={value} on:change={() => onChange()}>
+<input type=range min={min} max={max} bind:value={value} on:change={() => {if (value > 0) onChange()}}>
 
 <style>
   input[type=range] {
@@ -14,6 +14,7 @@
   padding: 0;
   background-color: transparent;
   -webkit-appearance: none;
+  appearance: none;
 }
 input[type=range]:focus {
   outline: none;

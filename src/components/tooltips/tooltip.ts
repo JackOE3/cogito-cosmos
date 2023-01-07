@@ -41,7 +41,7 @@ export function tooltip(element: HTMLElement, options: {
       tooltipData = data
       // programmatically sets props on an instance. component.$set({ x: 1 })
       // is equivalent to x = 1 inside the component's <script> block.
-      tooltipComponent.$set({data: data})
+     // tooltipComponent.$set({data: data})
      
     },
 		destroy() {

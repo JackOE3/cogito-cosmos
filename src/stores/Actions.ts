@@ -1,7 +1,6 @@
 import { resourceStore } from "./Resources";
 import { writable, get } from 'svelte/store';
 import {noRef} from '../gamelogic/utils'
-import {currentCPU} from '../stores/mainStore'
 
 // global cooldown time
 const GCD = 500
@@ -50,10 +49,7 @@ const baseActions: Action[] = [
     locked: false,
     label: "switch to next core",
     execute: function() {
-      currentCPU.update(c => {
-        c.activeCore++
-        return c
-      })
+      
       //storyBookStore.add(this.storyId, ActionSet.BASE_ACTIONS)
     },
     storyId: 0

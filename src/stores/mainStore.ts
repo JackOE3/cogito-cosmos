@@ -1,11 +1,24 @@
 import { writable, derived, get} from 'svelte/store'; 
-import {noRef} from '../gamelogic/utils'
+
+export const LORCA_OVERRIDE = writable(false)
+export const devToolsEnabled = writable(true)
 
 
 export const lastSaved = writable(Date.now())
 
-export const currentCPU = writable({
-  cores: 4,
-  activeCore: 1,
-  control: 0,
+export const thoughts= writable(0)
+export const thoughtsPerSec = writable(0)
+export const thoughtsBonus = writable(1)
+
+export const cheese = writable(0)
+export const cheesePerSec = writable(0)
+export const moldyCheese = writable(0)
+
+
+export const unlocked = writable({
+  "thinkPassively": false,
+  "thinkFaster": false,
+  "thoughtBoost": false,
+  "switzerland": false,
+  "cheeseQueue": false,
 })

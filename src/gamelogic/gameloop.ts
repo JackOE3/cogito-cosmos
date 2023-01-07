@@ -4,6 +4,8 @@ import { resourceStore } from '../stores/Resources'
 import { saveSaveGame } from './saveload'
 import { sendMessage } from "./notifications"
 import { formatWhole } from "./utils"
+import {thoughts, thoughtsPerSec, cheese, moldyCheese} from '../stores/mainStore'
+import {get} from 'svelte/store'
 
 /**
  * Reference to some stores.
@@ -18,7 +20,7 @@ lastSavedStore.subscribe(m => lastSaved = m)
  * how often to run the loop. 200ms = 5 times per second 
  * 200ms or 100ms is usually fast enough to feel responsive without wasting too much CPU time
  */ 
-const ms = 200
+const GAME_INTERVAL  = 200
 
 /**
  * How often to auto save the game. 60_000 = 60 seconds.
@@ -40,7 +42,7 @@ export function startGameLoop() {
   lastSaved = Date.now()
 
   console.log('Starting the game loop...')
-  interval = setInterval(gameLoop, ms)
+  interval = setInterval(gameLoop, GAME_INTERVAL)
 }
 
 // some datetime values we will be using to calculate how much time has passed
@@ -74,6 +76,7 @@ function gameLoop() {
 }
 
 
+
 /**
  * Function to update all game data based on time.
  * This is where all idle calculations should start so they can be 
@@ -82,10 +85,8 @@ function gameLoop() {
  * @param deltaT time in seconds since last update
  */
 function gameUpdate(deltaT: number) {
-
-  // update all resources
-  resourceStore.gameUpdate(deltaT)
- 
+  thoughts.update(value => value + get(thoughtsPerSec) * deltaT)
+  //console.log("looped")
 }
 
 

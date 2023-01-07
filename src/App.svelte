@@ -1,17 +1,32 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-	import ProgBar from './components/ProgBar.svelte'
-	import Tabs from './components/Tabs.svelte'
-  import ActionTree from './components/ActionTree.svelte'
-  import Notifications from './components/Notifications.svelte';
-  import { saveSaveGame, resetSaveGame } from "./gamelogic/saveload";
-  import Log from './components/Log.svelte'
-  import BaseGame from './components/RandomIdea.svelte'
+  import { onMount } from 'svelte'
+  import Notifications from './components/Notifications.svelte'
+  import { saveSaveGame, resetSaveGame } from "./gamelogic/saveload"
+  import ThoughtComponent from './components/ThoughtComponent.svelte'
+  import CheeseComponent from './components/CheeseComponent.svelte'
+  import RandomIdea from './components/RandomIdea.svelte'
+  import {devToolsEnabled, LORCA_OVERRIDE, unlocked} from './stores/mainStore'
+  import DevTools from './components/DevTools.svelte'
+
 
       
+  // return false if key is 'Enter'
+  window.document.onkeydown = (e: KeyboardEvent) => e.key !== 'Enter'
+
+  onMount(() => {
+    window.addEventListener('keypress', (e) => {
+      if (e.key === "f") $LORCA_OVERRIDE = !$LORCA_OVERRIDE
+    })
+    
+    window.addEventListener('keypress', (e) => {
+      if (e.key === "g") $devToolsEnabled = !$devToolsEnabled
+    })
+  })
+
 </script>
 
 <main>
+  <DevTools/>
   <!-- Add the Notifications component so messages appear on every page -->
   <Notifications/>
 
@@ -22,8 +37,15 @@
 
   <div class="display">
 
+    <div id="game">
+      <ThoughtComponent/>
+      {#if $unlocked["switzerland"] || $LORCA_OVERRIDE}
+        <CheeseComponent/>
+      {/if}
+    </div>
     <!--<Log/>-->
-    <BaseGame/>
+    
+    <!-- <RandomIdea/> -->
 
   </div>
   
@@ -31,6 +53,13 @@
 </main>
 
 <style>
+  #game {
+    display: flex;
+    align-items: flex-start;
+    gap: 28px;
+    margin-right: 16px;
+    margin-left: 16px; 
+  }
 	main {
 		max-width: 100%;
 		margin-top:20px;
