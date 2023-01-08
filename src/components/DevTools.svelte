@@ -8,19 +8,25 @@
       <h1>Developer Tools</h1>
 
       <span>add thoughts</span>
+      <input type=number bind:value={$thoughts}>
       <div style="display:flex;">
         <button on:click={() => $thoughts += 1}>+1</button>
         <button on:click={() => $thoughts += 10}>+10</button>
         <button on:click={() => $thoughts += 100}>+100</button>
         <button on:click={() => $thoughts += 1000}>+1K</button>
+        <button on:click={() => $thoughts += 10000}>+10K</button>
+        <button on:click={() => $thoughts += 100000}>+100K</button>
       </div>
 
       <span>add cheese</span>
+      <input type=number bind:value={$cheese}>
       <div style="display:flex;">
         <button on:click={() => $cheese += 1}>+1</button>
         <button on:click={() => $cheese += 10}>+10</button>
         <button on:click={() => $cheese += 100}>+100</button>
         <button on:click={() => $cheese += 1000}>+1K</button>
+        <button on:click={() => $cheese += 10000}>+10K</button>
+        <button on:click={() => $cheese += 100000}>+100K</button>
       </div>
 
       <span>add moldy cheese</span>

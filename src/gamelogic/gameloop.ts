@@ -4,8 +4,14 @@ import { resourceStore } from '../stores/Resources'
 import { saveSaveGame } from './saveload'
 import { sendMessage } from "./notifications"
 import { formatWhole } from "./utils"
-import {thoughts, thoughtsPerSec, cheese, moldyCheese} from '../stores/mainStore'
 import {get} from 'svelte/store'
+import {
+  thoughts,
+  thoughtsPerSec,
+  cheese, 
+  moldyCheese
+} from '../stores/mainStore'
+
 
 /**
  * Reference to some stores.

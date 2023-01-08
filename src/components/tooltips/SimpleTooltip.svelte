@@ -27,10 +27,4 @@
     gap: 0.5rem;
     box-shadow: 4px 4px var(--Gray900);
 	}
-  hr {
-    border: none;
-    color:  var(--Gray500);
-    background-color: var(--Gray500);;
-    height: 1px;
-  }
 </style>
