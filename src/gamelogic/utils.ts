@@ -84,3 +84,7 @@ export function once(fn: Function, context) {
 		return result;
 	};
 }
+
+export const baseLog = (base: number, x: number) => {
+  return Math.log(x) / Math.log(base)
+}

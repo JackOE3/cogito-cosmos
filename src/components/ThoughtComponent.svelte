@@ -13,6 +13,8 @@
     thoughtsBonus,
     cheeseThoughtMult,
     cheese,
+    currentCheeseQueue,
+    maxCheeseQueue,
     moldyCheese,
     unlocked,
     
@@ -30,13 +32,18 @@
   let thoughtBoostStrengthCostMult = 2.0
   let thoughtBoostDurationCost = 150
   let thoughtBoostDurationCostMult = 2.5
+  let thoughtBoostStackCost = 5000
+  let thoughtBoostStackCostMult = 3
   
-  let thoughtsBonusMax = 1
-  let thoughtsBonusDuration = 3000
-  let thoughtsBonusDecay = 2000
+  let thoughtBoostMaxStacks = 1
+  let thoughtBoostCurrentStacks = 0
+
+  let thoughtBoostMax = 2
+  let thoughtBoostDuration = 3000
+  let currentThoughtBoostTime = 0
+  let thoughtBoostDecay = 2000
   const FPS = 60
-  let thoughtsBonusIntervalId: number
-  let thoughtsBonusTimeoutId: number
+  let thoughtBoostIntervalId: number
 
   // thoughtsPerSec is being updated here gobally
   $: {
@@ -48,31 +55,53 @@
   
   function handleThink() {
     $thoughts += 1
-    if (thoughtsBonusMax === 1) return
-    $thoughtsBonus = thoughtsBonusMax
-    clearInterval(thoughtsBonusIntervalId)
-    clearTimeout(thoughtsBonusTimeoutId)
-    
-    // if clicked, set multiplier, which expires after a time and starts decaying
-    thoughtsBonusTimeoutId = setTimeout(() => {    
-      thoughtsBonusIntervalId = setInterval(() => {
-        // decrement evenly over {thoughtsBonusDecay} milliseconds
-        $thoughtsBonus -= (thoughtsBonusMax - 1)/(thoughtsBonusDecay) * FPS
+    if (!$unlocked["thoughtBoost"]) return
+    if ($unlocked["cheeseQueueToppedUp"]) $currentCheeseQueue = $maxCheeseQueue
+    // set multiplier, which expires after a time and starts decaying
+    $thoughtsBonus = thoughtBoostMax
+
+    if ($unlocked["thoughtBoostStack"]) {
+      if (thoughtBoostCurrentStacks < thoughtBoostMaxStacks) {
+        currentThoughtBoostTime += thoughtBoostDuration
+        thoughtBoostCurrentStacks++
+      } else currentThoughtBoostTime = thoughtBoostDuration * thoughtBoostMaxStacks
+    } else currentThoughtBoostTime = thoughtBoostDuration
+
+    clearInterval(thoughtBoostIntervalId)
+    let lastRunTime = Date.now()    
+    let deltaT = 0
+
+    thoughtBoostIntervalId = setInterval(() => {
+      const currentTime = Date.now()
+      deltaT = Math.max(Math.min((currentTime - lastRunTime), 1000), 0)
+      lastRunTime = currentTime
+
+      thoughtBoostCurrentStacks = Math.ceil(currentThoughtBoostTime/thoughtBoostDuration)
+
+      if (currentThoughtBoostTime > 0) {
+        currentThoughtBoostTime -= deltaT
+        if (currentThoughtBoostTime < 0) currentThoughtBoostTime = 0
+      } else {  
+        thoughtBoostCurrentStacks = 0  
+        // decrement evenly over {thoughtBoostDecay} milliseconds
+        $thoughtsBonus -= (thoughtBoostMax - 1)/(thoughtBoostDecay) * FPS
         if ($thoughtsBonus < 1) {
           // spooky
-          clearInterval(thoughtsBonusIntervalId)
+          clearInterval(thoughtBoostIntervalId)
           $thoughtsBonus = 1
         }
-      }, 1000/FPS)
-    }, thoughtsBonusDuration)
+      } 
+    }, 1000/FPS)
+    
   }
 
   const unlockCosts = {
     "thinkPassively": 10,
     "thinkFaster": 30,
     "thoughtBoost": 50,
-    "switzerland": 1000,
+    "switzerland": 3000,
     "thoughtSacrifice": 10_000,
+    "thoughtBoostStack": 1_000_000,
     "moldyCheese": 1_000_000,
   }
 
@@ -87,7 +116,8 @@
     "thoughtAcceleration": 0,
     "thoughtJerk": 0,
     "thoughtBoostStrength": 0,
-    "thoughtDurationStrength": 0,
+    "thoughtBoostDuration": 0,
+    "thoughtBoostStack": 0,
   }
 
   function thinkFaster() {
@@ -113,15 +143,22 @@
         $thoughts -= thoughtBoostStrengthCost
         thoughtBoostStrengthCost *= thoughtBoostStrengthCostMult
         upgradesBought["thoughtBoostStrength"] += 1
-        thoughtsBonusMax = 2 + Math.sqrt(upgradesBought["thoughtBoostStrength"])
+        thoughtBoostMax = 2 + Math.sqrt(upgradesBought["thoughtBoostStrength"])
 
         break
       case "duration":
         if ($thoughts < thoughtBoostDurationCost) return
         $thoughts -= thoughtBoostDurationCost
         thoughtBoostDurationCost *= thoughtBoostDurationCostMult
-        upgradesBought["thoughtDurationStrength"] += 1
-        thoughtsBonusDuration = 3000 + 10000*Math.sqrt(upgradesBought["thoughtDurationStrength"])
+        upgradesBought["thoughtBoostDuration"] += 1
+        thoughtBoostDuration = 3000 + 10000*Math.sqrt(upgradesBought["thoughtBoostDuration"])
+        break
+      case "stack":
+        if ($thoughts < thoughtBoostStackCost) return
+        $thoughts -= thoughtBoostStackCost
+        thoughtBoostStackCost *= thoughtBoostStackCostMult
+        thoughtBoostMaxStacks += 1
+        upgradesBought["thoughtBoostStack"] += 1
         break
     }
   }
@@ -135,11 +172,17 @@
   <div class="content">
     <span>
       You thought {formatNumber($thoughts ,2)} times <br>
-      <span class:green={$thoughtsBonus > 1}>
+      <span>
         {#if $unlocked["thinkPassively"] || LORCA_OVERRIDE}
-          ({formatNumber($thoughtsPerSec, 2)}/s)
-          <!-- svelte-ignore empty-block -->
-          {#if $thoughtsBonus > 1} +{formatWhole($thoughtsBonus*100)}% {:else} {/if}
+          <span class:green={$thoughtsBonus > 1}>{formatNumber($thoughtsPerSec, 2)}/s</span><!-- svelte-ignore empty-block -->
+          {#if $thoughtsBonus > 1}
+            - {formatNumber($thoughtsBonus, 2)}x for
+            {formatNumber(currentThoughtBoostTime/1000, 1)}s
+            {#if $unlocked["thoughtBoostStack"]}
+              - {thoughtBoostCurrentStacks}/{thoughtBoostMaxStacks} Stack{thoughtBoostMaxStacks > 1 ? "s" : ""}
+            {/if}
+          {:else}
+          {/if}
         {:else} 
           _
         {/if}
@@ -149,7 +192,7 @@
     {#if $unlocked["thoughtBoost"]}
       <button on:click={handleThink}>
           Thought Boost <span class="iconify" data-icon="icon-park-outline:brain"/><br>
-          x{formatNumber(thoughtsBonusMax, 2)} thoughts/s for {formatNumber(thoughtsBonusDuration/1000, 2)}s
+          x{formatNumber(thoughtBoostMax, 2)} thoughts/s for {formatNumber(thoughtBoostDuration/1000, 2)}s
       </button>
     {:else}
       <button on:click={handleThink}>
@@ -190,7 +233,7 @@
         {#if $unlocked["thoughtBoost"] || $LORCA_OVERRIDE}
           <button on:click={() => upgradeThoughtBoost("strength")} disabled={$thoughts < thoughtBoostStrengthCost} transition:slide={{duration: 500}}>
             Increase strength of Thought Boost <br>
-            Current: {formatNumber(thoughtsBonusMax, 2)}x <br>
+            Currently: {formatNumber(thoughtBoostMax, 2)}x <br>
             Costs {formatWhole(thoughtBoostStrengthCost)} thoughts
           </button>
         {/if}
@@ -198,8 +241,17 @@
         {#if $unlocked["thoughtBoost"] || $LORCA_OVERRIDE}
           <button on:click={() => upgradeThoughtBoost("duration")} disabled={$thoughts < thoughtBoostDurationCost} transition:slide={{duration: 500}}>
             Increase Duration of Thought Boost <br>
-            Current: {formatNumber(thoughtsBonusDuration/1000, 2)}s <br>
+            Currently: {formatNumber(thoughtBoostDuration/1000, 2)}s <br>
             Costs  {formatWhole(thoughtBoostDurationCost)} thoughts
+          </button>
+        {/if}
+        {#if $unlocked["thoughtBoostStack"] || $LORCA_OVERRIDE}
+          <button on:click={() => upgradeThoughtBoost("stack")} disabled={$thoughts < thoughtBoostStackCost || upgradesBought["thoughtBoostStack"] >= 20} transition:slide={{duration: 500}}
+            use:tooltip={{content: SimpleTooltip, data: '+1 to max stack'}} style="height:fit-content"
+          >
+            Increase the maximum stack size of Thought Boosts ({upgradesBought["thoughtBoostStack"]}/20) <br>
+            Currently: {formatWhole(thoughtBoostMaxStacks)} <br>
+            Costs {formatWhole(thoughtBoostStackCost)} thoughts
           </button>
         {/if}
 
@@ -237,9 +289,9 @@
           <button on:click={() => unlockFeature("switzerland")}  disabled={$unlocked["switzerland"] || $thoughts < unlockCosts["switzerland"]} 
             class:maxed={$unlocked["switzerland"]} transition:slide={{duration: 500}}
             use:tooltip={{content: SimpleTooltip, data: 'The land of cheese'}}
-            style="background: linear-gradient(90deg, rgba(131,58,180,1) 0%, rgba(253,29,29,1) 50%, rgba(252,176,69,1) 100%); color:white; "
+            style="background: linear-gradient(90deg, rgba(131,58,180,1) 0%, rgba(253,29,29,1) 50%, rgba(252,176,69,1) 100%); color:f; "
           >
-            Travel to Switzerland <br>
+            <span style="font-weight:bold; font-size: 16px; text-shadow:1px 1px 2px black;">Travel to Switzerland</span> <br>
             Costs {formatWhole(unlockCosts["switzerland"])} thoughts
           </button>
         {/if}
@@ -253,12 +305,12 @@
           </button>
         {/if}
         {#if $unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
-          <button disabled
-            transition:slide={{duration: 500}}
-            use:tooltip={{content: SimpleTooltip, data: 'Is it okay to eat?'}}
+          <button on:click={() => unlockFeature("thoughtBoostStack")} disabled={$unlocked["thoughtBoostStack"] || $thoughts < unlockCosts["thoughtBoostStack"]} 
+            class:maxed={$unlocked["thoughtBoostStack"]} transition:slide={{duration: 500}}
+            use:tooltip={{content: SimpleTooltip, data: 'Viagra for the brain'}}
           >
             Ability to stack Thought Boosts <br>
-            Costs {formatWhole(unlockCosts["moldyCheese"])} thoughts
+            Costs {formatWhole(unlockCosts["thoughtBoostStack"])} thoughts
           </button>
         {/if}
         {#if $unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
@@ -297,6 +349,7 @@
   }
   .green {
     color: rgb(0, 216, 0);
+    font-weight: bold;
   }
   
 

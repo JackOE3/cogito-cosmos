@@ -10,10 +10,12 @@ export const thoughts= writable(0)
 export const thoughtsPerSec = writable(0)
 export const thoughtsBonus = writable(1)
 export const cheeseThoughtMult = writable(1)
-export const thoughtsSacrificed = writable(0)
 
 export const cheese = writable(0)
 export const cheesePerSec = writable(0)
+export const currentCheeseQueue = writable(0)
+export const maxCheeseQueue = writable(5)
+
 export const moldyCheese = writable(0)
 
 
@@ -22,9 +24,16 @@ export const unlocked = writable({
   "thinkFaster": false,
   "thoughtBoost": false,
   "switzerland": false,
-  "cheeseQueue": false,
   "thoughtSacrifice": false,
-  "thoughtJerk": false,
+  "thoughtBoostStack": false,
   "moldyCheese": false,
+
+  "cheeseQueue": false,
+  "thoughtJerk": false,
+  "cheeseQueueLengthBoost": false,
+  "cheeseBoost": false,
+  "cheeseQueueToppedUp": false,
+  "cheeseCycleAccelerator": false,
+  
 })
 
