@@ -20,7 +20,7 @@
     
   } from'../stores/mainStore'
  
-  let thoughtsPerSecBase = 0
+  let thoughtsPerSecBase = 10
 
   let thinkFasterCost = 10
   let thinkFasterCostMult = 1.15
