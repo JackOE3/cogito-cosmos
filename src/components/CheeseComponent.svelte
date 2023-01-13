@@ -219,7 +219,7 @@
               <div class="slidecontainer">
                 <InputRange min={0} max={$maxCheeseQueue} bind:value={$currentCheeseQueue} onChange={handleCheeseGenerationInit}/>
               </div>
-              <p>There are currently {$currentCheeseQueue} cheese in queue.</p>
+              <p>There are currently {$currentCheeseQueue} batches in queue.</p>
             </div>
           {/if}
 

@@ -119,9 +119,9 @@ button:disabled {
   pointer-events: none;
 }
 
-button:focus {
+/* button:focus {
 	border-color: #666;
-}
+} */
 button:hover {
   cursor: pointer;
 }

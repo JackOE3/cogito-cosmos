@@ -2,11 +2,14 @@
   import { onMount } from 'svelte'
   import Notifications from './components/Notifications.svelte'
   import { saveSaveGame, resetSaveGame } from "./gamelogic/saveload"
-  import ThoughtComponent from './components/ThoughtComponent.svelte'
-  import CheeseComponent from './components/CheeseComponent.svelte'
-  import RandomIdea from './components/RandomIdea.svelte'
   import {devToolsEnabled, LORCA_OVERRIDE, unlocked} from './stores/mainStore'
   import DevTools from './components/DevTools.svelte'
+  import RandomIdea from './components/RandomIdea.svelte'
+  import ThoughtComponent from './components/ThoughtComponent.svelte'
+  import CheeseComponent from './components/CheeseComponent.svelte'
+  import MoldyCheeseComponent from './components/MoldyCheeseComponent.svelte'
+  
+  
 
 
       
@@ -42,10 +45,13 @@
       {#if $unlocked["switzerland"] || $LORCA_OVERRIDE}
         <CheeseComponent/>
       {/if}
+      {#if $unlocked["moldyCheese"] || $LORCA_OVERRIDE}
+        <MoldyCheeseComponent/>
+      {/if}
     </div>
     <!--<Log/>-->
     
-    <!-- <RandomIdea/> -->
+   <!--  <RandomIdea/> -->
 
   </div>
   

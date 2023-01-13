@@ -45,7 +45,7 @@
   #devTools {
     position: absolute;
     right: 0;
-    top: 30px;
+    bottom: 0;
     background-color: rgb(0,0,0,.8);
   }
   #devTools > #devControls {
