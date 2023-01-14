@@ -9,9 +9,12 @@ import {
   thoughts,
   thoughtsPerSec,
   cheese, 
-  moldyCheese
+  moldyCheese,
+  moldyCheeseHalfLifeSeconds,
 } from '../stores/mainStore'
 
+// natural log of 2
+const LN2 = 0.69314718056
 
 /**
  * Reference to some stores.
@@ -27,6 +30,7 @@ lastSavedStore.subscribe(m => lastSaved = m)
  * 200ms or 100ms is usually fast enough to feel responsive without wasting too much CPU time
  */ 
 const GAME_INTERVAL  = 200
+const fastFowardFactor = 1
 
 /**
  * How often to auto save the game. 60_000 = 60 seconds.
@@ -55,9 +59,9 @@ export function startGameLoop() {
 let lastRunTime = Date.now()
 
 /**
- * deltaT or delta time is the time difference in seconds since the last time the loop ran
+ * the time difference in seconds since the last time the loop ran
  */ 
-let deltaT = 0
+let deltaTimeSeconds = 0
 
 /**
  * The game loop function that runs multiple times per second in the background.
@@ -74,11 +78,11 @@ function gameLoop() {
 
   // calculate deltaT based on the current time and the last run time
   // we are using Math.max and Math.min to make sure deltaT is between 0 and 1 seconds
-  deltaT = Math.max(Math.min((currentTime - lastRunTime) / 1000, 1), 0)
+  deltaTimeSeconds  = Math.max(Math.min((currentTime - lastRunTime) / 1000, 1), 0)
   lastRunTime = currentTime
 
   // Now we know what deltaT is we can update the game
-  gameUpdate(deltaT)
+  gameUpdate(deltaTimeSeconds)
 }
 
 
@@ -88,11 +92,17 @@ function gameLoop() {
  * This is where all idle calculations should start so they can be 
  * used by the main loop and the offline progress function.
  * (Assumes that the production can be linearly extrapolated)
- * @param deltaT time in seconds since last update
+ * @param deltaTimeSeconds time in seconds since last update
  */
-function gameUpdate(deltaT: number) {
-  thoughts.update(value => value + get(thoughtsPerSec) * deltaT)
-  //console.log("looped")
+function gameUpdate(deltaTimeSeconds: number) {
+  deltaTimeSeconds *= fastFowardFactor
+  thoughts.update(value => value + get(thoughtsPerSec) * deltaTimeSeconds)
+
+  // moldy cheese decay
+  moldyCheese.update(value => value * (1 - LN2/get(moldyCheeseHalfLifeSeconds) * deltaTimeSeconds))
+
+  //moldyCheese.update(value => value + 10 * deltaTimeSeconds)
+  
 }
 
 
@@ -105,11 +115,11 @@ function calculateOfflineProgress() {
   // calculate time in seconds since last saved
   const currentTime = Date.now()
 
-  const offlineDeltaT = Math.max((currentTime - lastSaved) / 1000, 0)
+  const offlineDeltaTimeSeconds = Math.max((currentTime - lastSaved) / 1000, 0)
 
-  console.log(`Offline for ${offlineDeltaT} seconds`)
+  console.log(`Offline for ${offlineDeltaTimeSeconds} seconds`)
 
   // perform the game update for the total time
-  gameUpdate(offlineDeltaT)
+  gameUpdate(offlineDeltaTimeSeconds)
 
 }

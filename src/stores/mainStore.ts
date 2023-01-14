@@ -12,11 +12,13 @@ export const thoughtsBonus = writable(1)
 export const cheeseThoughtMult = writable(1)
 
 export const cheese = writable(0)
-export const cheesePerSec = writable(0)
+export const cheeseBatchSize = writable(1)
 export const currentCheeseQueue = writable(0)
 export const maxCheeseQueue = writable(5)
+export const cheeseQueueTotalCycles = writable(0)
 
 export const moldyCheese = writable(0)
+export const moldyCheeseHalfLifeSeconds = writable(10)
 
 
 export const unlocked = writable({
@@ -34,6 +36,9 @@ export const unlocked = writable({
   "cheeseBoost": false,
   "cheeseQueueToppedUp": false,
   "cheeseCycleAccelerator": false,
+
+  "moldyCheeseByproduct": false,
+  "cheeseyard": false,
   
 })
 

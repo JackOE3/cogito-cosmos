@@ -27,8 +27,9 @@
   $: thoughtBoostMaxStacks = upgradesBought["thoughtBoostStack"]
   let thoughtBoostCurrentStacks = 0
 
-  $: thoughtBoostMax = 2 + Math.sqrt(upgradesBought["thoughtBoostStrength"])
-  $: thoughtBoostDuration = 3000 + 10000*Math.sqrt(upgradesBought["thoughtBoostDuration"])
+  $: thoughtBoostMax = 2 + 0.5 * upgradesBought["thoughtBoostStrength"]
+  $: thoughtBoostDuration = 4000 + 2000 * upgradesBought["thoughtBoostDuration"]
+
   let currentThoughtBoostTime = 0
   let thoughtBoostDecay = 2000
   const FPS = 60
@@ -119,7 +120,7 @@
     "thoughtAcceleration": 1.15,
     "thoughtJerk": 1.5,
     "thoughtBoostStrength": 2.0,
-    "thoughtBoostDuration": 2.5,
+    "thoughtBoostDuration": 1.4,
     "thoughtBoostStack": 3,
   }
 
@@ -258,7 +259,9 @@
       
       <div class="gridColumn">
         <span>Unlocks</span>
-        <button on:click={() => unlockFeature("thinkPassively")} disabled={$unlocked["thinkPassively"] || $thoughts < 10} class:maxed={$unlocked["thinkPassively"]}
+        <button on:click={() => unlockFeature("thinkPassively")} 
+          disabled={$unlocked["thinkPassively"] || $thoughts < unlockCosts["thinkPassively"]} 
+          class:maxed={$unlocked["thinkPassively"]}
           use:tooltip={{content: SimpleTooltip, data: '"I think, therefore I am."'}}
         >
           Learn to think passively <br>
@@ -266,7 +269,8 @@
         </button>
 
         {#if $unlocked["thinkPassively"] || $LORCA_OVERRIDE}
-          <button on:click={() => unlockFeature("thinkFaster")} disabled={$unlocked["thinkFaster"] || $thoughts < unlockCosts["thinkFaster"]} 
+          <button on:click={() => unlockFeature("thinkFaster")} 
+            disabled={$unlocked["thinkFaster"] || $thoughts < unlockCosts["thinkFaster"]} 
             class:maxed={$unlocked["thinkFaster"]} transition:slide={{duration: 500}}
             use:tooltip={{content: SimpleTooltip, data: 'Really makes you think...'}}
           >
@@ -276,7 +280,8 @@
         {/if}
         
         {#if $unlocked["thinkFaster"] || $LORCA_OVERRIDE}
-          <button on:click={() => unlockFeature("thoughtBoost")} disabled={$unlocked["thoughtBoost"] || $thoughts < unlockCosts["thoughtBoost"]} 
+          <button on:click={() => unlockFeature("thoughtBoost")} 
+            disabled={$unlocked["thoughtBoost"] || $thoughts < unlockCosts["thoughtBoost"]} 
             class:maxed={$unlocked["thoughtBoost"]} transition:slide={{duration: 500}}
             use:tooltip={{content: SimpleTooltip, data: '"i dont want to spam click a gazillion times to play ur stupid game" <br> <strong>- HentaiEnjoyer1978'}}
           >
@@ -285,7 +290,8 @@
           </button>
         {/if}
         {#if $unlocked["thoughtBoost"] || $LORCA_OVERRIDE}
-          <button on:click={() => unlockFeature("switzerland")}  disabled={$unlocked["switzerland"] || $thoughts < unlockCosts["switzerland"]} 
+          <button on:click={() => unlockFeature("switzerland")}  
+            disabled={$unlocked["switzerland"] || $thoughts < unlockCosts["switzerland"]} 
             class:maxed={$unlocked["switzerland"]} transition:slide={{duration: 500}}
             use:tooltip={{content: SimpleTooltip, data: 'The land of cheese'}}
             style="background: linear-gradient(90deg, rgba(131,58,180,1) 0%, rgba(253,29,29,1) 50%, rgba(252,176,69,1) 100%); color:f; "
@@ -295,7 +301,8 @@
           </button>
         {/if}
         {#if $unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
-          <button on:click={() => unlockFeature("thoughtSacrifice")}  disabled={$unlocked["thoughtSacrifice"] || $thoughts < unlockCosts["thoughtSacrifice"]} 
+          <button on:click={() => unlockFeature("thoughtSacrifice")}  
+            disabled={$unlocked["thoughtSacrifice"] || $thoughts < unlockCosts["thoughtSacrifice"]} 
             class:maxed={$unlocked["thoughtSacrifice"]} transition:slide={{duration: 500}}
             use:tooltip={{content: SimpleTooltip, data: 'There will be sacrifices...'}}
           >
@@ -304,7 +311,8 @@
           </button>
         {/if}
         {#if $unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
-          <button on:click={() => unlockFeature("thoughtBoostStack")} disabled={$unlocked["thoughtBoostStack"] || $thoughts < unlockCosts["thoughtBoostStack"]} 
+          <button on:click={() => unlockFeature("thoughtBoostStack")} 
+            disabled={$unlocked["thoughtBoostStack"] || $thoughts < unlockCosts["thoughtBoostStack"]} 
             class:maxed={$unlocked["thoughtBoostStack"]} transition:slide={{duration: 500}}
             use:tooltip={{content: SimpleTooltip, data: 'Viagra for the brain'}}
           >
@@ -313,7 +321,8 @@
           </button>
         {/if}
         {#if $unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
-          <button on:click={() => unlockFeature("moldyCheese")}  disabled={$unlocked["moldyCheese"] || $thoughts < unlockCosts["moldyCheese"]} 
+          <button on:click={() => unlockFeature("moldyCheese")}  
+            disabled={$unlocked["moldyCheese"] || $thoughts < unlockCosts["moldyCheese"]} 
             class:maxed={$unlocked["moldyCheese"]} transition:slide={{duration: 500}}
             use:tooltip={{content: SimpleTooltip, data: 'Is it okay to eat?'}}
           >
