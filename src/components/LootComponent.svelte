@@ -8,18 +8,27 @@
       thoughts,
       moldyCheese,
       cheeseMonster,
-      cheeseyardSpawnrate,
-      cheeseyardCapacity,
+      cheeseMonsterSpawnrate,
+      cheeseMonsterCapacity,
+      monsterThoughtMult,
       cheeseBrains,
       unlocked, 
     } from'../stores/mainStore'
 
 
-  let monsterDropRate = 0.1
+  $: monsterDropRate = 0.1 + 0.1 * upgradesBought["cheeseMonsterDropRate"]
   let monsterLoot = [1, 3]
   // how much each monster boosts thoughts/s (additive per monster)
-  let monsterThoughtFactor = 2
+  $: monsterThoughtFactor = (2 + upgradesBought["cheeseMonsterSentience"]) * collectiveSentienceBoost
+  $: if(upgradesBought["cheeseMonsterSentience"] > 0) {
+    $monsterThoughtMult = monsterThoughtFactor * $cheeseMonster
+  }
+
   let totalMonsterDeaths = 0
+  $: totalMonsterDeathsLootBoost = unlocked["cheeseMonsterTotalDeathsBoost"] ? Math.sqrt(1 + totalMonsterDeaths/10) : 1
+  let monsterDeathsPerSec = 0
+
+  $: collectiveSentienceBoost = 1
 
   let buyMaxUpgrades = false
 
@@ -75,6 +84,7 @@
     } 
   }
 
+  
  
 
 </script>
@@ -100,7 +110,7 @@
             style="height:fit-content;"
           >
             Increase the drop rate of cheese monsters <br>
-            Currently: 10% <br>
+            Currently: {formatWhole(monsterDropRate*100)}% <br>
             Costs {formatWhole(upgradeCost["cheeseMonsterDropRate"])} cheese brains
           </button>
 
@@ -110,7 +120,7 @@
             style="height:fit-content;"
           >
             Increase the loot obtained from cheese monster corpses <br>
-            Currently: 1-3 cheese brains <br>
+            Currently: {monsterLoot[0]}-{monsterLoot[1]} cheese brains <br>
             Costs {formatWhole(upgradeCost["cheeseMonsterLoot"])} cheese brains
           </button>
 
@@ -119,7 +129,7 @@
             transition:slide={{duration: 500}}
           >
             Improve the sentience of cheese monsters <br>
-            Currently: +2x thoughts/s/monster <br>
+            Currently: +{formatNumber(monsterThoughtFactor, 2)}x thoughts/s/monster <br>
             Costs {formatWhole(upgradeCost["cheeseMonsterSentience"])} cheese brains
           </button>
 
@@ -152,7 +162,7 @@
             style="height:fit-content;"
           >
             Total cheese monster deaths boost cheese brain loot <br>
-            Currently: 1.00x <br>
+            Currently: {formatNumber(totalMonsterDeathsLootBoost, 2)}x <br>
             Costs {formatWhole(unlockCosts["cheeseMonsterTotalDeathsBoost"])} cheese brains
           </button>
         </div>

@@ -7,23 +7,25 @@
   import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
   import {baseLog} from '../gamelogic/utils'
   import {
-      LORCA_OVERRIDE,
-      thoughts,
-      thoughtsPerSec,
-      thoughtsBonus,
-      cheeseThoughtMult,
-      cheese,
-      cheeseBatchSize,
-      currentCheeseQueue,
-      maxCheeseQueue,
-      cheeseQueueTotalCycles,
-      moldyCheese,
-      unlocked,
-      
-    } from'../stores/mainStore'
+    GAME_FPS,
+    LORCA_OVERRIDE,
+    thoughts,
+    thoughtsPerSec,
+    thoughtsBonus,
+    cheeseThoughtMult,
+    cheese,
+    cheeseBatchSize,
+    currentCheeseQueue,
+    maxCheeseQueue,
+    cheeseQueueTotalCycles,
+    moldyCheese,
+    unlocked, 
+  } from'../stores/mainStore'
 
 
   let cheeseModeFactor = {yield: 1, duration: 1, cost: 1}
+
+  const cheeseBaseCost = 100
   let cheeseQueue = {
     infinite: false,
     state: 'initial',
@@ -32,19 +34,21 @@
     yield: 1,
     cost: 100
   }
-  let cheeseQueueAcceleratorCycles = 0
+
+  $: cheeseCycleAcceleratorFactor = $unlocked["cheeseCycleAccelerator"] ? 1 + Math.log($cheeseQueueTotalCycles/100 + 1) : 1
+
+
   // from the "cheese production takes less time..." upgrade:
   let cheeseQueueSpeedFactor = 1
 
   $: cheeseBoostFactorYield = $unlocked["cheeseBoost"] ? $thoughtsBonus : 1
-
 
   /* Reactive variables for Yield, Duration & Cost of the cheese cycle */
   $: {
     $cheeseBatchSize = cheeseQueue.yield * cheeseQueueLengthBoostFactor * cheeseBoostFactorYield * cheeseModeFactor.yield
   }
   //$: cheeseBatchSize = cheeseQueue.yield * cheeseQueueLengthBoostFactor * cheeseBoostFactorYield
-  $: cheeseCycleDuration = cheeseQueue.cycleDuration * cheeseQueueSpeedFactor * cheeseModeFactor.duration
+  $: cheeseCycleDuration = cheeseQueue.cycleDuration * cheeseQueueSpeedFactor * cheeseModeFactor.duration * (1 / cheeseCycleAcceleratorFactor)
   $: cheeseBatchCost = cheeseQueue.cost * cheeseModeFactor.cost
 
   // 1 if it's active, 0 when not
@@ -72,19 +76,43 @@
  
   $: if (cheeseThoughtMultFactor > 0) {
     // for balancing, change the 0.01 factor in the sqrt, or even the base of the log
-    //$cheeseThoughtMult = 1 + baseLog(2, $cheese + 1) * Math.sqrt(0.01 * cheeseThoughtMultFactor)
-    $cheeseThoughtMult = 1 + Math.sqrt($cheese * 0.001) * cheeseThoughtMultFactor
+    $cheeseThoughtMult = 1 + Math.log($cheese + 1) * cheeseThoughtMultFactor
+    //$cheeseThoughtMult = 1 + Math.sqrt($cheese * 0.001) * cheeseThoughtMultFactor
   }  
 
   /**
    * Triggered when manually starting the cheese generation (with button or input range)
   */
+  let testid: number
   function handleCheeseGenerationInit() {
     if ($thoughts < cheeseBatchCost || cheeseQueue.state === 'running') return
     $thoughts -= cheeseBatchCost
     if($currentCheeseQueue >= 1) $currentCheeseQueue--
     cheeseQueue.state = 'running'
+
+
+    // new logic for better cheese cycle / loop. progress variable will be passed to a ProgBar component.
+    clearInterval(testid)
+    let progress = 0
+    let deltaTimeMillis = 0
+    let lastTime = Date.now()
+    
+    testid = setInterval(() => {
+      if (cheeseQueue.state == 'initial') clearInterval(testid)
+      const currentTime = Date.now()
+      deltaTimeMillis = Math.max(Math.min(currentTime - lastTime), 0)
+      lastTime = currentTime
+      progress += deltaTimeMillis
+      while (progress >= cheeseCycleDuration) {
+        //handleCheeseGeneration()
+        console.log("Completed a cycle with " + cheeseCycleDuration, progress)
+        progress -= cheeseCycleDuration
+      }
+      
+    }, 100)
   }
+
+
 
   /**
    * This function will be called whenever the animation of the cheese bar completes a cycle.
@@ -92,28 +120,26 @@
    */
   function handleCheeseGeneration() {
     $cheese += $cheeseBatchSize
-    $cheeseQueueTotalCycles++
 
     if (!cheeseQueue.infinite && !$currentCheeseQueue) {
       // 'initial' better than 'paused', because the animation might've already started a small bit
       cheeseQueue.state = 'initial'
       return
     }
-
     if ($thoughts < cheeseBatchCost) {
       cheeseQueue.state = 'initial'
       return
     }
     $thoughts -= cheeseBatchCost
     if ($currentCheeseQueue >= 1) $currentCheeseQueue--
-    if ($unlocked["cheeseCycleAccelerator"]) cheeseQueueAcceleratorCycles++
+    if ($unlocked["cheeseCycleAccelerator"] || $LORCA_OVERRIDE) $cheeseQueueTotalCycles++
   }
 
   const unlockCosts = {
     "cheeseQueue": 8,
     "cheeseQueueLengthBoost": 1_000,
-    "cheeseBoost": 50_000,
-    "cheeseCycleAccelerator": 600_000,
+    "cheeseBoost": 25_000,
+    "cheeseCycleAccelerator": 300_000,
     "thoughtJerk": 5_000_000,
     "cheeseQueueToppedUp": 5000,
   }
@@ -159,7 +185,7 @@
     cheeseSpeedCost *= cheeseSpeedCostMult
 
     cheeseQueueSpeedFactor *= cheeseSpeedFactor.duration
-    cheeseBatchCost *= cheeseSpeedFactor.cost
+    cheeseQueue.cost *= cheeseSpeedFactor.cost
 
     upgradesBought["cheeseDuration"] += 1
   }
@@ -277,7 +303,7 @@
 
           {#if $unlocked["cheeseCycleAccelerator"] || $LORCA_OVERRIDE}
             <div transition:fade={{duration: 500}}>
-              <p>Total Cheese Cycles completed: {formatWhole(cheeseQueueAcceleratorCycles)}</p>
+              <p>Total Cheese Cycles completed: {formatWhole($cheeseQueueTotalCycles)}</p>
             </div>
           {/if}
 
@@ -370,7 +396,7 @@
               style="height:fit-content"
             >
               Cheese production speeds up based on amount of cycles completed <br>
-              Current Speed Factor: 2.54x <br>
+              Current Speed Factor: {formatNumber(cheeseCycleAcceleratorFactor, 2)}x <br>
               Costs {formatWhole(unlockCosts["cheeseCycleAccelerator"])} cheese
             </button>
 

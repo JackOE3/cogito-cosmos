@@ -6,8 +6,8 @@
       thoughts,
       moldyCheese,
       cheeseMonster,
-      cheeseyardSpawnrate,
-      cheeseyardCapacity,
+      cheeseMonsterSpawnrate,
+      cheeseMonsterCapacity,
       cheeseBrains,
       unlocked, 
     } from'../stores/mainStore'
@@ -43,10 +43,10 @@
       
       <div style="display: flex; flex-direction: column; gap: 8px;">
         <span class=resourceDisplay>
-          Current population: {formatWhole($cheeseMonster)}/{formatWhole($cheeseyardCapacity)} <strong style="color:rgb(255, 0, 98)">cheese monsters</strong> <br>
+          Current population: {formatWhole($cheeseMonster)}/{formatWhole($cheeseMonsterCapacity)} <strong style="color:rgb(255, 0, 98)">cheese monsters</strong> <br>
         </span>
         <span>
-          Spawn rate: {$cheeseyardSpawnrate}/min <br>
+          Spawn rate: {$cheeseMonsterSpawnrate}/min <br>
         </span>  
       </div>
 

@@ -40,7 +40,7 @@ const autoSaveTime = 60_000
 /**
  * A reference to the interval that can be used to stop it if we need to
  */ 
-let interval
+let interval: number
 
 /**
  * This function will start the game loop running at the desired rate, and save a reference to the interval so it can be stopped later
@@ -98,8 +98,11 @@ function gameUpdate(deltaTimeSeconds: number) {
   deltaTimeSeconds *= fastFowardFactor
   thoughts.update(value => value + get(thoughtsPerSec) * deltaTimeSeconds)
 
-  // moldy cheese decay
-  moldyCheese.update(value => value * (1 - LN2/get(moldyCheeseHalfLifeSeconds) * deltaTimeSeconds))
+  // moldy cheese decay (linear extrapolation)
+  //moldyCheese.update(value => value * (1 - LN2/get(moldyCheeseHalfLifeSeconds) * deltaTimeSeconds))
+  // OR: moldy cheese decay (exact)
+  // if statement so while offline for longer than 10s you dont lose moldy cheese (?)
+  if (deltaTimeSeconds < 10) moldyCheese.update(value => value * Math.exp(- LN2*deltaTimeSeconds/get(moldyCheeseHalfLifeSeconds)))
 
   //moldyCheese.update(value => value + 10 * deltaTimeSeconds)
   
@@ -110,7 +113,6 @@ function gameUpdate(deltaTimeSeconds: number) {
  * Function to calculate the offline progress
  */
 function calculateOfflineProgress() {
-
 
   // calculate time in seconds since last saved
   const currentTime = Date.now()

@@ -7,6 +7,7 @@
   import { tooltip } from "./tooltips/tooltip";
   import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
   import {
+    GAME_FPS,
     LORCA_OVERRIDE,
     thoughts,
     thoughtsPerSec,
@@ -24,15 +25,14 @@
  
   let thoughtsPerSecBase = 10
   
-  $: thoughtBoostMaxStacks = upgradesBought["thoughtBoostStack"]
+  $: thoughtBoostMaxStacks = 1 + upgradesBought["thoughtBoostStack"]
   let thoughtBoostCurrentStacks = 0
 
-  $: thoughtBoostMax = 2 + 0.5 * upgradesBought["thoughtBoostStrength"]
+  $: thoughtBoostMax = 2 + 0.25 * upgradesBought["thoughtBoostStrength"]
   $: thoughtBoostDuration = 4000 + 2000 * upgradesBought["thoughtBoostDuration"]
 
   let currentThoughtBoostTime = 0
   let thoughtBoostDecay = 2000
-  const FPS = 60
   let thoughtBoostIntervalId: number
 
   // thoughtsPerSec is being updated here gobally
@@ -44,8 +44,10 @@
   $: thoughtAccelDisplay = upgradesBought["thoughtJerk"] + 1
   
   function handleThink() {
-    $thoughts += 1
-    if (!$unlocked["thoughtBoost"]) return
+    if (!$unlocked["thoughtBoost"]) {
+      $thoughts += 1
+      return
+    }
     if ($unlocked["cheeseQueueToppedUp"]) $currentCheeseQueue = $maxCheeseQueue
     // set multiplier, which expires after a time and starts decaying
     $thoughtsBonus = thoughtBoostMax
@@ -74,14 +76,14 @@
       } else {  
         thoughtBoostCurrentStacks = 0  
         // decrement evenly over {thoughtBoostDecay} milliseconds
-        $thoughtsBonus -= (thoughtBoostMax - 1)/(thoughtBoostDecay) * FPS
+        $thoughtsBonus -= (thoughtBoostMax - 1)/(thoughtBoostDecay) * GAME_FPS
         if ($thoughtsBonus < 1) {
           // spooky
           clearInterval(thoughtBoostIntervalId)
           $thoughtsBonus = 1
         }
       } 
-    }, 1000/FPS)
+    }, 1000/GAME_FPS)
     
   }
 
@@ -92,7 +94,7 @@
     "switzerland": 3000,
     "thoughtSacrifice": 10_000,
     "thoughtBoostStack": 1_000_000,
-    "moldyCheese": 50_000_000,
+    "moldyCheese": 1_000_000_000,
   }
 
   function unlockFeature(name: string) {
@@ -111,10 +113,10 @@
   }
   const upgradeCost = {
     "thoughtAcceleration": 10,
-    "thoughtJerk": 2000,
+    "thoughtJerk": 50_000_000,
     "thoughtBoostStrength": 100,
     "thoughtBoostDuration": 150,
-    "thoughtBoostStack": 5000,
+    "thoughtBoostStack": 1_000_000,
   }
   const upgradeCostMultiplier = {
     "thoughtAcceleration": 1.15,
@@ -227,7 +229,7 @@
             disabled={$thoughts < upgradeCost["thoughtBoostStrength"]} 
             transition:slide={{duration: 500}}
           >
-            Increase strength of Thought Boost <br>
+            Increase the strength of Thought Boost <br>
             Currently: {formatNumber(thoughtBoostMax, 2)}x <br>
             Costs {formatWhole(upgradeCost["thoughtBoostStrength"])} thoughts
           </button>
@@ -238,7 +240,7 @@
             disabled={$thoughts < upgradeCost["thoughtBoostDuration"]} 
             transition:slide={{duration: 500}}
           >
-            Increase Duration of Thought Boost <br>
+            Increase the duration of Thought Boost <br>
             Currently: {formatNumber(thoughtBoostDuration/1000, 2)}s <br>
             Costs  {formatWhole(upgradeCost["thoughtBoostDuration"])} thoughts
           </button>

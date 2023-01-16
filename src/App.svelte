@@ -17,7 +17,7 @@
 
   onMount(() => {
     // return false if key is 'Enter'
-    window.document.onkeydown = (e: KeyboardEvent) => e.key !== 'Enter'
+    //window.document.onkeydown = (e: KeyboardEvent) => e.key !== 'Enter'
 
     window.addEventListener('keypress', (e) => {
       if (e.key === "f") $LORCA_OVERRIDE = !$LORCA_OVERRIDE

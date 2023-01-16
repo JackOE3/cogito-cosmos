@@ -16,6 +16,8 @@
       cheeseQueueTotalCycles,
       moldyCheese,
       moldyCheeseHalfLifeSeconds,
+      cheeseMonsterCapacity,
+      cheeseMonsterSpawnrate,
       unlocked, 
     } from'../stores/mainStore'
 
@@ -29,8 +31,9 @@
   $: moldyCheeseChance = 0.1 + upgradesBought["moldyCheeseChance"] 
   // kind of scuffed, this executes whenever a cheese cycle completes ($cheeseQueueTotalCycles is incremented)
   let lastCheeseQueueTotalCycles = 0
+  
   $: {
-    if ($cheeseQueueTotalCycles > lastCheeseQueueTotalCycles) {
+    if (unlocked["moldyCheeseByproduct"] && $cheeseQueueTotalCycles > lastCheeseQueueTotalCycles) {
       if (Math.random() < moldyCheeseChance) $moldyCheese += conversionAmount($cheeseBatchSize)
       console.log("Cycle") 
       lastCheeseQueueTotalCycles = $cheeseQueueTotalCycles
@@ -220,14 +223,14 @@
           </button>
 
           <button>
-            Improve the Cheeseyard spawn rate <br>
+            Improve the cheese monster spawn rate <br>
             Currently: 1/min <br>
             Costs 100 moldy cheese
           </button>
 
           <button>
             Expand the Cheeseyard <br>
-            Current Capacity: 10 <br>
+            Current Capacity: {formatWhole($cheeseMonsterCapacity)} <br>
             Costs 100 moldy cheese
           </button>
         </div>
