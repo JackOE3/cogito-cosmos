@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 moldy cheese as a resource and some fundamental upgrades for it
+the cheeseyard mechanic
+drag functionality
 
 ### Changed
 

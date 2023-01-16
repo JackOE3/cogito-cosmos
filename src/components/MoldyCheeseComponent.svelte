@@ -19,8 +19,6 @@
       unlocked, 
     } from'../stores/mainStore'
 
-
-  let brainMode = 0
   
   let moldyCheeseConversionState = 'initial'
   const MINIMUM_CHEESE = 100
@@ -75,6 +73,7 @@
 
   const unlockCosts = {
     "moldyCheeseByproduct": 50,
+    "manualMoldyCheeseConversionBoost": 500,
     "cheeseyard": 1000,
   }
 
@@ -119,7 +118,7 @@
       const cost = upgradeCost[upgradeName]
       const costMult = upgradeCostMultiplier[upgradeName]
       // used formulas for geometric series (because of the exponential cost curve of the upgrades)
-      const numUpgradesAffordable = Math.floor(Math.log($thoughts/cost * (costMult - 1) + 1) / Math.log(costMult))
+      const numUpgradesAffordable = Math.floor(Math.log($moldyCheese/cost * (costMult - 1) + 1) / Math.log(costMult))
       const totalPrice = cost * (Math.pow(costMult, numUpgradesAffordable) - 1) / (costMult - 1)
 
       $moldyCheese -= totalPrice
@@ -142,12 +141,16 @@
     </div>
     <div class="content">
       
-      <span>
-        You have {formatNumber($moldyCheese, 2)} moldy cheese <br>
-        Half-life: {formatWhole($moldyCheeseHalfLifeSeconds)}s (-{formatNumber(100 - 100 * (1 - Math.log(2)/$moldyCheeseHalfLifeSeconds), 2)}%/s) <br>
-        (Moldy cheese is an unstable isotope of cheese and can decay) <br>
-        You gain {formatNumber(conversionAmount($cheeseBatchSize), 2)} moldy cheese with a {formatNumber(moldyCheeseChance*100, 1)}%  chance whenever a cheese cycle completes
-      </span>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <span class=resourceDisplay>
+          You have {formatNumber($moldyCheese, 2)} <strong style="color:rgb(60, 255, 0)">moldy cheese</strong> <br>
+        </span>
+        <span>
+          Half-life: {formatWhole($moldyCheeseHalfLifeSeconds)}s (-{formatNumber(100 - 100 * (1 - Math.log(2)/$moldyCheeseHalfLifeSeconds), 2)}%/s) <br>
+          (Moldy cheese is an unstable isotope of cheese and can decay) <br>
+          You gain {formatNumber(conversionAmount($cheeseBatchSize), 2)} moldy cheese with a {formatNumber(moldyCheeseChance*100, 1)}%  chance whenever a cheese cycle completes
+        </span>
+      </div>
 
       <button on:click={handleMoldyCheeseGenerationInit} disabled={moldyCheeseConversionState=='running'}>
         Convert all cheese into
@@ -187,7 +190,7 @@
         </div>
       </div>
 
-      <div class="flexColumnContainer">
+      <div class="flexRowContainer">
         <div class="gridColumn">
           <button on:click={() => purchaseUpgrade("conversionExponent")}
             disabled={$moldyCheese < upgradeCost["conversionExponent"]} 
@@ -239,6 +242,15 @@
             Costs {formatWhole(unlockCosts["moldyCheeseByproduct"])} moldy cheese
           </button>
 
+          <button on:click={() => unlockFeature("manualMoldyCheeseConversionBoost")} 
+            disabled={$unlocked["manualMoldyCheeseConversionBoost"] || $moldyCheese < unlockCosts["manualMoldyCheeseConversionBoost"]} 
+            class:maxed={$unlocked["manualMoldyCheeseConversionBoost"]}
+            use:tooltip={{content: SimpleTooltip, data: 'TBD'}}
+          >
+            Multiply the manual moldy cheese conversion yield by 10 <br>
+            Costs {formatWhole(unlockCosts["manualMoldyCheeseConversionBoost"])} moldy cheese
+          </button>
+
           <button on:click={() => unlockFeature("cheeseyard")} 
             disabled={$unlocked["cheeseyard"] || $moldyCheese < unlockCosts["cheeseyard"]} 
             class:maxed={$unlocked["cheeseyard"]}
@@ -247,28 +259,23 @@
             Construct the <strong style="color:crimson">Cheeseyard</strong> <br>
             Costs {formatWhole(unlockCosts["cheeseyard"])} moldy cheese
           </button>
+
+          <button on:click={() => unlockFeature("manualMoldyCheeseConversionBoost")} 
+            disabled={$unlocked["manualMoldyCheeseConversionBoost"] || $moldyCheese < unlockCosts["manualMoldyCheeseConversionBoost"]} 
+            class:maxed={$unlocked["manualMoldyCheeseConversionBoost"]}
+            use:tooltip={{content: SimpleTooltip, data: 'eg: 5x longer cheese cycle => 10x moldy cheese gain'}}
+            style="height:fit-content"
+          >
+            You get disproportionally (2x) more moldy cheese as byproduct the longer a cheese cycle duration is <br>
+            Costs {formatWhole(unlockCosts["manualMoldyCheeseConversionBoost"])} moldy cheese
+          </button>
+          
+
           
         </div>
       </div>
 
-      <fieldset style="width:fit-content">
-        <legend>monster brain wave controller</legend>
-        <label>
-          <input type=radio name=brainMode bind:group={brainMode} value={1} 
-            on:change={() => {}}>
-            peaceful
-        </label>
-        <label>
-          <input type=radio name=brainMode bind:group={brainMode} value={2}
-          on:change={() => {}}>
-          neutral
-        </label>
-        <label>
-          <input type=radio name=brainMode bind:group={brainMode} value={3}
-          on:change={() => {}}>
-          destructive
-        </label>
-      </fieldset>
+
       
       
 

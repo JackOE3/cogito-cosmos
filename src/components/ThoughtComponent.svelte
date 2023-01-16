@@ -92,7 +92,7 @@
     "switzerland": 3000,
     "thoughtSacrifice": 10_000,
     "thoughtBoostStack": 1_000_000,
-    "moldyCheese": 1_000_000,
+    "moldyCheese": 50_000_000,
   }
 
   function unlockFeature(name: string) {
@@ -161,7 +161,7 @@
     </div>
     
     <span>
-      You thought {formatNumber($thoughts ,2)} times <br>
+      <span class=resourceDisplay>You thought {formatNumber($thoughts ,2)} times <br></span>
       <span>
         {#if $unlocked["thinkPassively"] || LORCA_OVERRIDE}
           <span class:green={$thoughtsBonus > 1}>{formatNumber($thoughtsPerSec, 2)}/s</span><!-- svelte-ignore empty-block -->
@@ -179,7 +179,7 @@
       </span>
     </span>
 
-    <div class="flexColumnContainer">
+    <div class="flexRowContainer">
       {#if $unlocked["thoughtBoost"]}
         <button on:click={handleThink}>
             Thought Boost <span class="iconify" data-icon="icon-park-outline:brain"/><br>
@@ -194,7 +194,7 @@
       
     </div>
 
-    <div class="flexColumnContainer">
+    <div class="flexRowContainer">
       <div class="gridColumn">
         <span>Upgrades</span>
         
@@ -301,16 +301,6 @@
           </button>
         {/if}
         {#if $unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
-          <button on:click={() => unlockFeature("thoughtSacrifice")}  
-            disabled={$unlocked["thoughtSacrifice"] || $thoughts < unlockCosts["thoughtSacrifice"]} 
-            class:maxed={$unlocked["thoughtSacrifice"]} transition:slide={{duration: 500}}
-            use:tooltip={{content: SimpleTooltip, data: 'There will be sacrifices...'}}
-          >
-            Optimise your cheese manufacturing process <br>
-            Costs {formatWhole(unlockCosts["thoughtSacrifice"])} thoughts
-          </button>
-        {/if}
-        {#if $unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
           <button on:click={() => unlockFeature("thoughtBoostStack")} 
             disabled={$unlocked["thoughtBoostStack"] || $thoughts < unlockCosts["thoughtBoostStack"]} 
             class:maxed={$unlocked["thoughtBoostStack"]} transition:slide={{duration: 500}}
@@ -340,7 +330,7 @@
 <style>
   .content {
     width: fit-content;
-    height: 800px;
+    height: fit-content;
     display: flex;
     flex-direction: column;
     row-gap: 16px;

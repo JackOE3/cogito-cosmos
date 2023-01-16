@@ -1,6 +1,6 @@
 import { writable, derived, get} from 'svelte/store'; 
 
-export const LORCA_OVERRIDE = writable(false)
+export const LORCA_OVERRIDE = writable(true)
 export const devToolsEnabled = writable(true)
 
 
@@ -20,25 +20,32 @@ export const cheeseQueueTotalCycles = writable(0)
 export const moldyCheese = writable(0)
 export const moldyCheeseHalfLifeSeconds = writable(10)
 
+export const cheeseMonster = writable(0)
+export const cheeseyardSpawnrate = writable(0)
+export const cheeseyardCapacity = writable(0)
+export const cheeseBrains = writable(0)
 
 export const unlocked = writable({
   "thinkPassively": false,
   "thinkFaster": false,
   "thoughtBoost": false,
   "switzerland": false,
-  "thoughtSacrifice": false,
   "thoughtBoostStack": false,
   "moldyCheese": false,
 
   "cheeseQueue": false,
-  "thoughtJerk": false,
   "cheeseQueueLengthBoost": false,
   "cheeseBoost": false,
-  "cheeseQueueToppedUp": false,
   "cheeseCycleAccelerator": false,
+  "thoughtJerk": false,
 
   "moldyCheeseByproduct": false,
   "cheeseyard": false,
+  "manualMoldyCheeseConversionBoost": false,
+
+  "cheeseMonsterMassacre": false,
   
+
+  "cheeseQueueToppedUp": false,
 })
 

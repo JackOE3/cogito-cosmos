@@ -6,6 +6,7 @@
 :root {
   --background-color: rgb(255, 255, 255);
   --color: rgb(0, 0, 0);
+  --grid-gap: 28px;
   
 }
 [data-theme="dark"] {
@@ -52,8 +53,8 @@ html, body {
 body {
   background-color: var(--background-color);
 	color: var(--color);
-	margin: 0;
-	padding: 8px;
+	margin: 0px;
+	padding: 0px;
 	box-sizing: border-box;
   text-rendering: geometricPrecision;
   font-family: monospace, 'Inter', Arial, sans-serif;
@@ -61,7 +62,7 @@ body {
   opacity: var(--high-emphasis)
 }
 body:hover{
-  cursor: default;
+  cursor: all-scroll;
   user-select: none;
 }
 
@@ -129,18 +130,17 @@ button.disabled:hover {
   outline: 0px;
 }
 
-.flexColumnContainer {
+.flexRowContainer {
   display:flex;
-  flex-direction:columns;
+  flex-direction:row;
   align-items:flex-start;
-  gap: .5rem;
+  gap: 8px;
 }
 .gridColumn {
   display: grid;
   width: fit-content;
   grid-template-columns: 1fr;
-  gap: .5rem;
-  
+  gap: 8px; 
 }
 
 .gridColumn button {
@@ -167,4 +167,8 @@ button.disabled:hover {
   margin: 0px;
   padding-left: 8px;
   display: flex;
+}
+
+.resourceDisplay {
+  font-size: 16px;
 }

@@ -23,6 +23,7 @@
     } from'../stores/mainStore'
 
 
+  let cheeseModeFactor = {yield: 1, duration: 1, cost: 1}
   let cheeseQueue = {
     infinite: false,
     state: 'initial',
@@ -36,13 +37,15 @@
   let cheeseQueueSpeedFactor = 1
 
   $: cheeseBoostFactorYield = $unlocked["cheeseBoost"] ? $thoughtsBonus : 1
-  
+
+
+  /* Reactive variables for Yield, Duration & Cost of the cheese cycle */
   $: {
-    $cheeseBatchSize = cheeseQueue.yield * cheeseQueueLengthBoostFactor * cheeseBoostFactorYield
+    $cheeseBatchSize = cheeseQueue.yield * cheeseQueueLengthBoostFactor * cheeseBoostFactorYield * cheeseModeFactor.yield
   }
   //$: cheeseBatchSize = cheeseQueue.yield * cheeseQueueLengthBoostFactor * cheeseBoostFactorYield
-  $: cheeseCycleDuration = cheeseQueue.cycleDuration * cheeseQueueSpeedFactor
- 
+  $: cheeseCycleDuration = cheeseQueue.cycleDuration * cheeseQueueSpeedFactor * cheeseModeFactor.duration
+  $: cheeseBatchCost = cheeseQueue.cost * cheeseModeFactor.cost
 
   // 1 if it's active, 0 when not
   $: cheeseQueueActive = cheeseQueue.state === 'running' ? 1 : 0
@@ -61,7 +64,7 @@
 
   let cheeseSpeedCost = 50
   let cheeseSpeedCostMult = 1.4
-  let cheeseSpeedFactor = {duration: 0.95, cost: 1.50}
+  let cheeseSpeedFactor = {duration: 0.95, cost: 1.40}
 
   let cheeseThoughtMultCost = 300
   let cheeseThoughtMultCostMult = 2.0
@@ -77,8 +80,8 @@
    * Triggered when manually starting the cheese generation (with button or input range)
   */
   function handleCheeseGenerationInit() {
-    if ($thoughts < cheeseQueue.cost || cheeseQueue.state === 'running') return
-    $thoughts -= cheeseQueue.cost
+    if ($thoughts < cheeseBatchCost || cheeseQueue.state === 'running') return
+    $thoughts -= cheeseBatchCost
     if($currentCheeseQueue >= 1) $currentCheeseQueue--
     cheeseQueue.state = 'running'
   }
@@ -97,11 +100,11 @@
       return
     }
 
-    if ($thoughts < cheeseQueue.cost) {
+    if ($thoughts < cheeseBatchCost) {
       cheeseQueue.state = 'initial'
       return
     }
-    $thoughts -= cheeseQueue.cost
+    $thoughts -= cheeseBatchCost
     if ($currentCheeseQueue >= 1) $currentCheeseQueue--
     if ($unlocked["cheeseCycleAccelerator"]) cheeseQueueAcceleratorCycles++
   }
@@ -156,7 +159,7 @@
     cheeseSpeedCost *= cheeseSpeedCostMult
 
     cheeseQueueSpeedFactor *= cheeseSpeedFactor.duration
-    cheeseQueue.cost *= cheeseSpeedFactor.cost
+    cheeseBatchCost *= cheeseSpeedFactor.cost
 
     upgradesBought["cheeseDuration"] += 1
   }
@@ -171,6 +174,31 @@
     cheeseThoughtMultFactor += 1
   }
 
+  let cheeseFactoryMode = 1
+  function handleCheeseModeChange(mode: number) {
+    switch(mode) {
+      case 1: {
+        cheeseModeFactor.yield = 1
+        cheeseModeFactor.duration = 10
+        cheeseModeFactor.cost = 1
+        // moldyCheeseYield *= 50 ?
+        break
+      }
+      case 2: {
+        cheeseModeFactor.yield = 1
+        cheeseModeFactor.duration = 1
+        cheeseModeFactor.cost = 1
+        break
+      }
+      case 3: {
+        cheeseModeFactor.yield = 1 / 100
+        cheeseModeFactor.duration = 1 / 10
+        cheeseModeFactor.cost = 1 / 10
+        // moldyCheeseYield = 0 (disabled)
+        break
+      }
+    }
+  }
 </script>
   
   <div class="container">
@@ -180,21 +208,42 @@
     <div class="content">
       
       <span>
-        You have {formatNumber($cheese,2)} <strong style="color:yellow">cheese</strong> <br>
+        <span class=resourceDisplay>You have {formatNumber($cheese,2)} <strong style="color:yellow">cheese</strong> <br></span>
         ~{formatNumber(cheesePerSecFromQueue,2)}/s
       </span>
 
-      <div class="flexColumnContainer">
+      <div class="flexRowContainer">
         <button on:click={handleCheeseGenerationInit} class:active={cheeseQueue.state === 'running'}>
           Make some cheese <br>
-          Costs {formatNumber(cheeseQueue.cost, 2)} thoughts
+          Costs {formatNumber(cheeseBatchCost, 2)} thoughts
         </button>
 
+        <fieldset style="width:fit-content">
+          <legend>cheese factory protocol</legend>
+          <div class="flexRowContainer">
+            <label>
+              <input type=radio name=cheeseFactoryMode bind:group={cheeseFactoryMode} value={1} 
+                on:change={() => handleCheeseModeChange(1)}>
+              meticulous
+            </label>
+            <label>
+              <input type=radio name=cheeseFactoryMode bind:group={cheeseFactoryMode} value={2}
+                on:change={() => handleCheeseModeChange(2)}>
+              nominal
+            </label>
+            <label>
+              <input type=radio name=cheeseFactoryMode bind:group={cheeseFactoryMode} value={3}
+                on:change={() => handleCheeseModeChange(3)}>
+              warp speed
+            </label>
+          </div>
+          
+        </fieldset>
                 
       </div>
       
 
-      <div class="flexColumnContainer">
+      <div class="flexRowContainer">
         <div class="gridColumn">
           <div>
             <div id="cheeseBar">
@@ -212,8 +261,8 @@
               Industrious swiss workers are producing
               {formatNumber($cheeseBatchSize, 2)} cheese every
               {formatNumber(cheeseCycleDuration/1000, 2)}s while consuming
-              {formatNumber(cheeseQueue.cost,2)} thoughts.
-              (~{formatNumber(cheeseQueue.cost/cheeseCycleDuration * 1000, 2)} thoughts/s)
+              {formatNumber(cheeseBatchCost,2)} thoughts.
+              (~{formatNumber(cheeseBatchCost/cheeseCycleDuration * 1000, 2)} thoughts/s)
             </p>
           </div>
           
@@ -341,6 +390,14 @@
               Activating Thought Boost automatically tops up the Cheese Queue <br> <!-- COULD BE AN UNLOCK THROUGH AN ACHIEVMENT ALTERNATIVELY -->
               Costs {formatWhole(unlockCosts["cheeseQueueToppedUp"])} cheese
             </button>
+
+            <button on:click={() => unlockFeature("cheeseQueueToppedUp")} 
+              disabled={$unlocked["cheeseQueueToppedUp"] || $cheese < unlockCosts["cheeseQueueToppedUp"]}
+              class:maxed={$unlocked["cheeseQueueToppedUp"]} transition:slide={{duration: 500}}
+            >
+              Unlock 3 modes to help manage your cheese production <br> 
+              Costs {formatWhole(unlockCosts["cheeseQueueToppedUp"])} cheese
+            </button>
           {/if}
 
         </div>
@@ -352,7 +409,7 @@
 <style>
   .content {
     width: fit-content;
-    height: 800px;
+    height: fit-content;
     display: flex;
     flex-direction: column;
     row-gap: 16px;

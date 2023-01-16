@@ -5,7 +5,7 @@
 {#if $devToolsEnabled}
   <div id="devTools">
     <div id="devControls">
-      <h1>Developer Tools</h1>
+      <strong>Developer Tools</strong>
 
       <span>add thoughts</span>
       <input type=number bind:value={$thoughts}>
@@ -30,11 +30,14 @@
       </div>
 
       <span>add moldy cheese</span>
+      <input type=number bind:value={$moldyCheese}>
       <div style="display:flex;">
         <button on:click={() => $moldyCheese += 1}>+1</button>
         <button on:click={() => $moldyCheese += 10}>+10</button>
         <button on:click={() => $moldyCheese += 100}>+100</button>
         <button on:click={() => $moldyCheese += 1000}>+1K</button>
+        <button on:click={() => $moldyCheese += 10000}>+10K</button>
+        <button on:click={() => $moldyCheese += 100000}>+100K</button>
       </div>
 
     </div>
@@ -46,6 +49,7 @@
     position: absolute;
     right: 0;
     bottom: 0;
+    z-index: 1;
     background-color: rgb(0,0,0,.8);
   }
   #devTools > #devControls {
