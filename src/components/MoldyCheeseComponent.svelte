@@ -1,11 +1,10 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { formatNumber, formatWhole } from "../gamelogic/utils";
   import { slide, fade} from "svelte/transition";
   import ProgBarTask from "./ProgBarTask.svelte";
-  import InputRange from "./InputRange.svelte";
   import { tooltip } from "./tooltips/tooltip";
   import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
-  import {baseLog} from '../gamelogic/utils'
   import {
       LORCA_OVERRIDE,
       thoughts,
@@ -19,48 +18,49 @@
       cheeseMonsterCapacity,
       cheeseMonsterSpawnrate,
       unlocked, 
+      moldyCheeseUpgradesBought as upgradesBought
     } from'../stores/mainStore'
 
-  
+  onMount(() => {
+    updateUpgradeCosts()
+  })
+  // Takes the number of upgrades bought from the SaveData and recalculates the current price.
+  function updateUpgradeCosts() {
+    for (let cost in upgradeCost) upgradeCost[cost] *= Math.pow(upgradeCostMultiplier[cost], $upgradesBought[cost])
+  }
+
   let moldyCheeseConversionState = 'initial'
-  const MINIMUM_CHEESE = 100
-  const MAXIMUM__CONVERSION_DURATION = 100
   let currentConversionDuration = 100
   let currentConversionAmount = 0
 
-  $: moldyCheeseChance = 0.1 + upgradesBought["moldyCheeseChance"] 
+  $: moldyCheeseChance = 0.1 + $upgradesBought["moldyCheeseChance"] 
   // kind of scuffed, this executes whenever a cheese cycle completes ($cheeseQueueTotalCycles is incremented)
   let lastCheeseQueueTotalCycles = 0
   
   $: {
     if (unlocked["moldyCheeseByproduct"] && $cheeseQueueTotalCycles > lastCheeseQueueTotalCycles) {
       if (Math.random() < moldyCheeseChance) $moldyCheese += conversionAmount($cheeseBatchSize)
-      console.log("Cycle") 
+      //console.log("Cycle") 
       lastCheeseQueueTotalCycles = $cheeseQueueTotalCycles
     } 
   }
 
-  $: conversionExponent = 0.1 + 0.1 * Math.log(upgradesBought["conversionExponent"] + 1)
+  $: conversionExponent = 0.1 + 0.05 * Math.log($upgradesBought["conversionExponent"] + 1)
 
   //reactive so it is updated when conversionExponent changes
-  $: conversionAmount = (cheese: number) => {
-    if (cheese < MINIMUM_CHEESE) return 0
-    return Math.pow(cheese - MINIMUM_CHEESE + 1, conversionExponent)
-  }
+  $: conversionAmount = (cheese: number): number => Math.pow(cheese, conversionExponent)
+  
 
-  const conversionDuration = (cheese: number) => {
-    if (cheese < MINIMUM_CHEESE) return MAXIMUM__CONVERSION_DURATION
-    return MAXIMUM__CONVERSION_DURATION / (Math.log(cheese/MINIMUM_CHEESE) + 1) 
-  }
+  const conversionDuration = (cheese: number): number => 100 / (Math.pow(cheese, 0.2) + 1) 
 
-  const conversionRate = (cheese: number) => {
+
+  const conversionRate = (cheese: number): number => {
     let duration = conversionDuration(cheese)
     if (duration == 0) return -1
     return conversionAmount(cheese)/duration
   }
 
   function handleMoldyCheeseGenerationInit() {
-    if ($cheese < MINIMUM_CHEESE) return
     currentConversionAmount = conversionAmount($cheese)
     currentConversionDuration = conversionDuration($cheese)
 
@@ -71,8 +71,6 @@
     $moldyCheese += currentConversionAmount
     moldyCheeseConversionState = 'initial'
   }
-
-  let buyMaxUpgrades = false
 
   const unlockCosts = {
     "moldyCheeseByproduct": 50,
@@ -87,35 +85,29 @@
     $unlocked[name] = true
   }
 
-  const upgradesBought = {
-    "conversionExponent": 0,
-    "moldyCheeseHalfLife": 0,
-    "moldyCheeseChance": 0,
-    "cheeseyardSpawnRate": 0,
-    "cheeseyardCapacity": 0,
-  }
   const upgradeCost = {
     "conversionExponent": 3,
-    "moldyCheeseHalfLife": 2,
+    "moldyCheeseHalfLife": 10,
     "moldyCheeseChance": 10,
-    "cheeseyardSpawnRate": 200,
-    "cheeseyardCapacity": 400,
+    "cheesecSpawnrate": 200,
+    "cheeseMonsterCapacity": 400,
   }
   const upgradeCostMultiplier = {
     "conversionExponent": 2.0,
-    "moldyCheeseHalfLife": 1.2,
-    "moldyCheeseChance": 1.4,
-    "cheeseyardSpawnRate": 2.0,
-    "cheeseyardCapacity": 2.5,
+    "moldyCheeseHalfLife": 1.3,
+    "moldyCheeseChance": 1.5,
+    "cheeseMonsterSpawnrate": 1.4,
+    "cheeseMonsterapacity": 2.5,
   }
 
+  let buyMaxUpgrades = false
   function purchaseUpgrade(upgradeName: string) {
     if ($moldyCheese< upgradeCost[upgradeName]) return
     if (!buyMaxUpgrades) {
       // PURCHASE SINGLE:
       $moldyCheese -= upgradeCost[upgradeName]
       upgradeCost[upgradeName] *= upgradeCostMultiplier[upgradeName]
-      upgradesBought[upgradeName]++
+      $upgradesBought[upgradeName]++
     } else {
       // PURCHASE MAX:
       const cost = upgradeCost[upgradeName]
@@ -126,14 +118,13 @@
 
       $moldyCheese -= totalPrice
       upgradeCost[upgradeName] *= Math.pow(costMult, numUpgradesAffordable)
-      upgradesBought[upgradeName] += numUpgradesAffordable
-      //alert("Upgrades affordable: " + numUpgradesAffordable + ", Total Prize: " + totalPrice)
+      $upgradesBought[upgradeName] += numUpgradesAffordable
     } 
   }
 
   const moldyCheeseHalfLifeStartingValue = 10
   $: {
-      $moldyCheeseHalfLifeSeconds = moldyCheeseHalfLifeStartingValue + 10 * upgradesBought["moldyCheeseHalfLife"]
+      $moldyCheeseHalfLifeSeconds = moldyCheeseHalfLifeStartingValue + 10 * $upgradesBought["moldyCheeseHalfLife"]
   }
 
 </script>
@@ -214,24 +205,30 @@
           </button>
 
           <button on:click={() => purchaseUpgrade("moldyCheeseChance")}
-            disabled={$moldyCheese < upgradeCost["moldyCheeseChance"] || upgradesBought["moldyCheeseChance"] >= 9} 
+            disabled={$moldyCheese < upgradeCost["moldyCheeseChance"] || $upgradesBought["moldyCheeseChance"] >= 9} 
             transition:slide={{duration: 500}}
           >
-            Increase MC byproduct chance ({upgradesBought["moldyCheeseChance"]}/9)<br>
+            Increase MC byproduct chance ({$upgradesBought["moldyCheeseChance"]}/9)<br>
             Currently: {formatNumber(moldyCheeseChance*100, 1)}% <br>
             Costs {formatWhole(upgradeCost["moldyCheeseChance"])} moldy cheese
           </button>
 
-          <button>
+          <button on:click={() => purchaseUpgrade("cheeseMonsterSpawnrate")}
+            disabled={$moldyCheese < upgradeCost["cheeseMonsterSpawnrate"]} 
+            transition:slide={{duration: 500}}
+          >
             Improve the cheese monster spawn rate <br>
-            Currently: 1/min <br>
-            Costs 100 moldy cheese
+            Currently: {formatWhole($cheeseMonsterSpawnrate)}/min <br>
+            Costs {formatWhole(upgradeCost["cheeseMonsterSpawnrate"])} moldy cheese
           </button>
 
-          <button>
+          <button on:click={() => purchaseUpgrade("cheeseMonsterCapacity")}
+            disabled={$moldyCheese < upgradeCost["cheeseMonsterCapacity"]} 
+            transition:slide={{duration: 500}}
+          >
             Expand the Cheeseyard <br>
             Current Capacity: {formatWhole($cheeseMonsterCapacity)} <br>
-            Costs 100 moldy cheese
+            Costs {formatWhole(upgradeCost["cheeseMonsterCapacity"])} moldy cheese
           </button>
         </div>
 
