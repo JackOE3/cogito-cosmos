@@ -19,23 +19,25 @@
     // return false if key is 'Enter'
     //window.document.onkeydown = (e: KeyboardEvent) => e.key !== 'Enter'
 
-    window.addEventListener('keypress', (e) => {
+    window.addEventListener('keypress', (e: KeyboardEvent) => {
       if (e.key === "f") $LORCA_OVERRIDE = !$LORCA_OVERRIDE
       if (e.key === "g") $devToolsEnabled = !$devToolsEnabled
     })
     
     // drag the entire game window around freely:
-    window.document.onmousedown = function(e) {
+    window.document.onmousedown = function(e: MouseEvent) {
+      // keep eg sliders draggable
+      if ((e.target as HTMLElement).classList.contains("draggable")) return
       dragWindow = gameWindow
       offsetX = e.pageX - gameWindow.offsetLeft
       offsetY = e.pageY - gameWindow.offsetTop
     }
-    window.document.onmousemove = function(e) {
+    window.document.onmousemove = function(e: MouseEvent) {
       if (dragWindow == null) return
       dragWindow.style.left = e.pageX - offsetX + "px"
       dragWindow.style.top = e.pageY - offsetY + "px"
     }
-    window.document.onmouseup = function(e) {
+    window.document.onmouseup = function(e: MouseEvent) {
       dragWindow = null
     }
 

@@ -6,30 +6,37 @@
   import { slide } from "svelte/transition";
   import { tooltip } from "./tooltips/tooltip";
   import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
+  import {GAME_FPS} from '../stores/constants'
   import {
-    GAME_FPS,
     LORCA_OVERRIDE,
     thoughts,
     thoughtsPerSec,
     thoughtsBonus,
     cheeseThoughtMult,
-    cheese,
     currentCheeseQueue,
     maxCheeseQueue,
-    moldyCheese,
     unlocked,
+    thoughtUpgradesBought as upgradesBought,
     
   } from'../stores/mainStore'
 
+  onMount(() => {
+    updateUpgradeCosts()
+  })
+  // Takes the number of upgrades bought from the SaveData and recalculates the current price.
+  function updateUpgradeCosts() {
+    for (let cost in upgradeCost) upgradeCost[cost] *= Math.pow(upgradeCostMultiplier[cost], $upgradesBought[cost])
+  }
+
   let buyMaxUpgrades = false
- 
+
   let thoughtsPerSecBase = 10
-  
-  $: thoughtBoostMaxStacks = 1 + upgradesBought["thoughtBoostStack"]
+
+  $: thoughtBoostMaxStacks = 1 + $upgradesBought["thoughtBoostStack"]
   let thoughtBoostCurrentStacks = 0
 
-  $: thoughtBoostMax = 2 + 0.25 * upgradesBought["thoughtBoostStrength"]
-  $: thoughtBoostDuration = 4000 + 2000 * upgradesBought["thoughtBoostDuration"]
+  $: thoughtBoostMax = 2 + 0.25 * $upgradesBought["thoughtBoostStrength"]
+  $: thoughtBoostDuration = 4000 + 2000 * $upgradesBought["thoughtBoostDuration"]
 
   let currentThoughtBoostTime = 0
   let thoughtBoostDecay = 2000
@@ -40,8 +47,8 @@
     $thoughtsPerSec = thoughtsPerSecBase * $thoughtsBonus * $cheeseThoughtMult
   }
   // (+ true) == 1, it's the "unary + operator"
-  $: thoughtsPerSecBase = (+ $unlocked["thinkPassively"]) + upgradesBought["thoughtAcceleration"] * (upgradesBought["thoughtJerk"] + 1)
-  $: thoughtAccelDisplay = upgradesBought["thoughtJerk"] + 1
+  $: thoughtsPerSecBase = (+ $unlocked["thinkPassively"]) + $upgradesBought["thoughtAcceleration"] * ($upgradesBought["thoughtJerk"] + 1)
+  $: thoughtAccelDisplay = $upgradesBought["thoughtJerk"] + 1
   
   function handleThink() {
     if (!$unlocked["thoughtBoost"]) {
@@ -104,20 +111,7 @@
     $unlocked[name] = true
   }
 
-  const upgradesBought = {
-    "thoughtAcceleration": 0,
-    "thoughtJerk": 0,
-    "thoughtBoostStrength": 0,
-    "thoughtBoostDuration": 0,
-    "thoughtBoostStack": 0,
-  }
-  const upgradeCost = {
-    "thoughtAcceleration": 10,
-    "thoughtJerk": 50_000_000,
-    "thoughtBoostStrength": 100,
-    "thoughtBoostDuration": 150,
-    "thoughtBoostStack": 1_000_000,
-  }
+  
   const upgradeCostMultiplier = {
     "thoughtAcceleration": 1.15,
     "thoughtJerk": 1.5,
@@ -125,6 +119,14 @@
     "thoughtBoostDuration": 1.4,
     "thoughtBoostStack": 3,
   }
+  const upgradeCost = {
+    "thoughtAcceleration": 10,
+    "thoughtJerk": 5_000_000,
+    "thoughtBoostStrength": 100,
+    "thoughtBoostDuration": 150,
+    "thoughtBoostStack": 1_000_000,
+  }
+  
 
   function purchaseUpgrade(upgradeName: string) {
     if ($thoughts < upgradeCost[upgradeName]) return
@@ -132,7 +134,7 @@
       // PURCHASE SINGLE:
       $thoughts -= upgradeCost[upgradeName]
       upgradeCost[upgradeName] *= upgradeCostMultiplier[upgradeName]
-      upgradesBought[upgradeName]++
+      $upgradesBought[upgradeName]++
     } else {
       // PURCHASE MAX:
       const cost = upgradeCost[upgradeName]
@@ -143,7 +145,7 @@
 
       $thoughts -= totalPrice
       upgradeCost[upgradeName] *= Math.pow(costMult, numUpgradesAffordable)
-      upgradesBought[upgradeName] += numUpgradesAffordable
+      $upgradesBought[upgradeName] += numUpgradesAffordable
       //alert("Upgrades affordable: " + numUpgradesAffordable + ", Total Prize: " + totalPrice)
     } 
   }
@@ -247,11 +249,11 @@
         {/if}
         {#if $unlocked["thoughtBoostStack"] || $LORCA_OVERRIDE}
           <button on:click={() => purchaseUpgrade("thoughtBoostStack")} 
-            disabled={$thoughts < upgradeCost["thoughtBoostStack"] || upgradesBought["thoughtBoostStack"] >= 20} 
+            disabled={$thoughts < upgradeCost["thoughtBoostStack"] || $upgradesBought["thoughtBoostStack"] >= 20} 
             transition:slide={{duration: 500}}
             use:tooltip={{content: SimpleTooltip, data: '+1 to max stack'}} style="height:fit-content"
           >
-            Increase the maximum stack size of Thought Boosts ({upgradesBought["thoughtBoostStack"]}/20) <br>
+            Increase the maximum stack size of Thought Boosts ({$upgradesBought["thoughtBoostStack"]}/20) <br>
             Currently: {formatWhole(thoughtBoostMaxStacks)} <br>
             Costs {formatWhole(upgradeCost["thoughtBoostStack"])} thoughts
           </button>

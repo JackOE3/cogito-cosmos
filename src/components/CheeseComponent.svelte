@@ -1,13 +1,13 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import { formatNumber, formatWhole } from "../gamelogic/utils";
   import { slide, fade} from "svelte/transition";
   import ProgBarTask from "./ProgBarTask.svelte";
   import InputRange from "./InputRange.svelte";
   import { tooltip } from "./tooltips/tooltip";
   import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
-  import {baseLog} from '../gamelogic/utils'
+  import {GAME_FPS} from '../stores/constants'
   import {
-    GAME_FPS,
     LORCA_OVERRIDE,
     thoughts,
     thoughtsPerSec,
@@ -20,8 +20,17 @@
     cheeseQueueTotalCycles,
     moldyCheese,
     unlocked, 
+    cheeseUpgradesBought as upgradesBought
   } from'../stores/mainStore'
 
+
+  onMount(() => {
+    updateUpgradeCosts()
+  })
+  // Takes the number of upgrades bought from the SaveData and recalculates the current price.
+  function updateUpgradeCosts() {
+   // for (let cost in upgradeCost) upgradeCost[cost] *= Math.pow(upgradeCostMultiplier[cost], $upgradesBought[cost])
+  }
 
   let cheeseModeFactor = {yield: 1, duration: 1, cost: 1}
 
@@ -51,6 +60,19 @@
   $: cheeseCycleDuration = cheeseQueue.cycleDuration * cheeseQueueSpeedFactor * cheeseModeFactor.duration * (1 / cheeseCycleAcceleratorFactor)
   $: cheeseBatchCost = cheeseQueue.cost * cheeseModeFactor.cost
 
+  $: {
+    $maxCheeseQueue = 5 + cheeseQueue.capDelta * $upgradesBought["cheeseQueueLength"] 
+  }
+  $: {
+    // Quadratic growth: for 0.5, every upgrades adds 1 more yield than the last: (+1, +2, +3, ...)
+    cheeseQueue.yield = 1 + 0.5 * ($upgradesBought["cheeseYield"] + $upgradesBought["cheeseYield"]*$upgradesBought["cheeseYield"])
+    cheeseQueue.cycleDuration = 1000 + cheeseYieldDeltaDuration * $upgradesBought["cheeseYield"]
+  }
+  $: {
+    cheeseQueueSpeedFactor = Math.pow(cheeseSpeedFactor.duration, $upgradesBought["cheeseDuration"])
+    cheeseQueue.cost = 100 * Math.pow(cheeseSpeedFactor.cost, $upgradesBought["cheeseDuration"])
+  }
+
   // 1 if it's active, 0 when not
   $: cheeseQueueActive = cheeseQueue.state === 'running' ? 1 : 0
   $: cheesePerSecFromQueue = (cheeseQueueActive * 1000 * $cheeseBatchSize/cheeseCycleDuration)
@@ -58,21 +80,12 @@
   $: cheeseQueueLengthBoostFactor = $unlocked["cheeseQueueLengthBoost"] ? ($maxCheeseQueue / 10) : 1
 
 
-  let cheeseQueueLengthCost = 5
-  let cheeseQueueLengthCostMult = 2
-
-  let cheeseYieldCost = 15
-  let cheeseYieldCostMult = 1.3
   let cheeseYieldDeltaYield = 1
   let cheeseYieldDeltaDuration = 500 //ms
 
-  let cheeseSpeedCost = 50
-  let cheeseSpeedCostMult = 1.4
   let cheeseSpeedFactor = {duration: 0.95, cost: 1.40}
 
-  let cheeseThoughtMultCost = 300
-  let cheeseThoughtMultCostMult = 2.0
-  let cheeseThoughtMultFactor = 0
+  $: cheeseThoughtMultFactor = 1 + $upgradesBought["cheeseThoughtMult"]
  
   $: if (cheeseThoughtMultFactor > 0) {
     // for balancing, change the 0.01 factor in the sqrt, or even the base of the log
@@ -105,13 +118,12 @@
       progress += deltaTimeMillis
       while (progress >= cheeseCycleDuration) {
         //handleCheeseGeneration()
-        console.log("Completed a cycle with " + cheeseCycleDuration, progress)
+        //console.log("Completed a cycle with " + cheeseCycleDuration, progress)
         progress -= cheeseCycleDuration
       }
       
     }, 100)
   }
-
 
 
   /**
@@ -135,14 +147,16 @@
     if ($unlocked["cheeseCycleAccelerator"] || $LORCA_OVERRIDE) $cheeseQueueTotalCycles++
   }
 
+
   const unlockCosts = {
     "cheeseQueue": 8,
     "cheeseQueueLengthBoost": 1_000,
     "cheeseBoost": 25_000,
-    "cheeseCycleAccelerator": 300_000,
-    "thoughtJerk": 5_000_000,
-    "cheeseQueueToppedUp": 5000,
+    "cheeseCycleAccelerator": 100_000,
+    "cheeseModes": 200_000,
+    "thoughtJerk": 500_000,
   }
+
   function unlockFeature(name: string) {
     let cost: number = unlockCosts[name]
     if ($cheese < cost) return
@@ -150,55 +164,41 @@
     $unlocked[name] = true
   }
 
-  const upgradesBought = {
-    "queueLength": 0,
-    "cheeseYield": 0,
-    "cheeseDuration": 0,
+  const upgradeCost = {
+    "cheeseQueueLength": 5,
+    "cheeseYield": 15,
+    "cheeseDuration": 50,
+    "cheeseThoughtMult": 300,
+  }
+  const upgradeCostMultiplier = {
+    "cheeseQueueLength": 2,
+    "cheeseYield": 1.3,
+    "cheeseDuration": 1.4,
+    "cheeseThoughtMult": 2,
   }
 
+  let buyMaxUpgrades = false
+  function purchaseUpgrade(upgradeName: string) {
+    if ($cheese< upgradeCost[upgradeName]) return
+    if (!buyMaxUpgrades) {
+      // PURCHASE SINGLE:
+      $cheese -= upgradeCost[upgradeName]
+      upgradeCost[upgradeName] *= upgradeCostMultiplier[upgradeName]
+      $upgradesBought[upgradeName]++
+    } else {
+      // PURCHASE MAX:
+      const cost = upgradeCost[upgradeName]
+      const costMult = upgradeCostMultiplier[upgradeName]
+      // used formulas for geometric series (because of the exponential cost curve of the upgrades)
+      const numUpgradesAffordable = Math.floor(Math.log($cheese/cost * (costMult - 1) + 1) / Math.log(costMult))
+      const totalPrice = cost * (Math.pow(costMult, numUpgradesAffordable) - 1) / (costMult - 1)
 
-
-  function upgradeCheeseQueue() {
-    if ($cheese < cheeseQueueLengthCost) return
-    $cheese -= cheeseQueueLengthCost
-    $maxCheeseQueue += cheeseQueue.capDelta
-    cheeseQueueLengthCost *= cheeseQueueLengthCostMult
-    
-    upgradesBought["queueLength"] += 1
+      $cheese -= totalPrice
+      upgradeCost[upgradeName] *= Math.pow(costMult, numUpgradesAffordable)
+      $upgradesBought[upgradeName] += numUpgradesAffordable
+    } 
   }
 
-  function upgradeCheeseYield() {
-    if ($cheese < cheeseYieldCost) return
-    $cheese -= cheeseYieldCost
-    cheeseYieldCost *= cheeseYieldCostMult
-
-    cheeseQueue.yield += cheeseYieldDeltaYield // ~ quadratic growth
-    cheeseYieldDeltaYield += 1
-    cheeseQueue.cycleDuration += cheeseYieldDeltaDuration
-
-    upgradesBought["cheeseYield"] += 1
-  }
-
-  function upgradeCheeseSpeed() {
-    if ($cheese < cheeseSpeedCost) return
-    $cheese -= cheeseSpeedCost
-    cheeseSpeedCost *= cheeseSpeedCostMult
-
-    cheeseQueueSpeedFactor *= cheeseSpeedFactor.duration
-    cheeseQueue.cost *= cheeseSpeedFactor.cost
-
-    upgradesBought["cheeseDuration"] += 1
-  }
-
-
-
-  function upgradeCheeseThoughtMult() {
-    if ($cheese < cheeseThoughtMultCost) return
-    $cheese -= cheeseThoughtMultCost
-    cheeseThoughtMultCost *= cheeseThoughtMultCostMult
-
-    cheeseThoughtMultFactor += 1
-  }
 
   let cheeseFactoryMode = 1
   function handleCheeseModeChange(mode: number) {
@@ -239,7 +239,7 @@
       </span>
 
       <div class="flexRowContainer">
-        <button on:click={handleCheeseGenerationInit} class:active={cheeseQueue.state === 'running'}>
+        <button style="width:170px" on:click={handleCheeseGenerationInit} disabled={cheeseQueue.state === 'running'}>
           Make some cheese <br>
           Costs {formatNumber(cheeseBatchCost, 2)} thoughts
         </button>
@@ -262,36 +262,69 @@
                 on:change={() => handleCheeseModeChange(3)}>
               warp speed
             </label>
-          </div>
-          
+          </div>  
         </fieldset>
                 
       </div>
-      
+      <div>
+        <div id="cheeseBar">
+          <ProgBarTask
+            on:completed={handleCheeseGeneration}
+            --width = 100%
+            --height = 100%
+            --barColor = yellow
+            --duration = {cheeseCycleDuration/1000}s
+            --playState = {cheeseQueue.state}
+            >
+          </ProgBarTask>
+        </div>
+        <div style="width:500px">
+            <p style="margin-left:4px; margin-top: 8px; margin-bottom: 0px">
+            Industrious swiss workers are producing
+            {formatNumber($cheeseBatchSize, 2)} cheese every
+            {formatNumber(cheeseCycleDuration/1000, 2)}s while consuming
+            {formatNumber(cheeseBatchCost,2)} thoughts.
+            (~{formatNumber(cheeseBatchCost/cheeseCycleDuration * 1000, 2)} thoughts/s)
+          </p>
+          {#if $unlocked["cheeseCycleAccelerator"] || $LORCA_OVERRIDE}
+            <p style="margin-left:4px; margin-top: 8px; margin-bottom: 0px" transition:fade={{duration: 500}}>
+              Total Cheese Cycles completed: {formatWhole($cheeseQueueTotalCycles)}
+            </p>
+          {/if}
+        </div>
+      </div>
 
       <div class="flexRowContainer">
-        <div class="gridColumn">
-          <div>
-            <div id="cheeseBar">
-              <ProgBarTask
-                on:completed={handleCheeseGeneration}
-                --width = 100%
-                --height = 100%
-                --barColor = yellow
-                --duration = {cheeseCycleDuration/1000}s
-                --playState = {cheeseQueue.state}
-                >
-              </ProgBarTask>
-            </div>
-            <p style="width:250px;">
-              Industrious swiss workers are producing
-              {formatNumber($cheeseBatchSize, 2)} cheese every
-              {formatNumber(cheeseCycleDuration/1000, 2)}s while consuming
-              {formatNumber(cheeseBatchCost,2)} thoughts.
-              (~{formatNumber(cheeseBatchCost/cheeseCycleDuration * 1000, 2)} thoughts/s)
-            </p>
+        {#if $unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
+          <div class="gridColumn">
+            <button on:click={() => purchaseUpgrade("cheeseYield")} 
+              disabled={$cheese < upgradeCost["cheeseYield"]}
+              use:tooltip={{content: SimpleTooltip, data: `+${formatNumber((($upgradesBought["cheeseYield"]+1) * $cheeseBatchSize/cheeseQueue.yield), 2)} cheese per cycle <br>
+              +${formatNumber((cheeseYieldDeltaDuration * cheeseCycleDuration/cheeseQueue.cycleDuration)/1000, 2)}s cycle duration`}}
+              transition:fade={{duration: 500}}
+            >
+              Your workers create more cheese but also take longer <br>
+              Costs {formatWhole(upgradeCost["cheeseYield"])} cheese
+            </button>
           </div>
-          
+          <div class="gridColumn">
+            <button on:click={() => purchaseUpgrade("cheeseDuration")} 
+              disabled={$cheese < upgradeCost["cheeseDuration"] || $upgradesBought["cheeseDuration"] >= 50}
+              class:maxed={$upgradesBought["cheeseDuration"] >= 50}
+              use:tooltip={{content: SimpleTooltip, data: `cycle duration x${formatNumber(cheeseSpeedFactor.duration, 2)} <br> 
+                thoughts required x${formatNumber(cheeseSpeedFactor.cost, 2)} <br> (both multiplicative)`}}
+              transition:fade={{duration: 500}}
+            >
+              The cheese production takes <strong>{formatNumber((1-cheeseSpeedFactor.duration)*100, 0)}%</strong>
+              less time, but costs <strong>{formatNumber(cheeseSpeedFactor.cost, 2)}x</strong> more ({formatWhole($upgradesBought["cheeseDuration"])}/50)<br>
+              Costs {formatWhole(upgradeCost["cheeseDuration"])} cheese
+            </button>
+          </div>
+        {/if}
+      </div>
+
+      <div class="flexRowContainer">
+        <div style="width:250px; margin-top:4px">
           {#if $unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
             <div transition:fade={{duration: 500}}>
               <div class="slidecontainer">
@@ -300,138 +333,118 @@
               <p>There are currently {$currentCheeseQueue} batches in queue.</p>
             </div>
           {/if}
-
-          {#if $unlocked["cheeseCycleAccelerator"] || $LORCA_OVERRIDE}
-            <div transition:fade={{duration: 500}}>
-              <p>Total Cheese Cycles completed: {formatWhole($cheeseQueueTotalCycles)}</p>
-            </div>
-          {/if}
-
-
-          {#if $unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
-          <button on:click={upgradeCheeseQueue} 
-            disabled={$cheese < cheeseQueueLengthCost}
-            use:tooltip={{content: SimpleTooltip, data: `Length +${cheeseQueue.capDelta}`}}
-            transition:fade={{duration: 500}}
-          >
-            Lengthen the <strong style="color:yellow">Cheese Queue</strong> <br>
-            Current Length: {$maxCheeseQueue} <br>
-            Costs {formatWhole(cheeseQueueLengthCost)} cheese
-          </button>
-        {/if}
-        {#if $unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
-          <button on:click={upgradeCheeseYield} 
-            disabled={$cheese < cheeseYieldCost}
-            use:tooltip={{content: SimpleTooltip, data: `+${formatNumber((cheeseYieldDeltaYield * $cheeseBatchSize/cheeseQueue.yield), 2)} cheese per cycle <br>
-             +${formatNumber((cheeseYieldDeltaDuration * cheeseCycleDuration/cheeseQueue.cycleDuration)/1000, 2)}s cycle duration`}}
-            transition:fade={{duration: 500}}
-          >
-            Your workers create more cheese but also take longer <br>
-            Costs {formatWhole(cheeseYieldCost)} cheese
-          </button>
-        {/if}
-        {#if $unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
-          <button on:click={upgradeCheeseSpeed} 
-            disabled={$cheese < cheeseSpeedCost || upgradesBought["cheeseDuration"] >= 50}
-            class:maxed={upgradesBought["cheeseDuration"] >= 50}
-            use:tooltip={{content: SimpleTooltip, data: `cycle duration x${formatNumber(cheeseSpeedFactor.duration, 2)} <br> 
-              thoughts required x${formatNumber(cheeseSpeedFactor.cost, 2)} <br> (both multiplicative)`}}
-            transition:fade={{duration: 500}}
-          >
-            The cheese production takes <strong>{formatNumber((1-cheeseSpeedFactor.duration)*100, 0)}%</strong>
-            less time, but costs <strong>{formatNumber(cheeseSpeedFactor.cost, 2)}x</strong> more ({formatWhole(upgradesBought["cheeseDuration"])}/50)<br>
-            Costs {formatWhole(cheeseSpeedCost)} cheese
-          </button>
-        {/if}
-        {#if $unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
-          <button on:click={upgradeCheeseThoughtMult} 
-            disabled={$cheese < cheeseThoughtMultCost}
-            transition:fade={{duration: 500}}
-          >
-            Cheese increases thoughts/s <br>
-            {#if cheeseThoughtMultFactor}
-              Currently: {formatNumber($cheeseThoughtMult , 2)}x <br>
-            {/if}
-            Costs {formatWhole(cheeseThoughtMultCost)} cheese
-          </button>
-        {/if}
-       
-
         </div>
-
-
-        
         <div class="gridColumn">
-
-          <button on:click={() => unlockFeature("cheeseQueue")} 
-            disabled={$unlocked["cheeseQueue"] || $cheese < unlockCosts["cheeseQueue"]} 
-            class:maxed={$unlocked["cheeseQueue"]} transition:slide={{duration: 500}}
-          >
-              Unlock the <strong style="color:yellow">Cheese Queue</strong> <br>
-              Costs {formatWhole(unlockCosts["cheeseQueue"])} cheese
-          </button>
-         
           {#if $unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
-            <button on:click={() => unlockFeature("cheeseQueueLengthBoost")} 
-              disabled={$unlocked["cheeseQueueLengthBoost"] || $cheese < unlockCosts["cheeseQueueLengthBoost"]}
-              class:maxed={$unlocked["cheeseQueueLengthBoost"]} transition:slide={{duration: 500}}
-              style="height:fit-content"
+            <button on:click={() => purchaseUpgrade("cheeseQueueLength")} 
+              disabled={$cheese < upgradeCost["cheeseQueueLength"]}
+              use:tooltip={{content: SimpleTooltip, data: `Length +${cheeseQueue.capDelta}`}}
+              transition:fade={{duration: 500}}
             >
-              Cheese Queue Length boosts cheese production<br>
-              Currently: {formatNumber(cheeseQueueLengthBoostFactor, 2)}x <br>
-              Costs {formatWhole(unlockCosts["cheeseQueueLengthBoost"])} cheese
-            </button>
-            
-            <button on:click={() => unlockFeature("cheeseBoost")} 
-              disabled={$unlocked["cheeseBoost"] || $cheese < unlockCosts["cheeseBoost"]}
-              class:maxed={$unlocked["cheeseBoost"]} transition:slide={{duration: 500}}
-            >
-              Thought Boost also affects cheese production <br>
-              Costs {formatWhole(unlockCosts["cheeseBoost"])} cheese
-            </button>
-
-            <button  on:click={() => unlockFeature("cheeseCycleAccelerator")} 
-              disabled={$unlocked["cheeseCycleAccelerator"] || $cheese < unlockCosts["cheeseCycleAccelerator"]}
-              class:maxed={$unlocked["cheeseCycleAccelerator"]} transition:slide={{duration: 500}}
-              style="height:fit-content"
-            >
-              Cheese production speeds up based on amount of cycles completed <br>
-              Current Speed Factor: {formatNumber(cheeseCycleAcceleratorFactor, 2)}x <br>
-              Costs {formatWhole(unlockCosts["cheeseCycleAccelerator"])} cheese
-            </button>
-
-            <button on:click={() => unlockFeature("thoughtJerk")}  
-              disabled={$unlocked["thoughtJerk"] || $cheese < unlockCosts["thoughtJerk"]}
-              class:maxed={$unlocked["thoughtJerk"]} transition:slide={{duration: 500}}
-              use:tooltip={{content: SimpleTooltip, data: 'something something per second cubed'}}
-            >
-              Jerk(?) your thinking <br>
-              Costs {formatWhole(unlockCosts["thoughtJerk"])} cheese
-            </button>
-
-            <button on:click={() => unlockFeature("cheeseQueueToppedUp")} 
-              disabled={$unlocked["cheeseQueueToppedUp"] || $cheese < unlockCosts["cheeseQueueToppedUp"]}
-              class:maxed={$unlocked["cheeseQueueToppedUp"]} transition:slide={{duration: 500}}
-            >
-              Activating Thought Boost automatically tops up the Cheese Queue <br> <!-- COULD BE AN UNLOCK THROUGH AN ACHIEVMENT ALTERNATIVELY -->
-              Costs {formatWhole(unlockCosts["cheeseQueueToppedUp"])} cheese
-            </button>
-
-            <button on:click={() => unlockFeature("cheeseQueueToppedUp")} 
-              disabled={$unlocked["cheeseQueueToppedUp"] || $cheese < unlockCosts["cheeseQueueToppedUp"]}
-              class:maxed={$unlocked["cheeseQueueToppedUp"]} transition:slide={{duration: 500}}
-            >
-              Unlock 3 modes to help manage your cheese production <br> 
-              Costs {formatWhole(unlockCosts["cheeseQueueToppedUp"])} cheese
+              Lengthen the <strong style="color:yellow">Cheese Queue</strong> <br>
+              Current Length: {$maxCheeseQueue} <br>
+              Costs {formatWhole(upgradeCost["cheeseQueueLength"])} cheese
             </button>
           {/if}
-
         </div>
+      </div>
+      
+      
+
+      <div class="flexRowContainer">
+        <div class="gridColumn">
+          {#if $unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
+            <button on:click={() => purchaseUpgrade("cheeseThoughtMult")} 
+              disabled={$cheese < upgradeCost["cheeseThoughtMult"]}
+              transition:fade={{duration: 500}}
+            >
+              Cheese increases thoughts/s <br>
+              {#if cheeseThoughtMultFactor}
+                Currently: {formatNumber($cheeseThoughtMult , 2)}x <br>
+              {/if}
+              Costs {formatWhole(upgradeCost["cheeseThoughtMult"])} cheese
+            </button>
+          {/if}
+        </div> 
       </div>
 
     </div>
   </div>
 
+  <div class="container">
+    <div class="header">
+    </div>
+    <div class="content">
+      <div class="gridColumn">
+
+        <button on:click={() => unlockFeature("cheeseQueue")} 
+          disabled={$unlocked["cheeseQueue"] || $cheese < unlockCosts["cheeseQueue"]} 
+          class:maxed={$unlocked["cheeseQueue"]} transition:slide={{duration: 500}}
+        >
+            Unlock the <strong style="color:yellow">Cheese Queue</strong> <br>
+            Costs {formatWhole(unlockCosts["cheeseQueue"])} cheese
+        </button>
+       
+        {#if $unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
+          <button on:click={() => unlockFeature("cheeseQueueLengthBoost")} 
+            disabled={$unlocked["cheeseQueueLengthBoost"] || $cheese < unlockCosts["cheeseQueueLengthBoost"]}
+            class:maxed={$unlocked["cheeseQueueLengthBoost"]} transition:slide={{duration: 500}}
+            style="height:fit-content"
+          >
+            Cheese Queue Length boosts cheese production<br>
+            Currently: {formatNumber(cheeseQueueLengthBoostFactor, 2)}x <br>
+            Costs {formatWhole(unlockCosts["cheeseQueueLengthBoost"])} cheese
+          </button>
+          
+          <button on:click={() => unlockFeature("cheeseBoost")} 
+            disabled={$unlocked["cheeseBoost"] || $cheese < unlockCosts["cheeseBoost"]}
+            class:maxed={$unlocked["cheeseBoost"]} transition:slide={{duration: 500}}
+          >
+            Thought Boost also affects cheese production <br>
+            Costs {formatWhole(unlockCosts["cheeseBoost"])} cheese
+          </button>
+
+          <button  on:click={() => unlockFeature("cheeseCycleAccelerator")} 
+            disabled={$unlocked["cheeseCycleAccelerator"] || $cheese < unlockCosts["cheeseCycleAccelerator"]}
+            class:maxed={$unlocked["cheeseCycleAccelerator"]} transition:slide={{duration: 500}}
+            style="height:fit-content"
+          >
+            Cheese production speeds up based on amount of cycles completed <br>
+            Current Speed Factor: {formatNumber(cheeseCycleAcceleratorFactor, 2)}x <br>
+            Costs {formatWhole(unlockCosts["cheeseCycleAccelerator"])} cheese
+          </button>
+
+          <button on:click={() => unlockFeature("cheeseModes")} 
+            disabled={$unlocked["cheeseModes"] || $cheese < unlockCosts["cheeseModes"]}
+            class:maxed={$unlocked["cheeseModes"]} transition:slide={{duration: 500}}
+          >
+            Unlock 3 modes to help manage your cheese production <br> 
+            Costs {formatWhole(unlockCosts["cheeseModes"])} cheese
+          </button>
+
+          <button on:click={() => unlockFeature("thoughtJerk")}  
+            disabled={$unlocked["thoughtJerk"] || $cheese < unlockCosts["thoughtJerk"]}
+            class:maxed={$unlocked["thoughtJerk"]} transition:slide={{duration: 500}}
+            use:tooltip={{content: SimpleTooltip, data: 'something something per second cubed'}}
+          >
+            Jerk(?) your thinking <br>
+            Costs {formatWhole(unlockCosts["thoughtJerk"])} cheese
+          </button>
+
+          <!-- <button on:click={() => unlockFeature("cheeseQueueToppedUp")} 
+            disabled={$unlocked["cheeseQueueToppedUp"] || $cheese < unlockCosts["cheeseQueueToppedUp"]}
+            class:maxed={$unlocked["cheeseQueueToppedUp"]} transition:slide={{duration: 500}}
+          >
+            Activating Thought Boost automatically tops up the Cheese Queue <br> 
+            Costs {formatWhole(unlockCosts["cheeseQueueToppedUp"])} cheese
+          </button> -->
+
+          
+        {/if}
+
+      </div>
+    </div>
+  </div>
 <style>
   .content {
     width: fit-content;
@@ -454,6 +467,9 @@
     border: 1px yellow solid;
     background-color: black;
     color: yellow;
+  }
+  .active {
+    background-color:rgb(121, 119, 0) ;
   }
 
  

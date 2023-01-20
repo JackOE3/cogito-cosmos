@@ -5,7 +5,7 @@
   export let onChange: Function
 </script>
 
-<input type=range min={min} max={max} bind:value={value} on:change={() => {if (value > 0) onChange()}}>
+<input class="draggable" type=range min={min} max={max} bind:value={value} on:change={() => {if (value > 0) onChange()}}>
 
 <style>
   input[type=range] {

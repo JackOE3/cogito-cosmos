@@ -1,16 +1,12 @@
 import { writable, get} from 'svelte/store';
 import { sendMessage } from './notifications';
-import {
-  lastSaved
-} from '../stores/mainStore'
-import {currentActionSet, actionFlagStore, storyBookStore} from '../stores/Actions'
-import type {ActionSet} from '../stores/Actions'
-
+import * as store from '../stores/mainStore'
 
 /**
  * This is the key the save data will be stored under inside localstorage
  */
-const storageName = 'sveltedata';
+const storageName = 'cogitoErgoSum';
+
 
  /**
  * This class holds any data that needs to be saved when the player saves their game.
@@ -20,22 +16,10 @@ export class SaveData {
   // maybe make private with getters? throws error though...
 
   // ALL STORE-RELATED DATA
-  public currentActionSet: ActionSet
-  public actionFlag: object
-  public storyBook: object
-  public lastSaved: number
-
-  // ALL OTHER DATA
-  public hideDisabledActions: boolean
+  public data: object = {}
 
   public updateFromStores() {
-    this.currentActionSet = get(currentActionSet)
-    this.actionFlag = get(actionFlagStore)
-    this.storyBook = get(storyBookStore)
-    this.lastSaved = get(lastSaved)
-  }
-  public updateFromLocalStorage(fromStorage: SaveData) {
-    this.hideDisabledActions = fromStorage.hideDisabledActions
+    for(let key in store) this.data[key] = get(store[key])
   }
 
   constructor(){
@@ -68,10 +52,10 @@ export function loadSaveGame(){
 
       hydrateStores(saveDataFromLocalStorage)
       //update the saveData object with the freshly hydrated stores
-      saveData.updateFromStores()
+      //saveData.updateFromStores()
 
       // update all the other data that is not from stores
-      saveData.updateFromLocalStorage(saveDataFromLocalStorage)
+      //saveData.updateFromLocalStorage(saveDataFromLocalStorage)
     } else console.log("No save found, created new one.")
 
   } catch (error) {
@@ -83,11 +67,11 @@ export function loadSaveGame(){
 * Loads the data from localStorage into the stores.
 */
 function hydrateStores(fromStorage: SaveData){
-  currentActionSet.set(fromStorage.currentActionSet)
-  actionFlagStore.set(fromStorage.actionFlag)
-  storyBookStore.set(fromStorage.storyBook)
-  lastSaved.set(fromStorage.lastSaved)
-
+ 
+  for(let key in store) {
+    store[key].set(fromStorage.data[key])
+  }
+  //for(let key in store) console.log(key, get(store[key]))
   console.log('Stores hydrated.');
 }
  
@@ -98,7 +82,7 @@ function hydrateStores(fromStorage: SaveData){
 export function saveSaveGame() {
 
   if (saveData) {
-    lastSaved.set(Date.now())
+    store.lastSaved.set(Date.now())
 
     // update the saveData object with all the current values of all the necessary stores
     saveData.updateFromStores()
@@ -127,13 +111,13 @@ function dataMigrate(fromStorage: SaveData) {
 
     // get an array of the properties of saveData
     // would also return functions of an object, but NOT methods from a class apparently, so it's fine
-    let keys = Object.getOwnPropertyNames(master);
+    let keys = Object.getOwnPropertyNames(master.data);
 
     // check each property to make sure it exists on the save data
     keys.forEach((prop) => {
-        if (typeof fromStorage[prop] === 'undefined') {
+        if (typeof fromStorage.data[prop] === 'undefined') {
             console.log(`${prop} was undefined, adding it to saveData`);
-            fromStorage[prop] = master[prop];
+            fromStorage.data[prop] = master.data[prop];
         }
     })
 }
@@ -143,16 +127,9 @@ function dataMigrate(fromStorage: SaveData) {
 * Resets saveGame in localstorage, resets all the stores and updates the savaData accordingly.
 */
 export function resetSaveGame() {
-
-    // remove from local storage
-    // -> actually shouldnt remove the save, only if you save afterwards
-    //localStorage.removeItem(storageName);
-
     // update the stored gameModel with a new one
     resetStores()
-
     saveData.updateFromStores()
-
     sendMessage("Game reset.")
 }
 
@@ -160,14 +137,7 @@ export function resetSaveGame() {
 * Resets all the stores to their default starting values. (NewGame)
 */
 function resetStores(){
-  // TODO: make each store custom, so you can do store.reset() for all stores here
-
-  currentActionSet.reset()
-  actionFlagStore.reset()
-  storyBookStore.reset()
-
-  /*worker.set(JSON.parse(JSON.stringify(workers)))
-  building.set(JSON.parse(JSON.stringify(buildings)))*/
+  for(let key in store) store[key].reset()
 }
 
 /**
