@@ -9,6 +9,7 @@ export function tooltip(element: HTMLElement, options: {
   let tooltipData = options.data
 
 	function mouseEnter(event: MouseEvent) {
+    if (tooltipData == null) return
 		tooltipComponent = new options.content({
 			props: {
 				data: tooltipData,
@@ -19,9 +20,11 @@ export function tooltip(element: HTMLElement, options: {
 		});
 	}
 	function mouseLeave() {
+    if (tooltipData == null) return
 		tooltipComponent.$destroy();
 	}
   function mouseMove(event: MouseEvent) {
+    if (tooltipData == null) return
     tooltipComponent.$set({
 			x: event.pageX,
 			y: event.pageY,

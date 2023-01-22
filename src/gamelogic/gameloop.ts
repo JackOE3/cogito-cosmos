@@ -6,12 +6,12 @@ import { sendMessage } from "./notifications"
 import { formatWhole } from "./utils"
 import {get} from 'svelte/store'
 import {
-  thoughts,
+  resource,
   thoughtsPerSec,
-  cheese, 
-  moldyCheese,
   moldyCheeseHalfLifeSeconds,
+  upgradesBought,
 } from '../stores/mainStore'
+import {upgrades} from './upgrades'
 
 // natural log of 2
 const LN2 = 0.69314718056
@@ -20,8 +20,6 @@ const LN2 = 0.69314718056
  * Reference to some stores.
  * We use the subscribe function so if the store is updated our local instance will also update.
  */
-let resource: Resource[]
-resourceStore.subscribe(m => resource = m)
 let lastSaved: number
 lastSavedStore.subscribe(m => lastSaved = m)
 
@@ -46,7 +44,9 @@ let interval: number
  * This function will start the game loop running at the desired rate, and save a reference to the interval so it can be stopped later
  */
 export function startGameLoop() {
-    
+  console.log('Repopulating transient values...')
+  repopulateValues()
+
   console.log('Calculating offline progess...')
   calculateOfflineProgress()
   lastSaved = Date.now()
@@ -96,15 +96,19 @@ function gameLoop() {
  */
 function gameUpdate(deltaTimeSeconds: number) {
   deltaTimeSeconds *= fastFowardFactor
-  thoughts.update(value => value + get(thoughtsPerSec) * deltaTimeSeconds)
 
-  // moldy cheese decay (linear extrapolation)
-  //moldyCheese.update(value => value * (1 - LN2/get(moldyCheeseHalfLifeSeconds) * deltaTimeSeconds))
-  // OR: moldy cheese decay (exact)
-  // if statement so while offline for longer than 10s you dont lose moldy cheese (?)
-  if (deltaTimeSeconds < 10) moldyCheese.update(value => value * Math.exp(- LN2*deltaTimeSeconds/get(moldyCheeseHalfLifeSeconds)))
+  resource.update(value => {
+    value.thoughts += get(thoughtsPerSec) * deltaTimeSeconds
+    // moldy cheese decay (linear extrapolation)
+    //moldyCheese.update(value => value * (1 - LN2/get(moldyCheeseHalfLifeSeconds) * deltaTimeSeconds))
+    // OR: moldy cheese decay (exact)
+    // if statement so while offline for longer than 10s you dont lose moldy cheese (?)
+    value.moldyCheese *= Math.exp(- LN2*deltaTimeSeconds/get(moldyCheeseHalfLifeSeconds))
 
-  //moldyCheese.update(value => value + 10 * deltaTimeSeconds)
+    return value
+  })
+
+  upgradesBought.update(value => value)
   
 }
 
@@ -124,4 +128,10 @@ function calculateOfflineProgress() {
   // perform the game update for the total time
   gameUpdate(offlineDeltaTimeSeconds)
 
+}
+
+function repopulateValues() {
+  for (let id in upgrades) {
+    upgrades[id].cost *= Math.pow(upgrades[id].costMultiplier, get(upgradesBought)[id])
+  }
 }

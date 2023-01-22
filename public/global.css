@@ -10,7 +10,7 @@
   
 }
 [data-theme="dark"] {
-  --background-color:  #313131;
+  --background-color:  #070707;
   --color: rgb(255, 255, 255);
   --primary: #BB86Fc;
   --primary-variant: #3700B3;
@@ -104,14 +104,14 @@ button {
   color: white;
   width:fit-content;
 
-  border-top: 1px white solid;
+  /* border-top: 1px white solid;
   border-left: 1px white solid;
-  box-shadow: 2px 2px 1px black
+  box-shadow: 2px 2px 1px black */
 }
 
 button:not(:disabled):active  {
-  border-top: 1px black solid;
-  border-left: 1px black solid;
+  /* border-top: 1px black solid;
+  border-left: 1px black solid; */
   box-shadow: 2px 2px 0px white;
 }
 

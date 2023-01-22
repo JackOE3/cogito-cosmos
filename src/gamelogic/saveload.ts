@@ -1,6 +1,7 @@
 import { writable, get} from 'svelte/store';
 import { sendMessage } from './notifications';
 import * as store from '../stores/mainStore'
+//import {compress, decompress} from 'lz-string'
 
 /**
  * This is the key the save data will be stored under inside localstorage
@@ -41,7 +42,7 @@ export function loadSaveGame(){
     if (localStorage.getItem(storageName)) {
 
       // get data from localstorage, decompress it using lz-string, then parse it back into a javascript object
-      let saveDataFromLocalStorage = JSON.parse(localStorage.getItem(storageName));
+      let saveDataFromLocalStorage = JSON.parse(localStorage.getItem(storageName)); 
 
       //sendMessage("Savefile loaded.")
       console.log('SaveData loaded:');
@@ -98,6 +99,23 @@ export function saveSaveGame() {
         console.error(error); // log the error so at least we can see it
     }
   }
+}
+
+export function exportSaveGame(): string {
+  if (saveData) {
+    saveData.updateFromStores()
+  }
+  return JSON.stringify(saveData)
+}
+export function importSaveGame(data: string) {
+  try {
+    let importedSaveData = JSON.parse(data); 
+    dataMigrate(importedSaveData);
+    hydrateStores(importedSaveData)
+  } catch (error) {
+    console.error(error);
+  }
+  
 }
 
 /**

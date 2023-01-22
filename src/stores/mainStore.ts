@@ -8,10 +8,18 @@ function makeStore<T>(init: T) {
   return {...store, reset}
 }
 
+
 export const LORCA_OVERRIDE = makeStore(true)
 export const devToolsEnabled = makeStore(true)
 
 export const lastSaved = makeStore(Date.now())
+
+export const resource = makeStore({
+  thoughts: 0,
+  cheese: 0,
+  moldyCheese: 0,
+  cheeseBrains: 0
+})
 
 export const thoughts = makeStore(0)
 export const thoughtsPerSec = makeStore(0)
@@ -45,7 +53,7 @@ export const unlocked = makeStore({
   "cheeseQueueLengthBoost": false,
   "cheeseBoost": false,
   "cheeseCycleAccelerator": false,
-  "cheeseMods": false,
+  "cheeseMode": false,
   "thoughtJerk": false,
 
   "moldyCheeseByproduct": false,
@@ -58,7 +66,7 @@ export const unlocked = makeStore({
   "cheeseQueueToppedUp": false,
 })
 
-export const thoughtUpgradesBought = makeStore({
+/* export const thoughtUpgradesBought = makeStore({
   "thoughtAcceleration": 0,
   "thoughtJerk": 0,
   "thoughtBoostStrength": 0,
@@ -77,5 +85,23 @@ export const moldyCheeseUpgradesBought = makeStore({
   "moldyCheeseChance": 0,
   "cheeseMonsterSpawnrate": 0,
   "cheeseMonsterCapacity": 0,
-})
+}) */
 
+export const upgradesBought = makeStore({
+  "thoughtAcceleration": 0,
+  "thoughtJerk": 0,
+  "thoughtBoostStrength": 0,
+  "thoughtBoostDuration": 0,
+  "thoughtBoostStack": 0,
+
+  "cheeseQueueLength": 0,
+  "cheeseYield": 0,
+  "cheeseDuration": 0,
+  "cheeseThoughtMult": 0,
+
+  "conversionExponent": 0,
+  "moldyCheeseHalfLife": 0,
+  "moldyCheeseChance": 0,
+  "cheeseMonsterSpawnrate": 0,
+  "cheeseMonsterCapacity": 0,
+})

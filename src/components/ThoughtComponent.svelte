@@ -1,32 +1,46 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import { formatNumber, formatWhole } from "../gamelogic/utils";
-  import ProgBarTask from './ProgBarTask.svelte';
-  import InputRange from './InputRange.svelte'
-  import { slide } from "svelte/transition";
-  import { tooltip } from "./tooltips/tooltip";
-  import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
+  import Window from './Window.svelte'
+  import UpgradeButton from './UpgradeButton.svelte'
+  import UnlockButton from './UnlockButton.svelte';
+  import {upgrades} from '../gamelogic/upgrades'
+  import {unlocks} from '../gamelogic/unlocks';
   import {GAME_FPS} from '../stores/constants'
   import {
     LORCA_OVERRIDE,
-    thoughts,
+    resource,
     thoughtsPerSec,
     thoughtsBonus,
     cheeseThoughtMult,
     currentCheeseQueue,
     maxCheeseQueue,
     unlocked,
-    thoughtUpgradesBought as upgradesBought,
-    
-  } from'../stores/mainStore'
+    upgradesBought,
 
-  onMount(() => {
-    updateUpgradeCosts()
-  })
-  // Takes the number of upgrades bought from the SaveData and recalculates the current price.
-  function updateUpgradeCosts() {
-    for (let cost in upgradeCost) upgradeCost[cost] *= Math.pow(upgradeCostMultiplier[cost], $upgradesBought[cost])
+  } from'../stores/mainStore'
+  
+
+ 
+  
+
+ 
+  const unlockCosts = {
+    "thinkPassively": 10,
+    "thinkFaster": 30,
+    "thoughtBoost": 50,
+    "switzerland": 3000,
+    "thoughtSacrifice": 10_000,
+    "thoughtBoostStack": 1_000_000,
+    "moldyCheese": 1_000_000_000,
   }
+  
+  function unlockFeature(name: string) {
+    let cost: number = unlockCosts[name]
+    if ($resource.thoughts < cost) return
+    $resource.thoughts -= cost
+    $unlocked[name] = true
+  }
+
 
   let buyMaxUpgrades = false
 
@@ -52,7 +66,7 @@
   
   function handleThink() {
     if (!$unlocked["thoughtBoost"]) {
-      $thoughts += 1
+      $resource.thoughts += 1
       return
     }
     if ($unlocked["cheeseQueueToppedUp"]) $currentCheeseQueue = $maxCheeseQueue
@@ -94,267 +108,129 @@
     
   }
 
-  const unlockCosts = {
-    "thinkPassively": 10,
-    "thinkFaster": 30,
-    "thoughtBoost": 50,
-    "switzerland": 3000,
-    "thoughtSacrifice": 10_000,
-    "thoughtBoostStack": 1_000_000,
-    "moldyCheese": 1_000_000_000,
-  }
-
-  function unlockFeature(name: string) {
-    let cost: number = unlockCosts[name]
-    if ($thoughts < cost) return
-    $thoughts -= cost
-    $unlocked[name] = true
-  }
-
-  
-  const upgradeCostMultiplier = {
-    "thoughtAcceleration": 1.15,
-    "thoughtJerk": 1.5,
-    "thoughtBoostStrength": 2.0,
-    "thoughtBoostDuration": 1.4,
-    "thoughtBoostStack": 3,
-  }
-  const upgradeCost = {
-    "thoughtAcceleration": 10,
-    "thoughtJerk": 5_000_000,
-    "thoughtBoostStrength": 100,
-    "thoughtBoostDuration": 150,
-    "thoughtBoostStack": 1_000_000,
-  }
-  
-
-  function purchaseUpgrade(upgradeName: string) {
-    if ($thoughts < upgradeCost[upgradeName]) return
-    if (!buyMaxUpgrades) {
-      // PURCHASE SINGLE:
-      $thoughts -= upgradeCost[upgradeName]
-      upgradeCost[upgradeName] *= upgradeCostMultiplier[upgradeName]
-      $upgradesBought[upgradeName]++
-    } else {
-      // PURCHASE MAX:
-      const cost = upgradeCost[upgradeName]
-      const costMult = upgradeCostMultiplier[upgradeName]
-      // used formulas for geometric series (because of the exponential cost curve of the upgrades)
-      const numUpgradesAffordable = Math.floor(Math.log($thoughts/cost * (costMult - 1) + 1) / Math.log(costMult))
-      const totalPrice = cost * (Math.pow(costMult, numUpgradesAffordable) - 1) / (costMult - 1)
-
-      $thoughts -= totalPrice
-      upgradeCost[upgradeName] *= Math.pow(costMult, numUpgradesAffordable)
-      $upgradesBought[upgradeName] += numUpgradesAffordable
-      //alert("Upgrades affordable: " + numUpgradesAffordable + ", Total Prize: " + totalPrice)
-    } 
-  }
-
-
 
 </script>
 
-<div class="container">
-  <div class="header">
-    <span class="componentTitle">Cogito Ergo Sum</span>
+<Window title="Cogito Ergo Sum" --bg="linear-gradient(90deg, rgb(129, 0, 204) 0%, rgb(182, 122, 255) 100%)">
+  <div style="position: absolute; right: 8px; top: 8px;">
+    <input type=checkbox name=buyMax bind:checked={buyMaxUpgrades}>
+    <label for=buyMax>Buy Max</label>
   </div>
-  <div class="content">
-    <div style="position: absolute; right: 8px; top: 8px;">
-      <input type=checkbox name=buyMax bind:checked={buyMaxUpgrades}>
-      <label for=buyMax>Buy Max</label>
+  
+  <span>
+    <span class=resourceDisplay>You thought {formatNumber($resource.thoughts ,2)} times<br></span>
+    <span>
+      {#if $unlocked["thinkPassively"] || LORCA_OVERRIDE}
+        <span class:green={$thoughtsBonus > 1}>{formatNumber($thoughtsPerSec, 2)}/s</span><!-- svelte-ignore empty-block -->
+        {#if $thoughtsBonus > 1}
+          - {formatNumber($thoughtsBonus, 2)}x for
+          {formatNumber(currentThoughtBoostTime/1000, 1)}s
+          {#if $unlocked["thoughtBoostStack"]}
+            - {thoughtBoostCurrentStacks}/{thoughtBoostMaxStacks} Stack{thoughtBoostMaxStacks > 1 ? "s" : ""}
+          {/if}
+        {:else}
+        {/if}
+      {:else} 
+        _
+      {/if}
+    </span>
+  </span>
+
+  <div class="flexRowContainer">
+    {#if $unlocked["thoughtBoost"]}
+      <button on:click={handleThink}>
+          Thought Boost <span class="iconify" data-icon="icon-park-outline:brain"/><br>
+          x{formatNumber(thoughtBoostMax, 2)} thoughts/s for {formatNumber(thoughtBoostDuration/1000, 2)}s
+      </button>
+    {:else}
+      <button on:click={handleThink}>
+        Think <br>
+        (+1 thought) 
+      </button>
+    {/if}
+    
+  </div>
+
+  <div class="flexRowContainer">
+    <div class="gridColumn">
+      <span>Upgrades</span>
+      
+      <UpgradeButton upgrade={upgrades.thoughtAcceleration} {buyMaxUpgrades} 
+        btnUnlocked={$unlocked["thinkFaster"] || $LORCA_OVERRIDE}
+        tooltipText={`+${thoughtAccelDisplay} thought${thoughtAccelDisplay > 1 ? 's' : ''}/s`}>
+        Thought Acceleration ({$upgradesBought["thoughtAcceleration"]})
+      </UpgradeButton>
+
+      <UpgradeButton upgrade={upgrades.thoughtJerk} {buyMaxUpgrades} 
+        btnUnlocked={$unlocked["thoughtJerk"] || $LORCA_OVERRIDE}
+        tooltipText={'Effect of Thought Acceleration +1'}>
+        Thought Jerk ({$upgradesBought["thoughtJerk"]})
+      </UpgradeButton>
+
+      <UpgradeButton upgrade={upgrades.thoughtBoostStrength} {buyMaxUpgrades} 
+        btnUnlocked={$unlocked["thoughtBoost"] || $LORCA_OVERRIDE}>
+        Increase strength of Thought Boost ({$upgradesBought["thoughtBoostStrength"]}) <br>
+        Currently: {formatNumber(thoughtBoostMax, 2)}x 
+      </UpgradeButton>
+
+      <UpgradeButton upgrade={upgrades.thoughtBoostDuration} {buyMaxUpgrades} 
+        btnUnlocked={$unlocked["thoughtBoost"] || $LORCA_OVERRIDE}>
+        Increase duration of Thought Boost ({$upgradesBought["thoughtBoostDuration"]}) <br>
+        Currently: {formatNumber(thoughtBoostDuration/1000, 2)}s
+      </UpgradeButton>
+
+      <UpgradeButton upgrade={upgrades.thoughtBoostStack} {buyMaxUpgrades} 
+        btnUnlocked={$unlocked["thoughtBoostStack"] || $LORCA_OVERRIDE}>
+        Increase the maximum stack size of Thought Boosts ({$upgradesBought["thoughtBoostStack"]}/20) <br>
+        Currently: {formatWhole(thoughtBoostMaxStacks)}
+      </UpgradeButton>
+
     </div>
     
-    <span>
-      <span class=resourceDisplay>You thought {formatNumber($thoughts ,2)} times <br></span>
-      <span>
-        {#if $unlocked["thinkPassively"] || LORCA_OVERRIDE}
-          <span class:green={$thoughtsBonus > 1}>{formatNumber($thoughtsPerSec, 2)}/s</span><!-- svelte-ignore empty-block -->
-          {#if $thoughtsBonus > 1}
-            - {formatNumber($thoughtsBonus, 2)}x for
-            {formatNumber(currentThoughtBoostTime/1000, 1)}s
-            {#if $unlocked["thoughtBoostStack"]}
-              - {thoughtBoostCurrentStacks}/{thoughtBoostMaxStacks} Stack{thoughtBoostMaxStacks > 1 ? "s" : ""}
-            {/if}
-          {:else}
-          {/if}
-        {:else} 
-          _
-        {/if}
-      </span>
-    </span>
+    <div class="gridColumn">
+      <span>Unlocks</span> 
 
-    <div class="flexRowContainer">
-      {#if $unlocked["thoughtBoost"]}
-        <button on:click={handleThink}>
-            Thought Boost <span class="iconify" data-icon="icon-park-outline:brain"/><br>
-            x{formatNumber(thoughtBoostMax, 2)} thoughts/s for {formatNumber(thoughtBoostDuration/1000, 2)}s
-        </button>
-      {:else}
-        <button on:click={handleThink}>
-          Think <br>
-          (+1 thought) 
-        </button>
-      {/if}
-      
+      <UnlockButton unlock={unlocks.thinkPassively} btnUnlocked={true} 
+        tooltipText={'"I think, therefore I am."'} --unlockedColor='var(--primary)'>
+        Learn to think passively
+      </UnlockButton>
+
+      <UnlockButton unlock={unlocks.thinkFaster} btnUnlocked={$unlocked["thinkPassively"] || $LORCA_OVERRIDE}
+        tooltipText={'Really makes you think...'} --unlockedColor='var(--primary)'>
+        Accelerate your thinking
+      </UnlockButton>
+
+      <UnlockButton unlock={unlocks.thoughtBoost} btnUnlocked={$unlocked["thinkFaster"] || $LORCA_OVERRIDE} 
+        tooltipText={'"i dont want to spam click a gazillion times to play ur stupid game" <br> <strong>- HentaiEnjoyer1978'} --unlockedColor='var(--primary)'>
+        Boost your thinking
+      </UnlockButton>
+
+      <UnlockButton unlock={unlocks.switzerland} btnUnlocked={$unlocked["thoughtBoost"] || $LORCA_OVERRIDE} 
+        tooltipText={'The land of cheese'} --unlockedColor='var(--primary)' --btn-bg="linear-gradient(90deg, rgba(131,58,180,1) 0%, rgba(253,29,29,1) 50%, rgba(252,176,69,1) 100%)">
+        <span style="font-weight:bold; font-size: 16px; text-shadow:1px 1px 2px black;">Travel to Switzerland</span>
+      </UnlockButton>
+
+      <UnlockButton unlock={unlocks.thoughtBoostStack} btnUnlocked={$unlocked["cheeseQueue"] || $LORCA_OVERRIDE} 
+        tooltipText={'Viagra for the brain'} --unlockedColor='var(--primary)'>
+        Ability to stack Thought Boosts
+      </UnlockButton>
+
+      <UnlockButton unlock={unlocks.moldyCheese} btnUnlocked={$unlocked["cheeseQueue"]|| $LORCA_OVERRIDE} 
+        tooltipText={'Is it okay to eat?'} --unlockedColor='var(--primary)'>
+        Unlock Moldy Cheese 
+      </UnlockButton>
+
     </div>
 
-    <div class="flexRowContainer">
-      <div class="gridColumn">
-        <span>Upgrades</span>
-        
-        {#if $unlocked["thinkFaster"] || $LORCA_OVERRIDE}
-          <button 
-            on:click={() => purchaseUpgrade("thoughtAcceleration")} disabled={$thoughts < upgradeCost["thoughtAcceleration"]}
-            use:tooltip={{content: SimpleTooltip, data: `+${thoughtAccelDisplay} thought${thoughtAccelDisplay > 1 ? 's' : ''}/s`}}
-          >
-            Thought Acceleration <br>
-            Costs {formatWhole(upgradeCost["thoughtAcceleration"])} thoughts
-          </button>
-        {:else}
-          <button disabled>???</button>
-        {/if}
-
-        {#if $unlocked["thoughtJerk"] || $LORCA_OVERRIDE}
-          <button 
-            on:click={() => purchaseUpgrade("thoughtJerk")} disabled={$thoughts < upgradeCost["thoughtJerk"]}
-            use:tooltip={{content: SimpleTooltip, data: 'Effect of Thought Acceleration +1'}}
-          >
-            Thought Jerk<br>
-            Costs {formatWhole(upgradeCost["thoughtJerk"])} thoughts
-          </button>
-        {:else}
-          <button disabled>???</button>
-        {/if}
-
-        {#if $unlocked["thoughtBoost"] || $LORCA_OVERRIDE}
-          <button on:click={() => purchaseUpgrade("thoughtBoostStrength")} 
-            disabled={$thoughts < upgradeCost["thoughtBoostStrength"]} 
-            transition:slide={{duration: 500}}
-          >
-            Increase the strength of Thought Boost <br>
-            Currently: {formatNumber(thoughtBoostMax, 2)}x <br>
-            Costs {formatWhole(upgradeCost["thoughtBoostStrength"])} thoughts
-          </button>
-        {/if}
-
-        {#if $unlocked["thoughtBoost"] || $LORCA_OVERRIDE}
-          <button on:click={() => purchaseUpgrade("thoughtBoostDuration")} 
-            disabled={$thoughts < upgradeCost["thoughtBoostDuration"]} 
-            transition:slide={{duration: 500}}
-          >
-            Increase the duration of Thought Boost <br>
-            Currently: {formatNumber(thoughtBoostDuration/1000, 2)}s <br>
-            Costs  {formatWhole(upgradeCost["thoughtBoostDuration"])} thoughts
-          </button>
-        {/if}
-        {#if $unlocked["thoughtBoostStack"] || $LORCA_OVERRIDE}
-          <button on:click={() => purchaseUpgrade("thoughtBoostStack")} 
-            disabled={$thoughts < upgradeCost["thoughtBoostStack"] || $upgradesBought["thoughtBoostStack"] >= 20} 
-            transition:slide={{duration: 500}}
-            use:tooltip={{content: SimpleTooltip, data: '+1 to max stack'}} style="height:fit-content"
-          >
-            Increase the maximum stack size of Thought Boosts ({$upgradesBought["thoughtBoostStack"]}/20) <br>
-            Currently: {formatWhole(thoughtBoostMaxStacks)} <br>
-            Costs {formatWhole(upgradeCost["thoughtBoostStack"])} thoughts
-          </button>
-        {/if}
-
-      </div>
-      
-      <div class="gridColumn">
-        <span>Unlocks</span>
-        <button on:click={() => unlockFeature("thinkPassively")} 
-          disabled={$unlocked["thinkPassively"] || $thoughts < unlockCosts["thinkPassively"]} 
-          class:maxed={$unlocked["thinkPassively"]}
-          use:tooltip={{content: SimpleTooltip, data: '"I think, therefore I am."'}}
-        >
-          Learn to think passively <br>
-          Costs {formatWhole(unlockCosts["thinkPassively"])} thoughts
-        </button>
-
-        {#if $unlocked["thinkPassively"] || $LORCA_OVERRIDE}
-          <button on:click={() => unlockFeature("thinkFaster")} 
-            disabled={$unlocked["thinkFaster"] || $thoughts < unlockCosts["thinkFaster"]} 
-            class:maxed={$unlocked["thinkFaster"]} transition:slide={{duration: 500}}
-            use:tooltip={{content: SimpleTooltip, data: 'Really makes you think...'}}
-          >
-            Accelerate your thinking <br>
-            Costs {formatWhole(unlockCosts["thinkFaster"])} thoughts
-          </button>
-        {/if}
-        
-        {#if $unlocked["thinkFaster"] || $LORCA_OVERRIDE}
-          <button on:click={() => unlockFeature("thoughtBoost")} 
-            disabled={$unlocked["thoughtBoost"] || $thoughts < unlockCosts["thoughtBoost"]} 
-            class:maxed={$unlocked["thoughtBoost"]} transition:slide={{duration: 500}}
-            use:tooltip={{content: SimpleTooltip, data: '"i dont want to spam click a gazillion times to play ur stupid game" <br> <strong>- HentaiEnjoyer1978'}}
-          >
-            Boost your thinking <br>
-            Costs {formatWhole(unlockCosts["thoughtBoost"])} thoughts
-          </button>
-        {/if}
-        {#if $unlocked["thoughtBoost"] || $LORCA_OVERRIDE}
-          <button on:click={() => unlockFeature("switzerland")}  
-            disabled={$unlocked["switzerland"] || $thoughts < unlockCosts["switzerland"]} 
-            class:maxed={$unlocked["switzerland"]} transition:slide={{duration: 500}}
-            use:tooltip={{content: SimpleTooltip, data: 'The land of cheese'}}
-            style="background: linear-gradient(90deg, rgba(131,58,180,1) 0%, rgba(253,29,29,1) 50%, rgba(252,176,69,1) 100%); color:f; "
-          >
-            <span style="font-weight:bold; font-size: 16px; text-shadow:1px 1px 2px black;">Travel to Switzerland</span> <br>
-            Costs {formatWhole(unlockCosts["switzerland"])} thoughts
-          </button>
-        {/if}
-        {#if $unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
-          <button on:click={() => unlockFeature("thoughtBoostStack")} 
-            disabled={$unlocked["thoughtBoostStack"] || $thoughts < unlockCosts["thoughtBoostStack"]} 
-            class:maxed={$unlocked["thoughtBoostStack"]} transition:slide={{duration: 500}}
-            use:tooltip={{content: SimpleTooltip, data: 'Viagra for the brain'}}
-          >
-            Ability to stack Thought Boosts <br>
-            Costs {formatWhole(unlockCosts["thoughtBoostStack"])} thoughts
-          </button>
-        {/if}
-        {#if $unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
-          <button on:click={() => unlockFeature("moldyCheese")}  
-            disabled={$unlocked["moldyCheese"] || $thoughts < unlockCosts["moldyCheese"]} 
-            class:maxed={$unlocked["moldyCheese"]} transition:slide={{duration: 500}}
-            use:tooltip={{content: SimpleTooltip, data: 'Is it okay to eat?'}}
-          >
-            Unlock Moldy Cheese <br>
-            Costs {formatWhole(unlockCosts["moldyCheese"])} thoughts
-          </button>
-        {/if}
-        
-
-      </div>
-    </div>
   </div>
-</div>
+</Window>
+
 
 <style>
-  .content {
-    width: fit-content;
-    height: fit-content;
-    display: flex;
-    flex-direction: column;
-    row-gap: 16px;
-    padding: 12px;
-    /*border-radius: 8px;*/
-    position: relative;
-  }
-  .header {
-    background: linear-gradient(90deg, rgb(129, 0, 204) 0%, rgb(182, 122, 255) 100%);
-  }
-  .maxed {
-    border: 1px var(--primary) solid;
-    background-color: black;
-    color: var(--primary)
-  }
   .green {
     color: rgb(0, 216, 0);
     font-weight: bold;
   }
-
   label {
     display:inline-block;
   }

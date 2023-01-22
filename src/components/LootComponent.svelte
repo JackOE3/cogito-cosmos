@@ -15,6 +15,27 @@
       unlocked, 
     } from'../stores/mainStore'
 
+  const upgradesBought = {
+    "cheeseMonsterSentience": 0,
+    "cheeseMonsterDropRate": 0,
+    "cheeseMonsterLoot": 0,
+  }
+  const upgradeCost = {
+    "cheeseMonsterSentience": 10,
+    "cheeseMonsterDropRate": 5,
+    "cheeseMonsterLoot": 10,
+  }
+  const upgradeCostMultiplier = {
+    "cheeseMonsterSentience": 1.2,
+    "cheeseMonsterDropRate": 1.4,
+    "cheeseMonsterLoot": 1.2,
+  }
+  const unlockCosts = {
+    "cheeseMonsterMassacre": 50,
+    "cheeseMonsterCollectiveSentience": 1000,
+    "cheeseMonsterTotalDeathsBoost": 10000,
+  }
+
 
   $: monsterDropRate = 0.1 + 0.1 * upgradesBought["cheeseMonsterDropRate"]
   let monsterLoot = [1, 3]
@@ -32,34 +53,12 @@
 
   let buyMaxUpgrades = false
 
-  const unlockCosts = {
-    "cheeseMonsterMassacre": 50,
-    "cheeseMonsterCollectiveSentience": 1000,
-    "cheeseMonsterTotalDeathsBoost": 10000,
-
-  }
-
+  
   function unlockFeature(name: string) {
     let cost: number = unlockCosts[name]
     if ($cheeseBrains < cost) return
     $cheeseBrains -= cost
     $unlocked[name] = true
-  }
-
-  const upgradesBought = {
-    "cheeseMonsterSentience": 0,
-    "cheeseMonsterDropRate": 0,
-    "cheeseMonsterLoot": 0,
-  }
-  const upgradeCost = {
-    "cheeseMonsterSentience": 10,
-    "cheeseMonsterDropRate": 5,
-    "cheeseMonsterLoot": 10,
-  }
-  const upgradeCostMultiplier = {
-    "cheeseMonsterSentience": 1.2,
-    "cheeseMonsterDropRate": 1.4,
-    "cheeseMonsterLoot": 1.2,
   }
 
   function purchaseUpgrade(upgradeName: string) {

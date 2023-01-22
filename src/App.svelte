@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import Notifications from './components/Notifications.svelte'
-  import { saveSaveGame, resetSaveGame } from "./gamelogic/saveload"
+  import { saveSaveGame, resetSaveGame, exportSaveGame, importSaveGame } from "./gamelogic/saveload"
   import {devToolsEnabled, LORCA_OVERRIDE, unlocked} from './stores/mainStore'
   import DevTools from './components/DevTools.svelte'
   import RandomIdea from './components/RandomIdea.svelte'
@@ -43,6 +43,10 @@
 
   })
 
+  let saveDataString: string
+  function handleExport() {
+    saveDataString = exportSaveGame()
+  }
 </script>
 
 <main>
@@ -51,6 +55,9 @@
   <Notifications/>
 
   <div id="saveload">
+    <input type=string bind:value={saveDataString}>
+    <button on:click={handleExport}>Export</button>
+    <button on:click={() => importSaveGame(saveDataString)}>Import</button>
     <button on:click={() => {saveSaveGame()}}>Save</button>
     <button on:click={resetSaveGame}>Reset</button>
   </div>
