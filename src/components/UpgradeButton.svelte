@@ -1,56 +1,50 @@
 <script lang="ts">
-  import { formatWhole } from '../gamelogic/utils';
-  import {upgradesBought} from '../stores/mainStore'
-  import {resource} from '../stores/mainStore'
-  import { tooltip } from "./tooltips/tooltip";
+  import { formatWhole } from '../gamelogic/utils'
+  import { upgrades } from '../stores/mainStore'
+  import { resource } from '../stores/mainStore'
+  import { tooltip } from './tooltips/tooltip'
   import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
+  import { derived, get } from 'svelte/store'
+  import { afterUpdate, beforeUpdate } from 'svelte'
 
-
-  export let upgrade: Upgrade
+  export let upgradeName: string
   export let tooltipText: string = null
   export let buyMaxUpgrades: boolean = false
   export let btnUnlocked: boolean = true
 
-  type Upgrade = {
-    name: string
-    resource: string,
-    cost: number,
-    costMultiplier: number
-    maxBuy: number
+  const resourceName = get(upgrades)[upgradeName].resource
+  const cost = derived(upgrades, ($upgrades) => $upgrades[upgradeName].cost)
+  const canAfford = derived(
+    resource,
+    ($resource) => $resource[resourceName] > get(cost)
+  )
+  const isMaxed = derived(
+    upgrades,
+    ($upgrades) =>
+      $upgrades[upgradeName].maxBuy !== null &&
+      $upgrades[upgradeName].bought >= $upgrades[upgradeName].maxBuy
+  )
+
+  const formatResourceName = (name: string) => {
+    if (name == 'moldyCheese') return 'moldy cheese'
+    return name
   }
 
-  function purchaseUpgrade() {
-    if ($resource[upgrade.resource] < upgrade.cost) return
-    if (!buyMaxUpgrades) {
-      // PURCHASE SINGLE:
-      $resource[upgrade.resource]  -= upgrade.cost
-      upgrade.cost *= upgrade.costMultiplier
-      $upgradesBought[upgrade.name]++
-    } else {
-      // PURCHASE MAX:
-      const cost = upgrade.cost
-      const costMult = upgrade.costMultiplier
-      // used formulas for geometric series (because of the exponential cost curve of the upgrades)
-      const numUpgradesAffordable = Math.floor(Math.log($resource[upgrade.resource] / cost * (costMult - 1) + 1) / Math.log(costMult))
-      const totalPrice = cost * (Math.pow(costMult, numUpgradesAffordable) - 1) / (costMult - 1)
-
-      $resource[upgrade.resource] -= totalPrice
-      upgrade.cost *= Math.pow(costMult, numUpgradesAffordable)
-      $upgradesBought[upgrade.name] += numUpgradesAffordable
-      //alert("Upgrades affordable: " + numUpgradesAffordable + ", Total Prize: " + totalPrice)
-    } 
-  }
+  beforeUpdate(() => console.log('beforeUpdate'))
 </script>
 
 {#if btnUnlocked}
-  <button on:click={purchaseUpgrade} 
-    disabled={$resource[upgrade.resource] < upgrade.cost || $upgradesBought[upgrade.name] >= upgrade.maxBuy}
-    use:tooltip={{content: SimpleTooltip, data: tooltipText}}
-    class="btn" class:maxed={$upgradesBought[upgrade.name] >= upgrade.maxBuy}
+  <button
+    on:click={() => upgrades.buy(upgradeName, buyMaxUpgrades)}
+    disabled={!$canAfford || $isMaxed}
+    use:tooltip={{ content: SimpleTooltip, data: tooltipText }}
+    class="btn"
+    class:maxed={$isMaxed}
   >
-    <slot/> 
-    <br>
-    Costs {formatWhole(upgrade.cost)} {upgrade.resource}
+    <slot />
+    <br />
+    Costs {formatWhole($cost)}
+    {formatResourceName(resourceName)}
   </button>
 {:else}
   <button disabled>???</button>

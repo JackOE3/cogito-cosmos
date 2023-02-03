@@ -1,6 +1,7 @@
 import { writable, get} from 'svelte/store';
 import { sendMessage } from './notifications';
 import * as store from '../stores/mainStore'
+import {upgradesInitial} from '../stores/upgrades';
 //import {compress, decompress} from 'lz-string'
 
 /**
@@ -75,6 +76,7 @@ function hydrateStores(fromStorage: SaveData){
   //for(let key in store) console.log(key, get(store[key]))
   console.log('Stores hydrated.');
 }
+
  
 /**
 * Saves the data to localstorage
@@ -154,8 +156,25 @@ export function resetSaveGame() {
 /**
 * Resets all the stores to their default starting values. (NewGame)
 */
-function resetStores(){
+function resetStores() {
   for(let key in store) store[key].reset()
+}
+
+/**
+ * If there already is a saved game, but eg. the base cost of an upgrade changes or its cost multiplier,
+ * this function will recalculate the current price for the upgrade
+ * Also can be utilized for possible upgrades where the base cost or multiplier of another upgrade changes.
+ */
+export function recalculateStores() {
+  let upgrades: object
+  const unsubscribe = store.upgrades.subscribe($value => upgrades = $value)
+  
+  for (const [key, value] of Object.entries(upgrades)) {
+    value.costMultiplier = upgradesInitial[key].costMultiplier
+    value.cost = upgradesInitial[key].cost * Math.pow(upgradesInitial[key].costMultiplier, value.bought)
+  }
+  store.upgrades.refresh()
+  unsubscribe()
 }
 
 /**
@@ -163,3 +182,4 @@ function resetStores(){
 */
 export const saveData = new SaveData()
 loadSaveGame()
+

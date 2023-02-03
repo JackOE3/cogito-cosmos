@@ -3,12 +3,9 @@
   import { slide, fade} from "svelte/transition";
   import {
       LORCA_OVERRIDE,
-      thoughts,
-      moldyCheese,
-      cheeseMonster,
+      resource,
       cheeseMonsterSpawnrate,
       cheeseMonsterCapacity,
-      cheeseBrains,
       unlocked, 
     } from'../stores/mainStore'
 
@@ -43,10 +40,10 @@
       
       <div style="display: flex; flex-direction: column; gap: 8px;">
         <span class=resourceDisplay>
-          Current population: {formatWhole($cheeseMonster)}/{formatWhole($cheeseMonsterCapacity)} <strong style="color:rgb(255, 0, 98)">cheese monsters</strong> <br>
+          Current population: {formatWhole($resource.cheeseMonster)}/{formatWhole($cheeseMonsterCapacity)} <strong style="color:rgb(255, 0, 98)">cheese monsters</strong> <br>
         </span>
         <span>
-          Spawn rate: {$cheeseMonsterSpawnrate}/min <br>
+          Spawn rate: {$cheeseMonsterSpawnrate*60}/min <br>
         </span>  
       </div>
 

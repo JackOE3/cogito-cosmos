@@ -1,6 +1,6 @@
 <script lang="ts">
   import { formatWhole } from '../gamelogic/utils';
-  import {upgradesBought, unlocked} from '../stores/mainStore'
+  import {unlocked} from '../stores/mainStore'
   import {resource} from '../stores/mainStore'
   import { tooltip } from "./tooltips/tooltip";
   import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
@@ -48,13 +48,13 @@
     background: var(--btn-bg, var(--Gray800));
     position: relative;   
   }
-  .cost {
+  /* .cost {
     width: 100%;
     position: absolute;
     bottom: 2px;
     left: 50%;
     transform: translate(-50%);
-  }
+  } */
 
   .unlocked {
     outline: 1px var(--unlockedColor, white) solid;

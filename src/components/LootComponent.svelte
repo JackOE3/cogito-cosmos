@@ -5,13 +5,10 @@
   import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
   import {
       LORCA_OVERRIDE,
-      thoughts,
-      moldyCheese,
-      cheeseMonster,
+      resource,
       cheeseMonsterSpawnrate,
       cheeseMonsterCapacity,
       monsterThoughtMult,
-      cheeseBrains,
       unlocked, 
     } from'../stores/mainStore'
 
@@ -42,7 +39,7 @@
   // how much each monster boosts thoughts/s (additive per monster)
   $: monsterThoughtFactor = (2 + upgradesBought["cheeseMonsterSentience"]) * collectiveSentienceBoost
   $: if(upgradesBought["cheeseMonsterSentience"] > 0) {
-    $monsterThoughtMult = monsterThoughtFactor * $cheeseMonster
+    $monsterThoughtMult = monsterThoughtFactor * $resource.cheeseMonster
   }
 
   let totalMonsterDeaths = 0
@@ -56,16 +53,16 @@
   
   function unlockFeature(name: string) {
     let cost: number = unlockCosts[name]
-    if ($cheeseBrains < cost) return
-    $cheeseBrains -= cost
+    if ($resource.cheeseBrains < cost) return
+    $resource.cheeseBrains -= cost
     $unlocked[name] = true
   }
 
   function purchaseUpgrade(upgradeName: string) {
-    if ($cheeseBrains < upgradeCost[upgradeName]) return
+    if ($resource.cheeseBrains < upgradeCost[upgradeName]) return
     if (!buyMaxUpgrades) {
       // PURCHASE SINGLE:
-      $cheeseBrains -= upgradeCost[upgradeName]
+      $resource.cheeseBrains -= upgradeCost[upgradeName]
       upgradeCost[upgradeName] *= upgradeCostMultiplier[upgradeName]
       upgradesBought[upgradeName]++
     } else {
@@ -73,10 +70,10 @@
       const cost = upgradeCost[upgradeName]
       const costMult = upgradeCostMultiplier[upgradeName]
       // used formulas for geometric series (because of the exponential cost curve of the upgrades)
-      const numUpgradesAffordable = Math.floor(Math.log($cheeseBrains/cost * (costMult - 1) + 1) / Math.log(costMult))
+      const numUpgradesAffordable = Math.floor(Math.log($resource.cheeseBrains/cost * (costMult - 1) + 1) / Math.log(costMult))
       const totalPrice = cost * (Math.pow(costMult, numUpgradesAffordable) - 1) / (costMult - 1)
 
-      $cheeseBrains -= totalPrice
+      $resource.cheeseBrains -= totalPrice
       upgradeCost[upgradeName] *= Math.pow(costMult, numUpgradesAffordable)
       upgradesBought[upgradeName] += numUpgradesAffordable
       //alert("Upgrades affordable: " + numUpgradesAffordable + ", Total Prize: " + totalPrice)
@@ -96,7 +93,7 @@
       
       <div style="display: flex; flex-direction: column; gap: 8px;">
         <span class=resourceDisplay>
-          You have {formatNumber($cheeseBrains, 2)} <strong style="color: rgb(250, 142, 0)">cheese brains</strong> <br>
+          You have {formatNumber($resource.cheeseBrains, 2)} <strong style="color: rgb(250, 142, 0)">cheese brains</strong> <br>
         </span>
       </div>
 
@@ -104,7 +101,7 @@
 
         <div class="gridColumn">
           <button on:click={() => purchaseUpgrade("cheeseMonsterDropRate")}
-            disabled={$cheeseBrains < upgradeCost["cheeseMonsterDropRate"]} 
+            disabled={$resource.cheeseBrains < upgradeCost["cheeseMonsterDropRate"]} 
             transition:slide={{duration: 500}}
             style="height:fit-content;"
           >
@@ -114,7 +111,7 @@
           </button>
 
           <button on:click={() => purchaseUpgrade("cheeseMonsterLoot")}
-            disabled={$cheeseBrains < upgradeCost["cheeseMonsterLoot"]} 
+            disabled={$resource.cheeseBrains < upgradeCost["cheeseMonsterLoot"]} 
             transition:slide={{duration: 500}}
             style="height:fit-content;"
           >
@@ -124,7 +121,7 @@
           </button>
 
           <button on:click={() => purchaseUpgrade("cheeseMonsterSentience")}
-            disabled={$cheeseBrains < upgradeCost["cheeseMonsterSentience"]} 
+            disabled={$resource.cheeseBrains < upgradeCost["cheeseMonsterSentience"]} 
             transition:slide={{duration: 500}}
           >
             Improve the sentience of cheese monsters <br>
@@ -137,7 +134,7 @@
 
         <div class="gridColumn">
           <button on:click={() => unlockFeature("cheeseMonsterMassacre")} 
-            disabled={$unlocked["cheeseMonsterMassacre"] || $cheeseBrains < unlockCosts["cheeseMonsterMassacre"]} 
+            disabled={$unlocked["cheeseMonsterMassacre"] || $resource.cheeseBrains < unlockCosts["cheeseMonsterMassacre"]} 
             class:maxed={$unlocked["cheeseMonsterMassacre"]}
             use:tooltip={{content: SimpleTooltip, data: 'TBD'}}
             style="height:fit-content;"
@@ -146,7 +143,7 @@
             Costs {formatWhole(unlockCosts["cheeseMonsterMassacre"])} cheese brains
           </button>
           <button on:click={() => unlockFeature("cheeseMonsterCollectiveSentience")} 
-            disabled={$unlocked["cheeseMonsterCollectiveSentience"] || $cheeseBrains < unlockCosts["cheeseMonsterCollectiveSentience"]} 
+            disabled={$unlocked["cheeseMonsterCollectiveSentience"] || $resource.cheeseBrains < unlockCosts["cheeseMonsterCollectiveSentience"]} 
             class:maxed={$unlocked["cheeseMonsterCollectiveSentience"]}
             use:tooltip={{content: SimpleTooltip, data: 'TBD'}}
             style="height:fit-content;"
@@ -155,7 +152,7 @@
             Costs {formatWhole(unlockCosts["cheeseMonsterCollectiveSentience"])} cheese brains
           </button>
           <button on:click={() => unlockFeature("cheeseMonsterTotalDeathsBoost")} 
-            disabled={$unlocked["cheeseMonsterTotalDeathsBoost"] || $cheeseBrains < unlockCosts["cheeseMonsterTotalDeathsBoost"]} 
+            disabled={$unlocked["cheeseMonsterTotalDeathsBoost"] || $resource.cheeseBrains < unlockCosts["cheeseMonsterTotalDeathsBoost"]} 
             class:maxed={$unlocked["cheeseMonsterTotalDeathsBoost"]}
             use:tooltip={{content: SimpleTooltip, data: 'TBD'}}
             style="height:fit-content;"

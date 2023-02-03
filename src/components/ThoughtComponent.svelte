@@ -1,10 +1,10 @@
 <script lang="ts">
   import { formatNumber, formatWhole } from "../gamelogic/utils";
   import Window from './Window.svelte'
+  import { derived, get } from 'svelte/store';
   import UpgradeButton from './UpgradeButton.svelte'
   import UnlockButton from './UnlockButton.svelte';
-  import {upgrades} from '../gamelogic/upgrades'
-  import {unlocks} from '../gamelogic/unlocks';
+  import {unlocks} from '../stores/unlocks';
   import {GAME_FPS} from '../stores/constants'
   import {
     LORCA_OVERRIDE,
@@ -12,45 +12,24 @@
     thoughtsPerSec,
     thoughtsBonus,
     cheeseThoughtMult,
+    cheeseCyclesThoughtMult,
     currentCheeseQueue,
     maxCheeseQueue,
     unlocked,
-    upgradesBought,
+    upgrades,
 
   } from'../stores/mainStore'
   
-
- 
-  
-
- 
-  const unlockCosts = {
-    "thinkPassively": 10,
-    "thinkFaster": 30,
-    "thoughtBoost": 50,
-    "switzerland": 3000,
-    "thoughtSacrifice": 10_000,
-    "thoughtBoostStack": 1_000_000,
-    "moldyCheese": 1_000_000_000,
-  }
-  
-  function unlockFeature(name: string) {
-    let cost: number = unlockCosts[name]
-    if ($resource.thoughts < cost) return
-    $resource.thoughts -= cost
-    $unlocked[name] = true
-  }
-
 
   let buyMaxUpgrades = false
 
   let thoughtsPerSecBase = 10
 
-  $: thoughtBoostMaxStacks = 1 + $upgradesBought["thoughtBoostStack"]
   let thoughtBoostCurrentStacks = 0
+  $: thoughtBoostMaxStacks = 1 + $upgrades.thoughtBoostStack.bought
 
-  $: thoughtBoostMax = 2 + 0.25 * $upgradesBought["thoughtBoostStrength"]
-  $: thoughtBoostDuration = 4000 + 2000 * $upgradesBought["thoughtBoostDuration"]
+  $: thoughtBoostMax = 2 + 0.25 * $upgrades.thoughtBoostStrength.bought
+  $: thoughtBoostDuration = 4000 + 2000 * $upgrades.thoughtBoostDuration.bought
 
   let currentThoughtBoostTime = 0
   let thoughtBoostDecay = 2000
@@ -58,11 +37,11 @@
 
   // thoughtsPerSec is being updated here gobally
   $: {
-    $thoughtsPerSec = thoughtsPerSecBase * $thoughtsBonus * $cheeseThoughtMult
+    $thoughtsPerSec = thoughtsPerSecBase * $thoughtsBonus * $cheeseThoughtMult * $cheeseCyclesThoughtMult
   }
   // (+ true) == 1, it's the "unary + operator"
-  $: thoughtsPerSecBase = (+ $unlocked["thinkPassively"]) + $upgradesBought["thoughtAcceleration"] * ($upgradesBought["thoughtJerk"] + 1)
-  $: thoughtAccelDisplay = $upgradesBought["thoughtJerk"] + 1
+  $: thoughtsPerSecBase = (+ $unlocked["thinkPassively"]) + $upgrades.thoughtAcceleration.bought * ($upgrades.thoughtJerk.bought + 1)
+  $: thoughtAccelDisplay = $upgrades.thoughtJerk.bought + 1
   
   function handleThink() {
     if (!$unlocked["thoughtBoost"]) {
@@ -108,14 +87,23 @@
     
   }
 
-
+  // derived for UI so the DOM only updates when the specific value changes, not the object itself
+  const thoughtAccelBought = derived(upgrades, $upg => $upg.thoughtAcceleration.bought)
+  const thoughtJerkBought = derived(upgrades, $upg => $upg.thoughtJerk.bought)
+  const thoughtBoostStrengthBought = derived(upgrades, $upg => $upg.thoughtBoostStrength.bought)
+  const thoughtBoostDurationBought = derived(upgrades, $upg => $upg.thoughtBoostDuration.bought)
+  const thoughtBoostStackBought = derived(upgrades, $upg => $upg.thoughtBoostStack.bought)
+ 
 </script>
+
 
 <Window title="Cogito Ergo Sum" --bg="linear-gradient(90deg, rgb(129, 0, 204) 0%, rgb(182, 122, 255) 100%)">
   <div style="position: absolute; right: 8px; top: 8px;">
     <input type=checkbox name=buyMax bind:checked={buyMaxUpgrades}>
     <label for=buyMax>Buy Max</label>
   </div>
+
+  
   
   <span>
     <span class=resourceDisplay>You thought {formatNumber($resource.thoughts ,2)} times<br></span>
@@ -154,34 +142,34 @@
   <div class="flexRowContainer">
     <div class="gridColumn">
       <span>Upgrades</span>
-      
-      <UpgradeButton upgrade={upgrades.thoughtAcceleration} {buyMaxUpgrades} 
+
+      <UpgradeButton upgradeName=thoughtAcceleration {buyMaxUpgrades} 
         btnUnlocked={$unlocked["thinkFaster"] || $LORCA_OVERRIDE}
         tooltipText={`+${thoughtAccelDisplay} thought${thoughtAccelDisplay > 1 ? 's' : ''}/s`}>
-        Thought Acceleration ({$upgradesBought["thoughtAcceleration"]})
+        Thought Acceleration ({$thoughtAccelBought})
       </UpgradeButton>
 
-      <UpgradeButton upgrade={upgrades.thoughtJerk} {buyMaxUpgrades} 
+      <UpgradeButton upgradeName=thoughtJerk {buyMaxUpgrades} 
         btnUnlocked={$unlocked["thoughtJerk"] || $LORCA_OVERRIDE}
         tooltipText={'Effect of Thought Acceleration +1'}>
-        Thought Jerk ({$upgradesBought["thoughtJerk"]})
+        Thought Jerk ({$thoughtJerkBought})
       </UpgradeButton>
 
-      <UpgradeButton upgrade={upgrades.thoughtBoostStrength} {buyMaxUpgrades} 
+      <UpgradeButton upgradeName=thoughtBoostStrength {buyMaxUpgrades} 
         btnUnlocked={$unlocked["thoughtBoost"] || $LORCA_OVERRIDE}>
-        Increase strength of Thought Boost ({$upgradesBought["thoughtBoostStrength"]}) <br>
+        Increase strength of Thought Boost ({$thoughtBoostStrengthBought}) <br>
         Currently: {formatNumber(thoughtBoostMax, 2)}x 
       </UpgradeButton>
 
-      <UpgradeButton upgrade={upgrades.thoughtBoostDuration} {buyMaxUpgrades} 
+      <UpgradeButton upgradeName=thoughtBoostDuration {buyMaxUpgrades} 
         btnUnlocked={$unlocked["thoughtBoost"] || $LORCA_OVERRIDE}>
-        Increase duration of Thought Boost ({$upgradesBought["thoughtBoostDuration"]}) <br>
+        Increase duration of Thought Boost ({$thoughtBoostDurationBought}) <br>
         Currently: {formatNumber(thoughtBoostDuration/1000, 2)}s
       </UpgradeButton>
 
-      <UpgradeButton upgrade={upgrades.thoughtBoostStack} {buyMaxUpgrades} 
+      <UpgradeButton upgradeName=thoughtBoostStack {buyMaxUpgrades} 
         btnUnlocked={$unlocked["thoughtBoostStack"] || $LORCA_OVERRIDE}>
-        Increase the maximum stack size of Thought Boosts ({$upgradesBought["thoughtBoostStack"]}/20) <br>
+        Increase the maximum stack size of Thought Boosts ({$thoughtBoostStackBought}/20) <br>
         Currently: {formatWhole(thoughtBoostMaxStacks)}
       </UpgradeButton>
 

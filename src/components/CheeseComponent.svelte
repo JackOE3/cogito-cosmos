@@ -6,25 +6,25 @@
   import Window from './Window.svelte'
   import UpgradeButton from './UpgradeButton.svelte'
   import InputRange from "./InputRange.svelte";
-  import { tooltip } from "./tooltips/tooltip";
-  import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
-  import {GAME_FPS} from '../stores/constants'
   import {
     LORCA_OVERRIDE,
     resource,
     thoughtsPerSec,
     thoughtsBonus,
     cheeseThoughtMult,
+    cheeseCyclesThoughtMult,
     cheeseBatchSize,
     currentCheeseQueue,
     maxCheeseQueue,
+    cheeseFactoryMode,
     cheeseQueueTotalCycles,
     unlocked, 
-    upgradesBought
+    upgrades,
+    //upgradesBought
   } from'../stores/mainStore'
-    import { upgrades } from "../gamelogic/upgrades";
-    import UnlockButton from "./UnlockButton.svelte";
-    import { unlocks } from "../gamelogic/unlocks";
+  //import { upgrades } from "../gamelogic/upgrades";
+  import UnlockButton from "./UnlockButton.svelte";
+  import { unlocks } from "../stores/unlocks";
 
 
 
@@ -66,16 +66,16 @@
   $: cheeseBatchCost = cheeseQueue.cost * cheeseModeFactor.cost
 
   $: {
-    $maxCheeseQueue = 5 + cheeseQueue.capDelta * $upgradesBought["cheeseQueueLength"] 
+    $maxCheeseQueue = 5 + cheeseQueue.capDelta * $upgrades.cheeseQueueLength.bought
   }
   $: {
     // Quadratic growth: for 0.5, every upgrades adds 1 more yield than the last: (+1, +2, +3, ...)
-    cheeseQueue.yield = 1 + 0.5 * ($upgradesBought["cheeseYield"] + $upgradesBought["cheeseYield"]*$upgradesBought["cheeseYield"])
-    cheeseQueue.cycleDuration = 1000 + cheeseYieldDeltaDuration * $upgradesBought["cheeseYield"]
+    cheeseQueue.yield = 1 + 0.5 * ($upgrades.cheeseYield.bought + $upgrades.cheeseYield.bought*$upgrades.cheeseYield.bought)
+    cheeseQueue.cycleDuration = 1000 + cheeseYieldDeltaDuration * $upgrades.cheeseYield.bought
   }
   $: {
-    cheeseQueueSpeedFactor = Math.pow(cheeseSpeedFactor.duration, $upgradesBought["cheeseDuration"])
-    cheeseQueue.cost = 100 * Math.pow(cheeseSpeedFactor.cost, $upgradesBought["cheeseDuration"])
+    cheeseQueueSpeedFactor = Math.pow(cheeseSpeedFactor.duration, $upgrades.cheeseDuration.bought)
+    cheeseQueue.cost = 100 * Math.pow(cheeseSpeedFactor.cost, $upgrades.cheeseDuration.bought)
 
   }
 
@@ -91,13 +91,17 @@
 
   let cheeseSpeedFactor = {duration: 0.95, cost: 1.40}
 
-  $: cheeseThoughtMultFactor = 1 + $upgradesBought["cheeseThoughtMult"]
+  $: cheeseThoughtMultFactor = $upgrades.cheeseThoughtMult.bought
  
-  $: if (cheeseThoughtMultFactor > 0) {
+  $: {
     // for balancing, change the 0.01 factor in the sqrt, or even the base of the log
     $cheeseThoughtMult = 1 + Math.log($resource.cheese + 1) * cheeseThoughtMultFactor
     //$cheeseThoughtMult = 1 + Math.sqrt(cheese * 0.001) * cheeseThoughtMultFactor
   }  
+
+  $: {
+    $cheeseCyclesThoughtMult = $unlocked["cheeseCyclesBoostThoughts"] ? Math.sqrt(1 + 0.1 * $cheeseQueueTotalCycles) : 1
+  }
 
   /**
    * Triggered when manually starting the cheese generation (with button or input range)
@@ -155,34 +159,25 @@
   }
 
 
-  function unlockFeature(name: string) {
-    let cost: number = unlockCosts[name]
-    if ($resource.cheese < cost) return
-    $resource.cheese -= cost
-    $unlocked[name] = true
-  }
-
 
   let buyMaxUpgrades = false
 
-
-  let cheeseFactoryMode = 1
-  function handleCheeseModeChange(mode: number) {
-    switch(mode) {
-      case 1: {
+  function handleCheeseModeChange() {
+    switch($cheeseFactoryMode) {
+      case 'meticulous': {
         cheeseModeFactor.yield = 1
         cheeseModeFactor.duration = 10
         cheeseModeFactor.cost = 1
         // moldyCheeseYield *= 50 ?
         break
       }
-      case 2: {
+      case 'nominal': {
         cheeseModeFactor.yield = 1
         cheeseModeFactor.duration = 1
         cheeseModeFactor.cost = 1
         break
       }
-      case 3: {
+      case 'warpSpeed': {
         cheeseModeFactor.yield = 1 / 100
         cheeseModeFactor.duration = 1 / 10
         cheeseModeFactor.cost = 1 / 10
@@ -209,18 +204,18 @@
         <legend>cheese factory protocol</legend>
         <div class="flexRowContainer">
           <label>
-            <input type=radio name=cheeseFactoryMode bind:group={cheeseFactoryMode} value={1} 
-              on:change={() => handleCheeseModeChange(1)}>
+            <input type=radio name=cheeseFactoryMode bind:group={$cheeseFactoryMode} value=meticulous
+              on:change={handleCheeseModeChange}>
             meticulous
           </label>
           <label>
-            <input type=radio name=cheeseFactoryMode bind:group={cheeseFactoryMode} value={2}
-              on:change={() => handleCheeseModeChange(2)}>
+            <input type=radio name=cheeseFactoryMode bind:group={$cheeseFactoryMode} value=nominal
+              on:change={handleCheeseModeChange}>
             nominal
           </label>
           <label>
-            <input type=radio name=cheeseFactoryMode bind:group={cheeseFactoryMode} value={3}
-              on:change={() => handleCheeseModeChange(3)}>
+            <input type=radio name=cheeseFactoryMode bind:group={$cheeseFactoryMode} value=warpSpeed
+              on:change={handleCheeseModeChange}>
             warp speed
           </label>
         </div>  
@@ -258,20 +253,20 @@
 
   <div class="flexRowContainer">
       <div class="gridColumn">
-        <UpgradeButton upgrade={upgrades.cheeseYield} {buyMaxUpgrades} 
+        <UpgradeButton upgradeName=cheeseYield {buyMaxUpgrades} 
           btnUnlocked={$unlocked["switzerland"] || $LORCA_OVERRIDE}
-          tooltipText={`+${formatNumber((($upgradesBought["cheeseYield"]+1) * $cheeseBatchSize/cheeseQueue.yield), 2)} cheese per cycle <br>
+          tooltipText={`+${formatNumber((($upgrades.cheeseYield.bought + 1) * $cheeseBatchSize/cheeseQueue.yield), 2)} cheese per cycle <br>
           +${formatNumber((cheeseYieldDeltaDuration * cheeseCycleDuration/cheeseQueue.cycleDuration)/1000, 2)}s cycle duration`}>
-          Your workers create more cheese but also take longer ({$upgradesBought["cheeseYield"]})
+          Your workers create more cheese but also take longer ({$upgrades.cheeseYield.bought})
         </UpgradeButton>
       </div>
       <div class="gridColumn">
-        <UpgradeButton upgrade={upgrades.cheeseDuration} {buyMaxUpgrades} --maxedColor=yellow
+        <UpgradeButton upgradeName=cheeseDuration {buyMaxUpgrades} --maxedColor=yellow
           btnUnlocked={$unlocked["switzerland"] || $LORCA_OVERRIDE}
           tooltipText={`cycle duration x${formatNumber(cheeseSpeedFactor.duration, 2)} <br> 
           thoughts required x${formatNumber(cheeseSpeedFactor.cost, 2)} <br> (both multiplicative)`}>
           The cheese production takes <strong>{formatNumber((1-cheeseSpeedFactor.duration)*100, 0)}%</strong>
-          less time, but costs <strong>{formatNumber(cheeseSpeedFactor.cost, 2)}x</strong> more ({formatWhole($upgradesBought["cheeseDuration"])}/50)
+          less time, but costs <strong>{formatNumber(cheeseSpeedFactor.cost, 2)}x</strong> more ({formatWhole($upgrades.cheeseDuration.bought)}/50)
         </UpgradeButton>
       </div>
   </div>
@@ -290,10 +285,10 @@
       {/if}
     </div>
     <div class="gridColumn">
-      <UpgradeButton upgrade={upgrades.cheeseQueueLength} {buyMaxUpgrades} 
+      <UpgradeButton upgradeName=cheeseQueueLength {buyMaxUpgrades} 
         btnUnlocked={$unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
         tooltipText={`Length +${cheeseQueue.capDelta}`}>
-        Lengthen the <strong style="color:yellow">Cheese Queue</strong> ({$upgradesBought["cheeseQueueLength"]}) <br>
+        Lengthen the <strong style="color:yellow">Cheese Queue</strong> ({$upgrades.cheeseQueueLength.bought}) <br>
         Current Length: {$maxCheeseQueue}
       </UpgradeButton>
     </div>
@@ -303,11 +298,11 @@
 
   <div class="flexRowContainer">
     <div class="gridColumn">
-      <UpgradeButton upgrade={upgrades.cheeseThoughtMult} {buyMaxUpgrades} 
+      <UpgradeButton upgradeName=cheeseThoughtMult {buyMaxUpgrades} 
         btnUnlocked={$unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
         tooltipText={`Length +${cheeseQueue.capDelta}`}>
-        Cheese increases thoughts/s ({$upgradesBought["cheeseThoughtMult"]})
-        {#if $upgradesBought["cheeseThoughtMult"]}
+        Cheese increases thoughts/s ({$upgrades.cheeseThoughtMult.bought})
+        {#if $upgrades.cheeseThoughtMult.bought}
           <br>Currently: {formatNumber($cheeseThoughtMult , 2)}x
         {/if}
       </UpgradeButton>
@@ -319,7 +314,7 @@
 
 <Window --bg="linear-gradient(90deg, rgb(121, 119, 0) 0%, yellow 100%)">
   <div class="gridColumn">
-    <UnlockButton unlock={unlocks.cheeseQueue} btnUnlocked={true}
+    <UnlockButton unlock={unlocks.cheeseQueue}
       --unlockedColor='yellow'>
       <span>Unlock the <strong style="color:yellow">Cheese Queue</strong></span>
     </UnlockButton>
@@ -332,7 +327,8 @@
 
     <UnlockButton unlock={unlocks.cheeseBoost} btnUnlocked={$unlocked["cheeseQueue"] || $LORCA_OVERRIDE}
       --unlockedColor='yellow'>
-      Thought Boost also affects cheese production
+      Thought Boost also affects cheese production <br>
+      Currently: {formatNumber($thoughtsBonus, 2)}x
     </UnlockButton>
 
     <UnlockButton unlock={unlocks.cheeseCycleAccelerator} btnUnlocked={$unlocked["cheeseQueueLengthBoost"] || $LORCA_OVERRIDE}
@@ -349,6 +345,12 @@
     <UnlockButton unlock={unlocks.cheeseModes} btnUnlocked={$unlocked["cheeseCycleAccelerator"] || $LORCA_OVERRIDE}
       --unlockedColor='yellow'>
       Unlock 3 modes to help manage your cheese production
+    </UnlockButton>
+
+    <UnlockButton unlock={unlocks.cheeseCyclesBoostThoughts} btnUnlocked={$unlocked["cheeseModes"] || $LORCA_OVERRIDE}
+      --unlockedColor='yellow'>
+      Total cheese cycles boost your thinking <br>
+      Currently: {formatNumber($cheeseCyclesThoughtMult, 2)}x
     </UnlockButton>
 
 
@@ -368,22 +370,8 @@
 
 
 <style>
-  .content {
-    width: fit-content;
-    height: fit-content;
-    display: flex;
-    flex-direction: column;
-    row-gap: 16px;
-    padding: 12px;
-    /*border-radius: 8px;*/
-  }
-  .header {
-    background: linear-gradient(90deg, rgb(121, 119, 0) 0%, yellow 100%);
-  }
-
   #cheeseBar {
     height: 2rem;
   }
  
-
 </style>

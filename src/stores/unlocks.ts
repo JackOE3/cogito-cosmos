@@ -19,8 +19,11 @@ export let unlocks = {
   cheeseCycleAccelerator: new Unlock("cheeseCycleAccelerator", 'cheese', 100_000),
   thoughtJerk: new Unlock("thoughtJerk", 'cheese', 300_000),
   cheeseModes: new Unlock("cheeseModes", 'cheese', 500_000),
+  cheeseCyclesBoostThoughts: new Unlock("cheeseCyclesBoostThoughts", 'cheese', 5_000_000),
 
-
+  moldyCheeseByproduct: new Unlock("moldyCheeseByproduct", 'moldyCheese', 50),
+  cheeseyard: new Unlock("cheeseyard", 'moldyCheese', 1000),
+  manualMoldyCheeseConversionBoost: new Unlock("manualMoldyCheeseConversionBoost", 'moldyCheese', 2000),
+  moldyCheeseCycleDurationBoost: new Unlock("moldyCheeseCycleDurationBoost", 'moldyCheese', 2000),
 
 }
-
