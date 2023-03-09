@@ -1,4 +1,4 @@
-import { beforeUpdate, onMount } from 'svelte';
+import { beforeUpdate, onMount } from 'svelte'
 
 /* export default function () {
 	let elements = new Set()

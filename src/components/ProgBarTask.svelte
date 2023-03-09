@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createEventDispatcher, onDestroy, onMount } from "svelte";
+  import { createEventDispatcher, onDestroy, onMount } from 'svelte'
 
   let container: HTMLElement
   let element: HTMLElement
@@ -16,45 +16,49 @@
   onDestroy(() => {
     element.removeEventListener('animationiteration', listener, false)
   })
-  
-  function listener(_e: Event) {
-    //console.log(e.target, element)
+
+  function listener(): void {
+    // console.log(e.target, element)
     dispatch('completed')
   }
 </script>
 
-<style>
-    #outerContainer {
-        background: var(--barBgColor, var(--Gray800));
-        height: var(--height);
-        width: var(--width, 4rem);
-        border-radius: .2rem;
-        overflow: hidden;
-        position: relative
-    }
-    #innerBar {
-        background-color: var(--barColor, var(--secondary));
-        height: inherit;
-        width: 0;
-        border-radius: inherit;
-        animation: linear var(--duration, 1s) infinite doTask var(--playState);
-    }
-    #barLabel {
-        display: flex;
-        height: inherit;
-        justify-content: center;
-        align-items: center;
-    }
-    @keyframes doTask {
-      from {width: 0}
-      to {width: 100%}
-    }
-</style>
-
 <div id="outerContainer" bind:this={container}>
-    <div id="innerBar" bind:this={element}>
-      <span id="barLabel" bind:this={label}>
-        <slot></slot>
-      </span>
-    </div>  
+  <div id="innerBar" bind:this={element}>
+    <span id="barLabel" bind:this={label}>
+      <slot />
+    </span>
+  </div>
 </div>
+
+<style>
+  #outerContainer {
+    background: var(--barBgColor, var(--Gray800));
+    height: var(--height);
+    width: var(--width, 4rem);
+    border-radius: 0.2rem;
+    overflow: hidden;
+    position: relative;
+  }
+  #innerBar {
+    background-color: var(--barColor, var(--secondary));
+    height: inherit;
+    width: 0;
+    border-radius: inherit;
+    animation: linear var(--duration, 1s) infinite doTask var(--playState);
+  }
+  #barLabel {
+    display: flex;
+    height: inherit;
+    justify-content: center;
+    align-items: center;
+  }
+  @keyframes doTask {
+    from {
+      width: 0;
+    }
+    to {
+      width: 100%;
+    }
+  }
+</style>

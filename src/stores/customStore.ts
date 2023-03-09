@@ -1,27 +1,36 @@
-import { writable } from 'svelte/store'
+import { writable, type Writable } from 'svelte/store'
 import { noRef } from '../gamelogic/utils'
 
-export function makeStore<T>(initialState: T) {
+console.log('customStore.ts')
+
+export interface baseStore<T> extends Writable<T> {
+  refresh: () => void
+  reset: () => void
+}
+
+export function makeStore<T>(initialState: T): baseStore<T> {
   // important to wrap it in noRef() !!
   const store = writable<T>(noRef(initialState))
-  const refresh = () => store.update(($store) => $store)
-  const reset = () => {
+  const refresh = (): void => {
+    store.update($store => $store)
+  }
+  const reset = (): void => {
     store.set(noRef(initialState))
   }
   return { ...store, reset, refresh }
 }
 
-export function makeStore2<T>(initialState: T) {
+/* export function makeStore2(initialState: unknown) {
   // important to wrap it in noRef() !!
   const store = writable(noRef(initialState))
-  const reset = () => {
+  const reset = (): void => {
     store.set(noRef(initialState))
   }
-  const add = (what: string, n: number) => {
-    store.update(($store) => {
-      $store[what] += n
+  const add = (resource: string, n: number): void => {
+    store.update($store => {
+      if (typeof $store[resource] === 'number') ($store[resource] as number) += n
     })
     return store
   }
   return { ...store, reset, add }
-}
+} */

@@ -1,17 +1,11 @@
-import { lastSaved as lastSavedStore } from '../stores/mainStore'
-import { resourceStore } from '../stores/Resources'
-import { saveSaveGame } from './saveload'
-import { sendMessage } from './notifications'
-import { formatWhole } from './utils'
+import { lastSaved as lastSavedStore, resource } from '../stores/mainStore'
+import { moldyCheeseHalfLifeSeconds } from '../stores/derived/moldyCheese'
+import { thoughtsPerSec } from '../stores/derived/thoughts'
 import { get } from 'svelte/store'
-import {
-  resource,
-  thoughtsPerSec,
-  moldyCheeseHalfLifeSeconds,
-  cheeseMonsterSpawnrate,
-  cheeseMonsterCapacity
-} from '../stores/mainStore'
-//import {upgrades} from './upgrades'
+import { handleCheeseMonster } from './cheeseMonster'
+
+console.log('gameloop.ts')
+// import {upgrades} from './upgrades'
 
 // natural log of 2
 const LN2 = 0.69314718056
@@ -21,10 +15,10 @@ const LN2 = 0.69314718056
  * We use the subscribe function so if the store is updated our local instance will also update.
  */
 let lastSaved: number
-lastSavedStore.subscribe(m => lastSaved = m)
+lastSavedStore.subscribe(m => (lastSaved = m))
 
 /**
- * how often to run the loop. 200ms = 5 times per second 
+ * how often to run the loop. 200ms = 5 times per second
  * 200ms or 100ms is usually fast enough to feel responsive without wasting too much CPU time
  */
 const GAME_INTERVAL = 200
@@ -43,16 +37,18 @@ let interval: number
 /**
  * This function will start the game loop running at the desired rate, and save a reference to the interval so it can be stopped later
  */
-export function startGameLoop() {
+export function startGameLoop(): void {
   /* console.log('Repopulating transient values...')
   repopulateValues() */
 
-  console.log('Calculating offline progess...')
-  calculateOfflineProgress()
+  // calculateOfflineProgress()
   lastSaved = Date.now()
 
   console.log('Starting the game loop...')
   interval = setInterval(gameLoop, GAME_INTERVAL)
+}
+export function stopGameLoop(): void {
+  clearInterval(interval)
 }
 
 // some datetime values we will be using to calculate how much time has passed
@@ -66,14 +62,14 @@ let deltaTimeSeconds = 0
 /**
  * The game loop function that runs multiple times per second in the background.
  */
-function gameLoop() {
+function gameLoop(): void {
   const currentTime = Date.now()
 
   // if lastSaved was more than 60 seconds ago we should save the game DEACTIVATED!!!!
   if (currentTime - lastSaved > autoSaveTime) {
     lastSaved = currentTime
-    //saveSaveGame()
-    //sendMessage("Game auto-saved")
+    // saveSaveGame()
+    // sendMessage('Game auto-saved')
   }
 
   // calculate deltaT based on the current time and the last run time
@@ -85,44 +81,38 @@ function gameLoop() {
   gameUpdate(deltaTimeSeconds)
 }
 
-
-
 /**
  * Function to update all game data based on time.
- * This is where all idle calculations should start so they can be 
+ * This is where all idle calculations should start so they can be
  * used by the main loop and the offline progress function.
  * (Assumes that the production can be linearly extrapolated)
  * @param deltaTimeSeconds time in seconds since last update
  */
-function gameUpdate(deltaTimeSeconds: number) {
+function gameUpdate(deltaTimeSeconds: number): void {
   deltaTimeSeconds *= fastFowardFactor
 
   resource.update($resource => {
     $resource.thoughts += get(thoughtsPerSec) * deltaTimeSeconds
     // moldy cheese decay (linear extrapolation)
-    //moldyCheese.update(value => value * (1 - LN2/get(moldyCheeseHalfLifeSeconds) * deltaTimeSeconds))
+    // moldyCheese.update(value => value * (1 - LN2/get(moldyCheeseHalfLifeSeconds) * deltaTimeSeconds))
     // OR: moldy cheese decay (exact)
     // if statement so while offline for longer than 10s you dont lose moldy cheese (?)
-    $resource.moldyCheese *= Math.exp(- LN2 * deltaTimeSeconds / get(moldyCheeseHalfLifeSeconds))
+    $resource.moldyCheese *= Math.exp((-LN2 * deltaTimeSeconds) / get(moldyCheeseHalfLifeSeconds))
 
-    const cap = get(cheeseMonsterCapacity)
-    if ($resource.cheeseMonster < cap) {
-      $resource.cheeseMonster += get(cheeseMonsterSpawnrate) * deltaTimeSeconds
-    } else $resource.cheeseMonster = cap
-
+    handleCheeseMonster($resource, deltaTimeSeconds)
 
     return $resource
   })
 
-  //upgradesBought.update(value => value)
+  // upgradesBought.update(value => value)
 }
-
 
 /**
  * Function to calculate the offline progress
  */
-function calculateOfflineProgress() {
-
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function calculateOfflineProgress(): void {
+  console.log('Calculating offline progess...')
   // calculate time in seconds since last saved
   const currentTime = Date.now()
 
@@ -132,7 +122,6 @@ function calculateOfflineProgress() {
 
   // perform the game update for the total time
   gameUpdate(offlineDeltaTimeSeconds)
-
 }
 
 /* function repopulateValues() {

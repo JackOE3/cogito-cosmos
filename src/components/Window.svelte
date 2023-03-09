@@ -1,21 +1,26 @@
 <script lang="ts">
-  export let title: string = ""
+  import { fade } from 'svelte/transition'
+
+  export let title = ''
 </script>
 
-
-<div class="container">
+<div class="container" transition:fade={{ duration: 1000 }}>
   <div class="header">
     <span class="windowTitle">{title}</span>
   </div>
   <div class="content">
-    <slot/>
+    <slot />
   </div>
 </div>
 
 <style>
+  .container {
+    width: max-content;
+    height: max-content;
+  }
   .content {
-    width: fit-content;
-    height: fit-content;
+    width: max-content;
+    height: max-content;
     display: flex;
     flex-direction: column;
     row-gap: 16px;

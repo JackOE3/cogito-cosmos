@@ -102,7 +102,7 @@ input:disabled {
 button {
   background-color: var(--Gray800);
   color: white;
-  width:fit-content;
+  width:max-content;
 
   /* border-top: 1px white solid;
   border-left: 1px white solid;
