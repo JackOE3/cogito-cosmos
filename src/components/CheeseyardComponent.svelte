@@ -89,7 +89,7 @@
           <br />
           Total deaths: {formatWhole($totalCheeseMonsterDeaths)}
         </span>
-      {:else}{/if}
+      {/if}
     </span>
   </div>
 

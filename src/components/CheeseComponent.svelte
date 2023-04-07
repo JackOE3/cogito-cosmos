@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="ts" id="MathJax-script">
   import AffixComponent from './AffixComponent.svelte'
 
   import Affix from './Affix.svelte'
@@ -36,7 +36,8 @@
   import { cheeseThoughtMult, cheeseCyclesThoughtMult } from '../stores/derived/thoughts'
   import { unlocks, unlocked, UnlockName } from '../stores/unlocks'
   import UnlockDrawer from './UnlockDrawer.svelte'
-  import { quintOut } from 'svelte/easing'
+
+  const test = `$$x = \\log_2{t}$$`
 
   const cheeseModeDescription: Record<CheeseFactoryMode, string> = {
     meticulous: '"Quality over quantity"',
@@ -174,16 +175,14 @@
       -->{#if $cheeseModeFactor.duration !== 1}
         <span style="color:orange;">[{$cheeseModeFactor.duration}x]</span>
       {/if}
-      {#if $unlocked.cheeseQueueOverclocking}
-        <span transition:fade={{ duration: 1000 }}>
-          while consuming {formatNumber($cheeseCycleCost, 2)}<!--
+      <span transition:fade={{ duration: 1000 }}>
+        while consuming {formatNumber($cheeseCycleCost, 2)}<!--
         -->{#if $cheeseModeFactor.cost !== 1}
-            <span style="color:orange;">[{$cheeseModeFactor.cost}x]</span>
-          {/if}
-          thoughts. (~{formatNumber(($cheeseCycleCost / $cheeseCycleDuration) * 1000, 2)}
-          thoughts/s)
-        </span>
-      {/if}
+          <span style="color:orange;">[{$cheeseModeFactor.cost}x]</span>
+        {/if}
+        thoughts. (~{formatNumber(($cheeseCycleCost / $cheeseCycleDuration) * 1000, 2)}
+        thoughts/s)
+      </span>
     </p>
   </div>
 
@@ -301,7 +300,7 @@
         upgradeName="cheeseQueueLength"
         {buyMaxUpgrades}
         btnUnlocked={$unlocked.cheeseQueue}
-        tooltipText={`Length +${cheeseQueue.capDelta}`}
+        tooltipText={`+${cheeseQueue.capDelta} Capacity <br> Currently: ${$maxCheeseQueue}`}
       >
         <span>Lengthen the <span style="color:yellow; font-weight: bold">Cheese Queue</span></span>
       </UpgradeButton>
@@ -329,13 +328,25 @@
       </UpgradeButton>
     </div>
 
-    <div class="gridColumn" style="height:264px">
-      <AffixComponent>
-        <Affix factor={$cheeseThoughtMult} unlocked={$upgrades.cheeseThoughtMult.bought > 0}>
+    <div class="gridColumn" style="height:264px; width: 100%">
+      <AffixComponent
+        title={$upgrades.cheeseThoughtMult.bought > 0 || $unlocked.cheeseQueueLengthBoost ? 'Affixes' : '???'}
+      >
+        <Affix
+          factor={$cheeseThoughtMult}
+          unlocked={$upgrades.cheeseThoughtMult.bought > 0}
+          tooltipText={`Scaling: log(cheese) &times; ${
+            $upgrades.cheeseThoughtMult.bought * $upgrades.cheeseThoughtMult.bought
+          }`}
+        >
           Cheese increases thoughts/s
         </Affix>
 
-        <Affix factor={$cheeseQueueLengthBoostFactor} unlocked={$unlocked.cheeseQueueLengthBoost}>
+        <Affix
+          factor={$cheeseQueueLengthBoostFactor}
+          unlocked={$unlocked.cheeseQueueLengthBoost}
+          tooltipText="Scaling: capacity^2"
+        >
           {unlocks.cheese.find(v => v.name === UnlockName.CHEESE_QUEUE_LENGTH_BOOST)?.description}
         </Affix>
 
@@ -343,11 +354,19 @@
           {unlocks.cheese.find(v => v.name === UnlockName.CHEESE_BOOST)?.description}
         </Affix>
 
-        <Affix factor={$cheeseCycleAcceleratorFactor} unlocked={$unlocked.cheeseCycleAccelerator}>
+        <Affix
+          factor={$cheeseCycleAcceleratorFactor}
+          unlocked={$unlocked.cheeseCycleAccelerator}
+          tooltipText="Scaling: log(cycles)"
+        >
           {unlocks.cheese.find(v => v.name === UnlockName.CHEESE_CYCLE_ACCELERATOR)?.description}
         </Affix>
 
-        <Affix factor={$cheeseCyclesThoughtMult} unlocked={$unlocked.cheeseCyclesBoostThoughts}>
+        <Affix
+          factor={$cheeseCyclesThoughtMult}
+          unlocked={$unlocked.cheeseCyclesBoostThoughts}
+          tooltipText="Scaling: cycles^1.5"
+        >
           {unlocks.cheese.find(v => v.name === UnlockName.CHEESE_CYCLES_BOOST_THOUGHTS)?.description}
         </Affix>
       </AffixComponent>

@@ -7,6 +7,7 @@
     "types": ["svelte"],
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "ignoreDeprecations": "5.0"
   }
 }

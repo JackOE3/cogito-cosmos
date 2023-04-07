@@ -1,9 +1,10 @@
 <script lang="ts">
+  export let title = 'Affixes'
 </script>
 
 <div id="affixContainer" class="themeBorder">
   <div id="affixHeader">
-    <span style="text-align:center">Affixes</span>
+    <span style="text-align:center">{title}</span>
     <hr />
   </div>
   <div id="affixBody">

@@ -6,6 +6,7 @@
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "start": "sirv public --no-clear",
+    "host": "sirv public --host 0.0.0.0",
     "validate": "svelte-check"
   },
   "devDependencies": {
@@ -24,6 +25,7 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-svelte": "^2.18.0",
+    "gh-pages": "^5.0.0",
     "prettier": "2.8.3",
     "prettier-plugin-svelte": "^2.9.0",
     "rollup": "^2.3.4",

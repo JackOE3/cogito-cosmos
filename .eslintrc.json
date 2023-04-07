@@ -9,6 +9,7 @@
     "plugin:svelte/recommended",
     "plugin:@typescript-eslint/recommended"
   ],
+  "ignorePatterns": ["public/build"],
   "plugins": ["prettier"],
   "overrides": [
     {

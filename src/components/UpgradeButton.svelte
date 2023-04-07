@@ -4,7 +4,7 @@
   import { tooltip } from './tooltips/tooltip'
   import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
   import { derived, get } from 'svelte/store'
-  import { fade, blur, fly, slide, scale, draw, crossfade } from 'svelte/transition'
+  import { fade } from 'svelte/transition'
 
   export let upgradeName: string
   export let tooltipText: string | null = null

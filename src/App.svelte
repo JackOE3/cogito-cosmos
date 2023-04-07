@@ -11,7 +11,6 @@
   import CheeseyardComponent from './components/CheeseyardComponent.svelte'
   import MilkComponent from './components/MilkComponent.svelte'
   import MilkTreeComponent from './components/MilkTreeComponent.svelte'
-  import { easeInOutQuad, easeInOutSine } from './gamelogic/utils'
 
   console.log('App.svelte')
   let secretImage: HTMLElement

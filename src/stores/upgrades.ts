@@ -36,7 +36,7 @@ export const upgradesInitial: Record<string, IUpgrade> = {
   thoughtJerk: new Upgrade('thoughts', 5e7, 1.3),
   thoughtBoostStrength: new Upgrade('thoughts', 100, 2),
   thoughtBoostDuration: new Upgrade('thoughts', 150, 3, 11),
-  thoughtBoostStack: new Upgrade('thoughts', 1e7, 3, 9),
+  thoughtBoostStack: new Upgrade('thoughts', 1e7, 5, 9),
 
   // Switzerland Simulator
   cheeseQueueLength: new Upgrade('cheese', 5, 2),
@@ -45,9 +45,9 @@ export const upgradesInitial: Record<string, IUpgrade> = {
   cheeseQueueOverclockingCost: new Upgrade('cheese', 5e3, 1.5),
 
   // Moldy Cheese
-  moldyCheeseConversionExponent: new Upgrade('moldyCheese', 3, 1.5),
-  moldyCheeseHalfLife: new Upgrade('moldyCheese', 10, 1.15),
-  moldyCheeseChance: new Upgrade('moldyCheese', 50, 1.5, 9),
+  moldyCheeseConversionExponent: new Upgrade('moldyCheese', 5, 1.5),
+  moldyCheeseHalfLife: new Upgrade('moldyCheese', 20, 1.15),
+  moldyCheeseChance: new Upgrade('moldyCheese', 100, 1.5, 9),
   cheeseMonsterSpawnrate: new Upgrade('moldyCheese', 200, 2.0),
   cheeseMonsterCapacity: new Upgrade('moldyCheese', 400, 1.3), // multipler for cap should be smaller than for spawnrate, so neutral brainMode doesnt fill up 100% capacity
 

@@ -67,7 +67,7 @@ export const cheeseBoostFactorYield = derived([unlocked, currentThoughtBoost], (
 )
 
 export const cheeseQueueLengthBoostFactor = derived([unlocked, maxCheeseQueue], ([$unlocked, $maxCheeseQueue]) =>
-  checkBoolForNum($unlocked.cheeseQueueLengthBoost, $maxCheeseQueue / 10)
+  checkBoolForNum($unlocked.cheeseQueueLengthBoost, ($maxCheeseQueue * $maxCheeseQueue) / 100)
 )
 
 /* Reactive variables for Yield, Duration & Cost of the cheese cycle */
