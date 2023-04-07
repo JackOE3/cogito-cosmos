@@ -4,17 +4,10 @@
   import Window from './Window.svelte'
   import { tooltip } from './tooltips/tooltip'
   import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
-  import UnlockButton from './UnlockButton.svelte'
   import UpgradeButton from './UpgradeButton.svelte'
-  import { unlocks } from '../stores/unlocks'
-  import {
-    resource,
-    unlocked,
-    type BrainMode,
-    brainMode,
-    totalCheeseMonsterDeaths,
-    upgrades,
-  } from '../stores/mainStore'
+  import { unlocks, unlocked } from '../stores/unlocks'
+  import { resource } from '../stores/resources'
+  import { type BrainMode, brainMode, totalCheeseMonsterDeaths, upgrades } from '../stores/mainStore'
   import {
     monsterThoughtMult,
     resourceFactorFromBrainMode,
@@ -25,7 +18,14 @@
     cheeseMonsterCapacity,
     cheeseMonsterDropRate,
     cheeseMonsterLootAmount,
+    monsterMoldyCheeseFactor,
+    monsterMoldyCheeseMult,
+    cheeseMonsterMassacreMultiplier,
+    cheeseMonsterDeathsPerSec,
+    collectiveSentienceBoost,
   } from '../stores/derived/cheeseMonster'
+  import { fade } from 'svelte/transition'
+  import UnlockDrawer from './UnlockDrawer.svelte'
 
   const buyMaxUpgrades = false
 
@@ -37,9 +37,8 @@
 
   $: controllerUnlocked = $unlocked.monsterBrainWaveController
 
-  $: approxDeathsPerSec = $cheeseMonsterDeathrate * $resource.cheeseMonster
   $: approxCheeseBrainsPerSec =
-    approxDeathsPerSec * $cheeseMonsterDropRate * $cheeseMonsterLootAmount * $totalMonsterDeathsLootBoost
+    $cheeseMonsterDeathsPerSec * $cheeseMonsterDropRate * $cheeseMonsterLootAmount * $totalMonsterDeathsLootBoost
 
   function unlockBrainWaveController(): void {
     if ($resource.cheeseMonster < 10) return
@@ -47,30 +46,65 @@
   }
 </script>
 
-<Window title="The Cheeseyard" --bg="linear-gradient(90deg, rgb(82, 0, 18) 0%, rgb(255, 0, 98) 100%)">
-  <div style="display: flex; flex-direction: column; gap: 8px;">
+<Window title="The Cheeseyard" themeColor1="rgb(82, 0, 18)" themeColor2="rgb(255, 0, 98)">
+  <div style="display: flex; flex-direction: column; gap: 8px; width: var(--window-width);">
     <span class="resourceDisplay">
       Current population: {formatWhole($resource.cheeseMonster)}/{formatWhole($cheeseMonsterCapacity)}
       <strong class="colorText">cheese monsters</strong> <br />
     </span>
     <span>
+      {#if $unlocked.cheeseMonsterCollectiveSentience}
+        <span
+          class="backgroundOnHover"
+          transition:fade={{ duration: 1000 }}
+          use:tooltip={{
+            Component: SimpleTooltip,
+            data: 'In bigger populations, a sort of global thinking <br/> emerges, giving an additional multiplier. <br/> (~population^3)',
+          }}
+        >
+          Collective Sentience: {formatNumber($collectiveSentienceBoost, 2)}x<br />
+        </span>
+      {:else}
+        <span>...??? <br /></span>
+      {/if}
       Spawn rate: {$cheeseMonsterSpawnrate < 1
         ? `${formatWhole($cheeseMonsterSpawnrate * 60)}/min`
         : `${formatNumber($cheeseMonsterSpawnrate, 2)}/s`}
       <br />
-      Approx. deaths: {$cheeseMonsterDeathrate > 0 ? `${formatNumber(approxDeathsPerSec, 2)}/s` : 'None'}
-      <br />
-      Total deaths: {$totalCheeseMonsterDeaths}
+      {#if $totalCheeseMonsterDeaths > 0}
+        <span transition:fade={{ duration: 1000 }}>
+          Approx. deaths: {$cheeseMonsterDeathrate > 0 ? `${formatNumber($cheeseMonsterDeathsPerSec, 2)}/s` : 'None'}
+          {#if $unlocked.cheeseMonsterMassacre}
+            <span
+              class="backgroundOnHover"
+              transition:fade={{ duration: 1000 }}
+              use:tooltip={{
+                Component: SimpleTooltip,
+                data: 'Higher deaths/s are disproportionally rewarded. <br/> (~deathsPerSec^1.3)',
+              }}
+            >
+              -> Massacre multiplier: {formatNumber($cheeseMonsterMassacreMultiplier, 2)}x
+            </span>
+          {/if}
+          <br />
+          Total deaths: {formatWhole($totalCheeseMonsterDeaths)}
+        </span>
+      {:else}{/if}
     </span>
   </div>
 
   {#if !controllerUnlocked}
-    <button on:click={unlockBrainWaveController}>
+    <button
+      style="height:50px"
+      on:click={unlockBrainWaveController}
+      disabled={$resource.cheeseMonster < 10}
+      use:tooltip={{ Component: SimpleTooltip, data: 'Are you sure?' }}
+    >
       Activate the monster brain wave controller <br />
       Requires 10 cheese monsters
     </button>
   {:else}
-    <div id="brainWaveContainer">
+    <div id="brainWaveContainer" transition:fade={{ duration: 1000 }}>
       <fieldset>
         <legend>monster brain wave controller</legend>
         <label>
@@ -91,15 +125,15 @@
         <span>
           <p style="margin:0">{brainModeDescription[$brainMode]}.</p>
           <!-- Sentiment: {brainMode} <br /> -->
-          Death rate: {$cheeseMonsterDeathrate > 0 ? `${formatNumber($cheeseMonsterDeathrate, 2)}/s/monster` : 'None'}
+          Death toll: {$cheeseMonsterDeathrate > 0 ? `${formatNumber($cheeseMonsterDeathrate, 2)}/s/monster` : 'None'}
           <br />
           <span
             class="backgroundOnHover"
             use:tooltip={{
-              content: SimpleTooltip,
+              Component: SimpleTooltip,
               data: 'The less preoccupied the monsters are with killing each<br> other, the more they can ponder and produce stuff.',
             }}
-            >Relative resource generation: thoughts {$resourceFactorFromBrainMode.thoughts}x
+            >Relative resource generation: {$resourceFactorFromBrainMode}x
           </span>
         </span>
       </div>
@@ -107,65 +141,86 @@
   {/if}
 
   <div>
-    <span>Your current cheese monsters boost the following resources: </span>
-    <table>
-      <tr>
-        <td class="name">thoughts/s</td>
-        <td>{formatNumber($monsterThoughtMult, 2)}x</td>
-      </tr>
-      <tr>
-        <td class="name">cheese gain</td>
-        <td>3.90x</td>
-      </tr>
-    </table>
-  </div>
-
-  <div>
-    <span class="resourceDisplay">
-      You have {formatNumber($resource.cheeseBrains, 2)}
-      <strong style="color: rgb(250, 142, 0)">cheese brains</strong>
-      <br />
+    <span>Your current cheese monsters want to help you: <br /> </span>
+    <span>
+      ⮞ thoughts/s are boosted by {formatNumber($monsterThoughtMult, 2)}x <br />
     </span>
-    <span>~ {formatNumber(approxCheeseBrainsPerSec, 2)}/s</span>
+    <span>
+      {#if $upgrades.cheeseMonsterMoldiness.bought > 0}
+        ⮞ MC gain is boosted by {formatNumber($monsterMoldyCheeseMult, 2)}x
+      {:else}
+        ⮞ ...???
+      {/if}
+    </span>
   </div>
 
-  <div class="flexRowContainer">
-    <div class="gridColumn">
-      <UpgradeButton upgradeName="cheeseMonsterDropRate" {buyMaxUpgrades}>
-        Increase the drop rate of cheese monsters ({$upgrades.cheeseMonsterDropRate.bought}/{$upgrades
-          .cheeseMonsterDropRate.maxBuy})<br />
-        Currently: {formatWhole($cheeseMonsterDropRate * 100)}%
-      </UpgradeButton>
-
-      <UpgradeButton upgradeName="cheeseMonsterLoot" {buyMaxUpgrades}>
-        Increase the loot obtained from cheese monster corpses <br />
-        Currently: {$cheeseMonsterLootAmount} cheese brains
-      </UpgradeButton>
-
-      <UpgradeButton upgradeName="cheeseMonsterSentience" {buyMaxUpgrades}>
-        Improve the sentience of cheese monsters <br />
-        Currently: +{formatNumber($monsterThoughtFactor, 2)}x thoughts/s/monster
-      </UpgradeButton>
+  {#if controllerUnlocked}
+    <div transition:fade={{ duration: 1000 }}>
+      <span class="resourceDisplay">
+        You have {formatNumber($resource.cheeseBrains, 2)}
+        <strong style="color: rgb(250, 142, 0)">cheese brains</strong>
+        <br />
+      </span>
+      <span>~ {formatNumber(approxCheeseBrainsPerSec, 2)}/s</span>
     </div>
 
-    <div class="gridColumn">
-      <UnlockButton unlock={unlocks.cheeseMonsterMassacre}>
-        Massacre effect: When killing many cheese monsters at once, the loot is massively boosted
-      </UnlockButton>
+    <UnlockDrawer unlocks={unlocks.cheeseBrains} folderName="Free Warlock Skills" />
 
-      <UnlockButton unlock={unlocks.cheeseMonsterCollectiveSentience}>
-        Collective sentience: The bigger the population, the higher the resource multipliers per cheese monster
-      </UnlockButton>
+    <div class="flexRowContainer" transition:fade={{ duration: 1000 }}>
+      <div class="gridColumn">
+        <UpgradeButton upgradeName="cheeseMonsterDropRate" {buyMaxUpgrades}>
+          Increase the drop rate of cheese monsters ({$upgrades.cheeseMonsterDropRate.bought}/{$upgrades
+            .cheeseMonsterDropRate.maxBuy})<br />
+          Currently: {formatWhole($cheeseMonsterDropRate * 100)}%
+        </UpgradeButton>
 
-      <UnlockButton unlock={unlocks.cheeseMonsterTotalDeathsBoost}>
-        Total cheese monster deaths boost loot <br />
+        <UpgradeButton upgradeName="cheeseMonsterLoot" {buyMaxUpgrades}>
+          Increase the loot obtained from cheese monster corpses ({$upgrades.cheeseMonsterLoot.bought})<br />
+          Currently: {formatWhole($cheeseMonsterLootAmount)} cheese brains/death
+        </UpgradeButton>
 
-        {#if $unlocked.cheeseMonsterTotalDeathsBoost}
-          Currently: {formatNumber($totalMonsterDeathsLootBoost, 2)}x
-        {/if}
-      </UnlockButton>
+        <UpgradeButton
+          upgradeName="cheeseMonsterSentience"
+          {buyMaxUpgrades}
+          tooltipText={'Surely nothing bad will happen.'}
+        >
+          Nurture the sentience of monsters ({$upgrades.cheeseMonsterSentience.bought})<br />
+          Currently: +{formatNumber($monsterThoughtFactor, 2)}x thoughts/s/monster
+        </UpgradeButton>
+
+        <UpgradeButton upgradeName="cheeseMonsterMoldiness" {buyMaxUpgrades} tooltipText={'This smells...'}>
+          Improve the moldiness of monsters ({$upgrades.cheeseMonsterMoldiness.bought})<br />
+          Currently: +{formatNumber($monsterMoldyCheeseFactor, 2)}x MC gain/monster
+        </UpgradeButton>
+      </div>
+
+      <div class="gridColumn">
+        <!-- <UnlockButton
+          unlock={unlocks.cheeseMonsterMassacre}
+          tooltipText={'Rewarding genocide! <br /> (only applies in this game and NOT in real life)'}
+        >
+          <span>
+            <strong>Massacre effect</strong>: When killing many cheese monsters at once, the loot is massively boosted.
+          </span>
+        </UnlockButton>
+
+        <UnlockButton unlock={unlocks.cheeseMonsterCollectiveSentience} tooltipText={'Completely harmless.'}>
+          <span>
+            <strong>Collective sentience</strong>: Bigger populations give a (much) bigger global boost to thinking due
+            to emergence.
+          </span>
+        </UnlockButton>
+
+        <UnlockButton unlock={unlocks.cheeseMonsterTotalDeathsBoost}>
+          Total monster deaths boost loot gain <br />
+
+          {#if $unlocked.cheeseMonsterTotalDeathsBoost}
+            Currently: {formatNumber($totalMonsterDeathsLootBoost, 2)}x (quadratic scaling)
+          {/if}
+        </UnlockButton> -->
+      </div>
     </div>
-  </div>
+  {/if}
 </Window>
 
 <style>
@@ -176,20 +231,12 @@
   .colorText {
     color: var(--unlockedColor);
   }
-
-  table {
-    margin-top: 4px;
-    margin-left: 0px;
-    outline: 1px rgb(119, 119, 119) solid;
-  }
-  .name {
-    width: 100px;
-  }
   fieldset {
-    width: 178px;
+    width: 180px;
     height: fit-content;
   }
   #brainWaveContainer {
+    width: var(--window-width);
     display: flex;
     flex-direction: row;
     gap: 8px;

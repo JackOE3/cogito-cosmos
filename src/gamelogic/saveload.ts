@@ -213,9 +213,10 @@ export function recalculateStores(): void {
   })
 
   for (const [key, value] of Object.entries(upgrades)) {
+    value.maxBuy = upgradesInitial[key].maxBuy
+    if (typeof value.maxBuy === 'number' && value.bought > value.maxBuy) value.bought = value.maxBuy
     value.costMultiplier = upgradesInitial[key].costMultiplier
     value.cost = upgradesInitial[key].cost * Math.pow(upgradesInitial[key].costMultiplier, value.bought)
-    value.maxBuy = upgradesInitial[key].maxBuy
   }
   store.upgrades.refresh()
   unsubscribe()

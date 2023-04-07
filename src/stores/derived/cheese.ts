@@ -1,11 +1,19 @@
 import { derived } from 'svelte/store'
 import { unlocked } from '../unlocks'
 import { upgrades } from '../upgrades'
-import { type CheeseFactoryMode, cheeseFactoryMode, cheeseQueueTotalCycles, currentThoughtBoost } from '../mainStore'
+import {
+  type CheeseFactoryMode,
+  cheeseFactoryMode,
+  cheeseQueueTotalCycles,
+  currentThoughtBoost,
+  cheeseQueueOverclockLvl,
+} from '../mainStore'
+import { checkBoolForNum } from '../../gamelogic/utils'
 
 export const cheeseSpeedFactor = { duration: 0.95, cost: 1.4 }
 export const cheeseYieldDeltaDuration = 500 // ms
 
+// cost is now DEPRECATED with the duration of the cheeseQueue being inherently linked with the cost! (DELETE LATER)
 export const cheeseModeStats: Record<CheeseFactoryMode, { yield: number; duration: number; cost: number }> = {
   meticulous: { yield: 1, duration: 10, cost: 1 },
   nominal: { yield: 1, duration: 1, cost: 1 },
@@ -13,6 +21,13 @@ export const cheeseModeStats: Record<CheeseFactoryMode, { yield: number; duratio
 }
 export const cheeseModeFactor = derived(cheeseFactoryMode, $cheeseFactoryMode => cheeseModeStats[$cheeseFactoryMode])
 
+export const cheeseQueueCostDivideBy = derived(upgrades, $upgrades =>
+  $upgrades.cheeseQueueOverclockingCost.bought > 0
+    ? 1 + 0.25 * ($upgrades.cheeseQueueOverclockingCost.bought + 1) * ($upgrades.cheeseQueueOverclockingCost.bought + 1)
+    : 1
+)
+
+const baseCost = 10
 export const cheeseQueue = {
   infinite: false,
   state: 'initial',
@@ -22,7 +37,14 @@ export const cheeseQueue = {
     upgrades,
     $upgrades => 1 + 0.5 * ($upgrades.cheeseYield.bought + $upgrades.cheeseYield.bought * $upgrades.cheeseYield.bought)
   ),
-  cost: derived(upgrades, $upgrades => 100 * Math.pow(cheeseSpeedFactor.cost, $upgrades.cheeseDuration.bought)),
+  cost: derived(
+    [cheeseQueueOverclockLvl, cheeseQueueCostDivideBy],
+    ([$cheeseQueueOverclockLvl, $cheeseQueueCostDivideBy]) => {
+      if ($cheeseQueueOverclockLvl > 0)
+        return (baseCost * (1 * Math.pow(2, $cheeseQueueOverclockLvl))) / $cheeseQueueCostDivideBy
+      return baseCost
+    }
+  ),
 }
 
 export const maxCheeseQueue = derived(
@@ -33,19 +55,19 @@ export const maxCheeseQueue = derived(
 export const cheeseCycleAcceleratorFactor = derived(
   [unlocked, cheeseQueueTotalCycles],
   ([$unlocked, $cheeseQueueTotalCycles]) =>
-    $unlocked.cheeseCycleAccelerator ? 1 + Math.log($cheeseQueueTotalCycles / 100 + 1) : 1
+    checkBoolForNum($unlocked.cheeseCycleAccelerator, 1 + Math.log($cheeseQueueTotalCycles / 100 + 1))
 )
 
-export const cheeseQueueSpeedFactor = derived(upgrades, $upgrades =>
-  Math.pow(cheeseSpeedFactor.duration, $upgrades.cheeseDuration.bought)
+export const cheeseQueueOverclockFactor = derived(cheeseQueueOverclockLvl, $cheeseQueueOverclockLvl =>
+  Math.pow(1.05, $cheeseQueueOverclockLvl)
 )
 
 export const cheeseBoostFactorYield = derived([unlocked, currentThoughtBoost], ([$unlocked, $currentThoughtBoost]) =>
-  $unlocked.cheeseBoost ? $currentThoughtBoost : 1
+  checkBoolForNum($unlocked.cheeseBoost, $currentThoughtBoost)
 )
 
 export const cheeseQueueLengthBoostFactor = derived([unlocked, maxCheeseQueue], ([$unlocked, $maxCheeseQueue]) =>
-  $unlocked.cheeseQueueLengthBoost ? $maxCheeseQueue / 10 : 1
+  checkBoolForNum($unlocked.cheeseQueueLengthBoost, $maxCheeseQueue / 10)
 )
 
 /* Reactive variables for Yield, Duration & Cost of the cheese cycle */
@@ -57,10 +79,10 @@ export const cheeseCycleBatchSize = derived(
 )
 
 export const cheeseCycleDuration = derived(
-  [cheeseQueue.cycleDuration, cheeseQueueSpeedFactor, cheeseModeFactor, cheeseCycleAcceleratorFactor],
-  ([$cheeseQueueCycleDuration, $cheeseQueueSpeedFactor, $cheeseModeFactor, $cheeseCycleAcceleratorFactor]) =>
+  [cheeseQueue.cycleDuration, cheeseQueueOverclockFactor, cheeseModeFactor, cheeseCycleAcceleratorFactor],
+  ([$cheeseQueueCycleDuration, $cheeseQueueOverclockFactor, $cheeseModeFactor, $cheeseCycleAcceleratorFactor]) =>
     $cheeseQueueCycleDuration *
-    $cheeseQueueSpeedFactor *
+    (1 / $cheeseQueueOverclockFactor) *
     $cheeseModeFactor.duration *
     (1 / $cheeseCycleAcceleratorFactor)
 )

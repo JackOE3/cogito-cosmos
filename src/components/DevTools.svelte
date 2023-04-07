@@ -42,8 +42,11 @@
       <span>cheese monsters</span>
       <input type="number" bind:value={$resource.cheeseMonster} />
 
-      <span>chees Brains</span>
+      <span>cheese Brains</span>
       <input type="number" bind:value={$resource.cheeseBrains} />
+
+      <span>milk</span>
+      <input type="number" bind:value={$resource.milk} />
     </div>
   </div>
 {/if}

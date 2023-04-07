@@ -1,37 +1,42 @@
 <script lang="ts">
+  import AffixComponent from './AffixComponent.svelte'
+
+  import Affix from './Affix.svelte'
+
   import { formatNumber, formatWhole } from '../gamelogic/utils'
-  import { fade, slide } from 'svelte/transition'
+  import { draw, fade, slide } from 'svelte/transition'
   import ProgBar from './ProgBar.svelte'
   import Window from './Window.svelte'
   import UpgradeButton from './UpgradeButton.svelte'
-  import UnlockButton from './UnlockButton.svelte'
   import InputRange from './InputRange.svelte'
   import {
     LORCA_OVERRIDE,
     resource,
-    unlocked,
     upgrades,
-    currentThoughtBoost,
     currentCheeseQueue,
+    cheeseQueueOverclockLvl,
     cheeseFactoryMode,
     cheeseQueueTotalCycles,
     type CheeseFactoryMode,
+    currentThoughtBoost,
   } from '../stores/mainStore'
   import {
     cheeseModeFactor,
-    cheeseCycleCost,
     cheeseCycleDuration,
     cheeseCycleBatchSize,
+    cheeseCycleCost,
+    cheeseQueueCostDivideBy,
     cheeseQueue,
+    cheeseQueueOverclockFactor,
     maxCheeseQueue,
     cheeseYieldDeltaDuration,
-    cheeseSpeedFactor,
     cheeseQueueLengthBoostFactor,
     cheeseCycleAcceleratorFactor,
   } from '../stores/derived/cheese'
   import { cheeseThoughtMult, cheeseCyclesThoughtMult } from '../stores/derived/thoughts'
-  import { unlocks } from '../stores/unlocks'
-  // import { tooltip } from './tooltips/tooltip'
+  import { unlocks, unlocked, UnlockName } from '../stores/unlocks'
+  import UnlockDrawer from './UnlockDrawer.svelte'
+  import { quintOut } from 'svelte/easing'
 
   const cheeseModeDescription: Record<CheeseFactoryMode, string> = {
     meticulous: '"Quality over quantity"',
@@ -43,6 +48,7 @@
   // extracting the stores from the cheeseQueue object
   const cheeseQueueYield = cheeseQueue.yield
   const cheeseQueueCycleDuration = cheeseQueue.cycleDuration
+  const cheeseQueueCost = cheeseQueue.cost
 
   // 1 if it's active, 0 when not
   $: cheeseQueueActive = cheeseQueue.state === 'running'
@@ -50,6 +56,10 @@
 
   let cheeseBarProgress = 0
   let lastTime: number | null = null
+
+  function resetCheeseBar(): void {
+    cheeseBarProgress = 0
+  }
   /**
    * Triggered when manually starting the cheese generation (with button or input range)
    */
@@ -60,6 +70,9 @@
     cheeseQueue.state = 'running'
 
     lastTime = null
+
+    /* TODO: insert here logic for if cheeseQueueCycleDuration exceeds a certain speed, then no animation, just a static bar with
+    statistical averages for calculations */
     requestAnimationFrame(animateCheeseBar)
   }
 
@@ -94,23 +107,147 @@
       return
     }
 
+    // TODO: delet this, since cost is now per second and not tied to the cycle anymore!!!
     $resource.thoughts -= $cheeseCycleCost
     if ($currentCheeseQueue >= 1) $currentCheeseQueue--
-    if ($unlocked.cheeseCycleAccelerator || $LORCA_OVERRIDE) $cheeseQueueTotalCycles++
+    $cheeseQueueTotalCycles++
   }
 </script>
 
-<Window title="Switzerland Simulator" --bg="linear-gradient(90deg, rgb(121, 119, 0) 0%, yellow 100%)">
+<Window title="Switzerland Simulator" themeColor1="rgb(168, 143, 2)" themeColor2="rgb(244, 255, 33)">
   <div>
     <span class="resourceDisplay"
-      >You have {formatNumber($resource.cheese, 2)} <strong style="color:yellow">cheese</strong> <br />
+      >You have {formatNumber($resource.cheese, 2)} <span class="colorText" style="font-weight:bold">cheese</span>
+      <br />
     </span>
     ~ {formatNumber(cheesePerSecFromQueue, 2)}/s
   </div>
 
+  <div>
+    <div class="flexRowContainer">
+      <button style="width:170px;" on:click={handleCheeseGenerationInit} disabled={cheeseQueue.state === 'running'}>
+        Make cheese <br />
+        {formatNumber($cheeseCycleCost, 2)} thoughts
+      </button>
+
+      <div class="gridColumn" style="width: 100%">
+        <div id="cheeseBar">
+          <ProgBar
+            --width="100%"
+            --height="24px"
+            --barColor="yellow"
+            --progress="{(100 * cheeseBarProgress) / $cheeseCycleDuration}%"
+          />
+        </div>
+
+        <div style="width:100%; height: 16px; margin-top:4px;">
+          {#if $unlocked.cheeseQueue}
+            <div
+              transition:fade={{ duration: 1000 }}
+              style="display:grid; grid-template-columns: auto 1fr auto; gap: 8px"
+            >
+              <span class="flexCenter">Cheese Queue:</span>
+
+              <InputRange
+                min={0}
+                max={$maxCheeseQueue}
+                bind:value={$currentCheeseQueue}
+                onChange={handleCheeseGenerationInit}
+              />
+
+              <span class="flexCenter" style="width: 40px; background: var(--Gray800);">{$currentCheeseQueue}</span>
+            </div>
+          {:else}
+            <div style="text-align: center;">???</div>
+          {/if}
+        </div>
+      </div>
+    </div>
+
+    <p style="margin-bottom: 0px; margin-top: 8px; height: 1.625rem;">
+      Industrious swiss workers are producing
+      {formatNumber($cheeseCycleBatchSize, 2)}<!--
+    -->{#if $cheeseModeFactor.yield !== 1}
+        <span style="color:orange;">[{$cheeseModeFactor.yield}x]</span>
+      {/if} cheese every
+      {formatNumber($cheeseCycleDuration / 1000, 2)}s<!--
+      -->{#if $cheeseModeFactor.duration !== 1}
+        <span style="color:orange;">[{$cheeseModeFactor.duration}x]</span>
+      {/if}
+      {#if $unlocked.cheeseQueueOverclocking}
+        <span transition:fade={{ duration: 1000 }}>
+          while consuming {formatNumber($cheeseCycleCost, 2)}<!--
+        -->{#if $cheeseModeFactor.cost !== 1}
+            <span style="color:orange;">[{$cheeseModeFactor.cost}x]</span>
+          {/if}
+          thoughts. (~{formatNumber(($cheeseCycleCost / $cheeseCycleDuration) * 1000, 2)}
+          thoughts/s)
+        </span>
+      {/if}
+    </p>
+  </div>
+
+  {#if $unlocked.cheeseQueueOverclocking || $LORCA_OVERRIDE}
+    <div class="flexRowContainer" transition:slide={{ duration: 1000 }}>
+      <div style="display:flex; flex-direction:row; gap: 2px;">
+        <div style="display:flex; flex-direction:column; background-color: var(--Gray800)" class="button-border">
+          <div
+            style="height:1.25rem; border-bottom: 2px solid rgba(255, 255, 255, 0.4); display:flex; align-items: center; justify-content: center; gap: 0.5rem"
+          >
+            <span style="font-size:.875rem; font-weight: bold"> Overclocking </span>
+            <span style="font-size:.875rem;">LV{$cheeseQueueOverclockLvl}</span>
+          </div>
+
+          <div style="height:2.5rem; display:flex; flex-direction:row; ">
+            <div
+              style="width: 4rem; display:flex; flex-direction:column; justify-content:center; align-items: center; gap: 0.125rem "
+            >
+              <span
+                style="font-weight: bold; color:white; background: rgb(10, 125, 16); padding-left:0.25rem; padding-right: 0.25rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.4); "
+              >
+                SPEED
+              </span>
+              <span> {formatNumber($cheeseQueueOverclockFactor, 2)} Hz</span>
+            </div>
+            <div
+              style="width: 10rem; display:flex; flex-direction:column;  justify-content:center; align-items: center; gap: 0.125rem; border-left: 2px solid rgba(255, 255, 255, 0.4)"
+            >
+              <span
+                style="font-weight: bold; color:white; background: rgb(115, 0, 2); padding-left:0.25rem; padding-right: 0.25rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.4); "
+              >
+                COST
+              </span>
+              <span> {formatNumber($cheeseQueueCost, 2)} thoughts/cycle</span>
+            </div>
+          </div>
+        </div>
+        <div style="width: 100%; display:flex; flex-direction:column; justify-content: space-between">
+          <button style="height: 2rem; width: 2rem" on:click={() => $cheeseQueueOverclockLvl++}>
+            <img
+              alt="+1 level"
+              src="assets/chevron-arrow-down.png"
+              style="width: 50%; transform: rotate(180deg); filter: invert(100%); "
+            />
+          </button>
+          <button style="height: 2rem; width: 2rem" on:click={() => $cheeseQueueOverclockLvl--}>
+            <img alt="-1 level" src="assets/chevron-arrow-down.png" style="width: 50%; filter: invert(100%); " />
+          </button>
+        </div>
+      </div>
+      <div>
+        {#if $unlocked.cheeseCycleAccelerator}
+          <span transition:fade={{ duration: 500 }}>
+            Total Cheese Cycles: {formatWhole($cheeseQueueTotalCycles)} <br />
+            Cycle Duration: {formatNumber($cheeseCycleDuration / 1000, 2)}s <br />
+          </span>
+        {/if}
+      </div>
+    </div>
+  {/if}
+
   {#if $unlocked.cheeseModes || $LORCA_OVERRIDE}
     <div id="cheeseFactoryProtocolContainer" transition:slide={{ duration: 1000 }}>
-      <fieldset>
+      <fieldset on:change={resetCheeseBar}>
         <legend>cheese factory protocol</legend>
 
         <label>
@@ -127,7 +264,7 @@
         </label>
       </fieldset>
       <div id="cheeseFactoryProtocolInfo">
-        <strong class="colorText" style="text-decoration: underline;">Cheesy Info</strong> <br />
+        <span class="colorText" style="text-decoration: underline; font-weight: bold">Cheesy Info</span> <br />
         <span>
           <p style="margin:0">{cheeseModeDescription[$cheeseFactoryMode]}</p>
           Relative yield/duration/cost: {$cheeseModeFactor.yield}x / {$cheeseModeFactor.duration}x / {$cheeseModeFactor.cost}x
@@ -140,119 +277,85 @@
     </div>
   {/if}
 
-  <div class="flexRowContainer">
-    <button style="width:170px" on:click={handleCheeseGenerationInit} disabled={cheeseQueue.state === 'running'}>
-      Make some cheese <br />
-      Costs {formatNumber($cheeseCycleCost, 2)} thoughts
-    </button>
-  </div>
-  <div>
-    <div id="cheeseBar">
-      <ProgBar
-        --width="100%"
-        --height="2rem"
-        --barColor="yellow"
-        --progress="{(100 * cheeseBarProgress) / $cheeseCycleDuration}%"
-      />
-    </div>
-    <div style="width:500px">
-      <p style="margin-left:4px; margin-top: 8px; margin-bottom: 0px">
-        Industrious swiss workers are producing
-        {formatNumber($cheeseCycleBatchSize, 2)} cheese every
-        {formatNumber($cheeseCycleDuration / 1000, 2)}s while consuming
-        {formatNumber($cheeseCycleCost, 2)} thoughts. (~{formatNumber(
-          ($cheeseCycleCost / $cheeseCycleDuration) * 1000,
-          2
-        )}
-        thoughts/s)
-      </p>
-      {#if $unlocked.cheeseCycleAccelerator}
-        <p style="margin-left:4px; margin-top: 8px; margin-bottom: 0px" transition:fade={{ duration: 500 }}>
-          Total Cheese Cycles completed: {formatWhole($cheeseQueueTotalCycles)}
-        </p>
-      {/if}
-    </div>
-  </div>
+  <UnlockDrawer unlocks={unlocks.cheese} folderName="Free 50 Aeromancer Skills" />
 
   <div class="flexRowContainer">
     <div class="gridColumn">
       <UpgradeButton
         upgradeName="cheeseYield"
         {buyMaxUpgrades}
-        btnUnlocked={$unlocked.switzerland}
         tooltipText={`+${formatNumber(
           (($upgrades.cheeseYield.bought + 1) * $cheeseCycleBatchSize) / $cheeseQueueYield,
           2
         )} cheese per cycle <br>
-          +${formatNumber(
-            (cheeseYieldDeltaDuration * $cheeseCycleDuration) / $cheeseQueueCycleDuration / 1000,
-            2
-          )}s cycle duration`}
+            +${formatNumber(
+              (cheeseYieldDeltaDuration * $cheeseCycleDuration) / $cheeseQueueCycleDuration / 1000,
+              2
+            )}s cycle duration <br>
+            (without scaling: +0.5s cycle duration)`}
       >
-        Your workers create more cheese but also take longer ({$upgrades.cheeseYield.bought})
+        Your workers create more cheese but also take longer
       </UpgradeButton>
-    </div>
-    <div class="gridColumn">
-      <UpgradeButton
-        upgradeName="cheeseDuration"
-        {buyMaxUpgrades}
-        --maxedColor="yellow"
-        btnUnlocked={$unlocked.switzerland}
-        tooltipText={`cycle duration x${formatNumber(cheeseSpeedFactor.duration, 2)} <br> 
-          thoughts required x${formatNumber(cheeseSpeedFactor.cost, 2)} <br> (both multiplicative)`}
-      >
-        The cheese production takes <strong>{formatNumber((1 - cheeseSpeedFactor.duration) * 100, 0)}%</strong>
-        less time, but costs <strong>{formatNumber(cheeseSpeedFactor.cost, 2)}x</strong> more ({formatWhole(
-          $upgrades.cheeseDuration.bought
-        )}/50)
-      </UpgradeButton>
-    </div>
-  </div>
 
-  <div class="flexRowContainer">
-    <div style="width:250px; margin-top:4px;">
-      {#if $unlocked.cheeseQueue}
-        <div transition:fade={{ duration: 1000 }}>
-          <div class="slidecontainer">
-            <InputRange
-              min={0}
-              max={$maxCheeseQueue}
-              bind:value={$currentCheeseQueue}
-              onChange={handleCheeseGenerationInit}
-            />
-          </div>
-          <p>There are currently {$currentCheeseQueue} batches in queue.</p>
-        </div>
-      {:else}
-        <div style="margin-top:10px; text-align: center;">???</div>
-      {/if}
-    </div>
-    <div class="gridColumn">
       <UpgradeButton
         upgradeName="cheeseQueueLength"
         {buyMaxUpgrades}
         btnUnlocked={$unlocked.cheeseQueue}
         tooltipText={`Length +${cheeseQueue.capDelta}`}
       >
-        Lengthen the <strong style="color:yellow">Cheese Queue</strong> ({$upgrades.cheeseQueueLength.bought}) <br />
-        Current Length: {$maxCheeseQueue}
+        <span>Lengthen the <span style="color:yellow; font-weight: bold">Cheese Queue</span></span>
       </UpgradeButton>
-    </div>
-  </div>
 
-  <div class="flexRowContainer">
-    <div class="gridColumn">
-      <UpgradeButton upgradeName="cheeseThoughtMult" {buyMaxUpgrades} btnUnlocked={$unlocked.cheeseQueue}>
-        Cheese increases thoughts/s ({$upgrades.cheeseThoughtMult.bought})
-        {#if $upgrades.cheeseThoughtMult.bought}
-          <br />Currently: {formatNumber($cheeseThoughtMult, 2)}x
+      <UpgradeButton
+        upgradeName="cheeseThoughtMult"
+        {buyMaxUpgrades}
+        btnUnlocked={$unlocked.cheeseQueue}
+        tooltipText={`Currently: ${$upgrades.cheeseThoughtMult.bought * $upgrades.cheeseThoughtMult.bought}x`}
+      >
+        {#if $upgrades.cheeseThoughtMult.bought === 0}
+          Cheese increases thought gain
+        {:else}
+          Increase effect of cheese boosting thought gain
         {/if}
       </UpgradeButton>
+
+      <UpgradeButton
+        upgradeName="cheeseQueueOverclockingCost"
+        {buyMaxUpgrades}
+        btnUnlocked={$unlocked.cheeseQueueCostDivide}
+      >
+        Divide the cost requirement of Overclocking <br />
+        Currently: {formatNumber($cheeseQueueCostDivideBy, 2)}
+      </UpgradeButton>
+    </div>
+
+    <div class="gridColumn" style="height:264px">
+      <AffixComponent>
+        <Affix factor={$cheeseThoughtMult} unlocked={$upgrades.cheeseThoughtMult.bought > 0}>
+          Cheese increases thoughts/s
+        </Affix>
+
+        <Affix factor={$cheeseQueueLengthBoostFactor} unlocked={$unlocked.cheeseQueueLengthBoost}>
+          {unlocks.cheese.find(v => v.name === UnlockName.CHEESE_QUEUE_LENGTH_BOOST)?.description}
+        </Affix>
+
+        <Affix factor={$currentThoughtBoost} unlocked={$unlocked.cheeseBoost}>
+          {unlocks.cheese.find(v => v.name === UnlockName.CHEESE_BOOST)?.description}
+        </Affix>
+
+        <Affix factor={$cheeseCycleAcceleratorFactor} unlocked={$unlocked.cheeseCycleAccelerator}>
+          {unlocks.cheese.find(v => v.name === UnlockName.CHEESE_CYCLE_ACCELERATOR)?.description}
+        </Affix>
+
+        <Affix factor={$cheeseCyclesThoughtMult} unlocked={$unlocked.cheeseCyclesBoostThoughts}>
+          {unlocks.cheese.find(v => v.name === UnlockName.CHEESE_CYCLES_BOOST_THOUGHTS)?.description}
+        </Affix>
+      </AffixComponent>
     </div>
   </div>
 </Window>
 
-<Window --bg="linear-gradient(90deg, rgb(121, 119, 0) 0%, yellow 100%)">
+<!-- <Window --width="max-content" --bg="linear-gradient(90deg, rgb(121, 119, 0) 0%, yellow 100%)">
   <div class="gridColumn">
     <UnlockButton unlock={unlocks.cheeseQueue}>
       <span>Unlock the <strong style="color:yellow">Cheese Queue</strong></span>
@@ -290,26 +393,15 @@
       Currently: {formatNumber($cheeseCyclesThoughtMult, 2)}x
     </UnlockButton>
 
-    <!-- <button on:click={() => unlockFeature("cheeseQueueToppedUp")} 
-        disabled={$unlocked["cheeseQueueToppedUp"] || cheese < unlockCosts["cheeseQueueToppedUp"]}
-        class:maxed={$unlocked["cheeseQueueToppedUp"]} transition:slide={{duration: 500}}
-      >
-        Activating Thought Boost automatically tops up the Cheese Queue <br> 
-        Costs {formatWhole(unlockCosts["cheeseQueueToppedUp"])} cheese
-      </button> -->
-  </div>
-</Window>
 
+  </div>
+</Window> -->
 <style>
-  * {
-    --unlockedColor: yellow;
-    --maxedColor: var(--unlockedColor);
-  }
   .colorText {
-    color: var(--unlockedColor);
+    color: var(--themeColor2);
   }
   #cheeseBar {
-    height: 2rem;
+    width: 100%;
   }
   #cheeseFactoryProtocolContainer {
     display: flex;

@@ -13,9 +13,13 @@ export { upgrades } from './upgrades'
 
 export { unlocked } from './unlocks'
 
+export { milkBoostActive } from './boosts'
+
 export const currentThoughtBoost = makeStore(1)
+export const currentThoughtBoostTime = makeStore(0)
 
 export const currentCheeseQueue = makeStore(0)
+export const cheeseQueueOverclockLvl = makeStore(0)
 export const cheeseQueueTotalCycles = makeStore(0)
 export type CheeseFactoryMode = 'meticulous' | 'nominal' | 'warpSpeed'
 export const cheeseFactoryMode = makeStore<CheeseFactoryMode>('nominal')
@@ -23,3 +27,5 @@ export const cheeseFactoryMode = makeStore<CheeseFactoryMode>('nominal')
 export const totalCheeseMonsterDeaths = makeStore(0)
 export type BrainMode = 'peaceful' | 'neutral' | 'destructive'
 export const brainMode = makeStore<BrainMode>('peaceful')
+
+export const highestMilk = makeStore(0)

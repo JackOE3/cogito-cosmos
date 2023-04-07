@@ -1,10 +1,6 @@
-const thousand = 1_000
-const million = 1_000_000
-const billion = 1_000_000_000
-const trillion = 1_000_000_000_000
-const quadrilion = trillion * 1000
-const quintilion = quadrilion * 1000
-const sextilion = quintilion * 1000
+const suffixes = ['K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'Dc']
+const suffixesB = ['K', 'M', 'G', 'T', 'P', 'E']
+const OOMs = [1e3, 1e6, 1e9, 1e12, 1e15, 1e18, 1e21, 1e24, 1e27, 1e30, 1e33]
 
 /**
  * Function to format a number for display on screen.
@@ -14,24 +10,22 @@ const sextilion = quintilion * 1000
 export function formatNumber(input: number, decimals: number): string {
   if (typeof input !== 'number') input = 0
   if (input < 0) return '-' + formatNumber(-1 * input, decimals)
-  if (input >= quadrilion) return input.toExponential(decimals).replace('+', '')
-  if (input >= trillion) return (input / trillion).toFixed(decimals) + 'T'
-  if (input >= billion) return (input / billion).toFixed(decimals) + 'B'
-  if (input >= million) return (input / million).toFixed(decimals) + 'M'
-  if (input >= thousand) return (input / thousand).toFixed(decimals) + 'K'
+  if (input >= OOMs[suffixes.length]) return input.toExponential(decimals).replace('+', '')
+
+  for (let i = suffixes.length - 1; i >= 0; i--) {
+    if (input >= OOMs[i]) return (input / OOMs[i]).toFixed(decimals) + suffixes[i]
+  }
 
   return input.toFixed(decimals)
 }
 export function formatNumber2(input: number, decimals: number): string {
   if (typeof input !== 'number') input = 0
   if (input < 0) return '-' + formatNumber(-1 * input, decimals)
-  if (input >= sextilion) return input.toExponential(decimals).replace('+', '')
-  if (input >= quintilion) return (input / quintilion).toFixed(decimals) + ' E'
-  if (input >= quadrilion) return (input / quadrilion).toFixed(decimals) + ' P'
-  if (input >= trillion) return (input / trillion).toFixed(decimals) + ' T'
-  if (input >= billion) return (input / billion).toFixed(decimals) + ' G'
-  if (input >= million) return (input / million).toFixed(decimals) + ' M'
-  if (input >= thousand) return (input / thousand).toFixed(decimals) + ' k'
+  if (input >= OOMs[suffixesB.length]) return input.toExponential(decimals).replace('+', '')
+
+  for (let i = suffixesB.length - 1; i >= 0; i--) {
+    if (input >= OOMs[i]) return (input / OOMs[i]).toFixed(decimals) + suffixesB[i]
+  }
 
   return input.toFixed(decimals)
 }
@@ -44,13 +38,23 @@ export function formatNumber2(input: number, decimals: number): string {
 export function formatWhole(input: number): string {
   if (typeof input !== 'number') input = 0
   if (input < 0) return '-' + formatWhole(-1 * input)
-  if (input < thousand) return formatNumber(input, 0)
+  if (input < 1e3) return formatNumber(input, 0)
   return formatNumber(input, 2)
 }
 
-export const formatResourceName = (name: string): string => {
+export function formatResourceName(name: string): string {
   if (name === 'moldyCheese') return 'moldy cheese'
+  if (name === 'cheeseBrains') return 'cheese brains'
   return name
+}
+
+export function formatTime(sec: number): string {
+  const hours = Math.floor(sec / 3600)
+  const minutes = Math.floor(sec / 60 - 60 * hours)
+  const seconds = Math.floor(sec % 60)
+  if (sec >= 3600) return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+  if (sec >= 60) return `${minutes}:${seconds.toString().padStart(2, '0')}`
+  return `${formatNumber(sec, 1)}s`
 }
 
 /**
@@ -64,4 +68,21 @@ export function noRef<T>(obj: T): T {
 
 export const baseLog = (base: number, x: number): number => {
   return Math.log(x) / Math.log(base)
+}
+
+export function checkBoolForNum(bool: boolean, num: number, or = 1): number {
+  return bool ? num : or
+}
+
+export function easeInQuad(x: number): number {
+  if (x >= 1) return 1
+  return x * x
+}
+export function easeInOutQuad(x: number): number {
+  if (x >= 1) return 1
+  return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2
+}
+export function easeInOutSine(x: number): number {
+  if (x >= 1) return 1
+  return -(Math.cos(Math.PI * x) - 1) / 2
 }

@@ -1,23 +1,26 @@
 <script lang="ts">
+  export let data: string
   export let rect: DOMRect
-  export let data = 'No Tooltip'
 </script>
 
-<div style="top: {rect.bottom + 10}px; left: {rect.left + 4}px;">
+<div style="top: {rect.bottom + 10}px; left: calc({rect.left + rect.width / 2}px - var(--width)/2 - var(--padding));">
   {@html data}
 </div>
 
 <style>
+  * {
+    --width: 300px;
+    --padding: 12px;
+  }
   div {
-    background-color: black;
-    color: #e2e2e2;
-    /* border: 1px var(--color) solid; */
+    background-color: rgb(10, 10, 10);
+    color: white;
+    border: 1px white solid;
+    box-shadow: 4px 4px 4px black;
 
-    /* box-shadow: 4px 4px 4px black; */
-    border-radius: 4px;
-
-    width: fit-content;
-    padding: 12px;
+    width: var(--width);
+    /* border: 1px solid var(--secondary); */
+    padding: var(--padding);
     position: absolute;
     display: flex;
     flex-direction: column;
@@ -34,7 +37,7 @@
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: transparent transparent black transparent;
+    border-color: transparent transparent white transparent;
   }
   /* div::after {
     border-color: transparent transparent black transparent;

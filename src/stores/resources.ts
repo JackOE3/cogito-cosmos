@@ -8,6 +8,9 @@ export interface Resource {
   moldyCheese: number
   cheeseMonster: number
   cheeseBrains: number
+  milk: number
+  milkPower: number
+  milkPoints: number
 }
 
 export const resource = makeStore<Resource>({
@@ -16,6 +19,9 @@ export const resource = makeStore<Resource>({
   moldyCheese: 0,
   cheeseMonster: 0,
   cheeseBrains: 0,
+  milk: 0,
+  milkPower: 0,
+  milkPoints: 0,
 })
 
 /* const resource2 = {

@@ -1,10 +1,11 @@
 import type { SvelteComponent } from 'svelte'
+import type { IUnlock } from '../../stores/unlocks'
 
-export function tooltip(
+export function tooltipForUnlocks(
   element: HTMLElement,
   options: {
     Component: typeof SvelteComponent // <-- else you are referring to the instance of that component, not the class type
-    data: string | null
+    data: IUnlock
   }
 ): object {
   let tooltipComponent: SvelteComponent
@@ -17,7 +18,7 @@ export function tooltip(
     tooltipComponent = new options.Component({
       props: {
         data: tooltipData,
-        rect: element.getBoundingClientRect(),
+        rect: element.offsetParent?.getBoundingClientRect(),
       },
       target: document.body,
     })

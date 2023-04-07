@@ -3,10 +3,10 @@
   import { unlocked, resource, LORCA_OVERRIDE } from '../stores/mainStore'
   import { tooltip } from './tooltips/tooltip'
   import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
-  import type { IUnlock } from '../stores/unlocks'
+  import type { IUnlock, unlockType } from '../stores/unlocks'
 
   export let unlock: IUnlock
-  export let tooltipText: string | null = null
+  // export let tooltipText: string | null = null
   export let btnUnlocked = true
   export let btnHidden = false
 
@@ -20,16 +20,23 @@
     })
     // $unlocked[unlock.name] = true
   }
+
+  const unlockTypeSymbol: Record<unlockType, string> = {
+    static: '≡',
+    dynamic: '≋',
+    content: '✪',
+  }
+  const temp = unlock.type !== undefined ? unlockTypeSymbol[unlock.type] : ''
 </script>
 
 {#if !btnHidden}
   {#if btnUnlocked || $LORCA_OVERRIDE}
     <button
       on:click={unlockFeature}
-      disabled={$unlocked[unlock.name] || $resource[unlock.resource] < unlock.cost}
-      use:tooltip={{ content: SimpleTooltip, data: tooltipText }}
-      class="btn"
+      class:disabled={$unlocked[unlock.name] || $resource[unlock.resource] < unlock.cost}
+      use:tooltip={{ Component: SimpleTooltip, data: unlock.tooltipText }}
       class:unlocked={$unlocked[unlock.name]}
+      data-unlockType={temp}
     >
       <slot />
       <br />
@@ -38,24 +45,36 @@
   {:else}
     <button class="btn" disabled>???</button>
   {/if}
-{:else}
-  {''}
 {/if}
 
 <style>
-  .btn {
+  button {
     min-height: 50px;
     height: fit-content;
-    background: var(--btn-bg, var(--Gray800));
+    background: var(--Gray800);
     position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
   }
 
+  button:not(.disabled):hover {
+    outline: 1px var(--unlockedColor, white) solid;
+    background-color: black;
+    color: var(--unlockedColor, white);
+  }
+
   .unlocked {
     outline: 1px var(--unlockedColor, white) solid;
     background-color: black;
     color: var(--unlockedColor, white);
+  }
+
+  button::before {
+    content: attr(data-unlockType);
+    scale: 2;
+    position: absolute;
+    top: 2px;
+    left: 5px;
   }
 </style>

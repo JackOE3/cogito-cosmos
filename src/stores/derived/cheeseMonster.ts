@@ -7,59 +7,77 @@ import { brainMode, totalCheeseMonsterDeaths } from '../mainStore'
 console.log('stores/cheeseMonster.ts')
 
 export const resourceFactorFromBrainMode = derived(brainMode, $brainMode => {
-  const result = {
-    thoughts: 1,
-    cheese: 1,
-  }
   switch ($brainMode) {
     case 'peaceful': {
-      result.thoughts = 1
-      break
+      return 1
     }
     case 'neutral': {
-      result.thoughts = 0.2
-      break
+      return 0.2
     }
     case 'destructive': {
-      result.thoughts = 0
-      break
+      return 0
     }
   }
-
-  return result
 })
 
-export const cheeseMonsterCapacity = derived(upgrades, $upgrades => 10 + 10 * $upgrades.cheeseMonsterCapacity.bought)
+export const cheeseMonsterCapacityDelta = derived(upgrades, $upgrades =>
+  $upgrades.cheeseMonsterCapacityDelta.bought > 0
+    ? 0.1 * Math.pow($upgrades.cheeseMonsterCapacityDelta.bought + 10, 2)
+    : 10
+)
+export const cheeseMonsterCapacity = derived(
+  [upgrades, cheeseMonsterCapacityDelta],
+  ([$upgrades, $cheeseMonsterCapacityDelta]) =>
+    $cheeseMonsterCapacityDelta * (1 + $upgrades.cheeseMonsterCapacity.bought)
+)
 
 /** per second */
 export const cheeseMonsterSpawnrate = derived(
   [unlocked, upgrades],
-  ([$unlocked, $upgrades]) => (+$unlocked.cheeseyard * (1 + $upgrades.cheeseMonsterSpawnrate.bought)) / 6
+  ([$unlocked, $upgrades]) => (+$unlocked.cheeseyard * $upgrades.cheeseMonsterSpawnrate.bought) / 6
 )
 export const cheeseMonsterDeathrate = derived(brainMode, $brainMode =>
   $brainMode === 'peaceful' ? 0 : $brainMode === 'neutral' ? 0.01 : 0.1
 )
 
-export const cheeseMonsterLootAmount = derived(upgrades, $upgrades => 1 + $upgrades.cheeseMonsterLoot.bought)
+export const cheeseMonsterDeathsPerSec = derived(
+  [cheeseMonsterDeathrate, resource],
+  ([$cheeseMonsterDeathrate, $resource]) => $cheeseMonsterDeathrate * $resource.cheeseMonster
+)
+export const cheeseMonsterMassacreMultiplier = derived(
+  [unlocked, cheeseMonsterDeathsPerSec],
+  ([$unlocked, $cheeseMonsterDeathsPerSec]) =>
+    $unlocked.cheeseMonsterMassacre ? 1 + Math.pow($cheeseMonsterDeathsPerSec, 1.3) : 1
+)
+
+export const cheeseMonsterLootAmount = derived(
+  [upgrades, cheeseMonsterMassacreMultiplier],
+  ([$upgrades, $cheeseMonsterMassacreMultiplier]) =>
+    (1 + $upgrades.cheeseMonsterLoot.bought) * $cheeseMonsterMassacreMultiplier
+)
 export const cheeseMonsterDropRate = derived(upgrades, $upgrades => 0.1 + 0.05 * $upgrades.cheeseMonsterDropRate.bought)
-export const totalMonsterDeathsLootBoost = derived([unlocked, totalCheeseMonsterDeaths], ([$unl, $totalDeaths]) =>
-  $unl.cheeseMonsterTotalDeathsBoost ? Math.sqrt(1 + $totalDeaths / 10) : 1
+
+export const totalMonsterDeathsLootBoost = derived([unlocked, totalCheeseMonsterDeaths], ([$unlocked, $totalDeaths]) =>
+  $unlocked.cheeseMonsterTotalDeathsBoost ? 1 + 1e-6 * $totalDeaths * $totalDeaths : 1
 )
 
 export const collectiveSentienceBoost = derived([resource, unlocked], ([$resource, $unlocked]) =>
-  $unlocked.collectiveSentienceBoost ? $resource.cheeseMonster : 1
+  $unlocked.cheeseMonsterCollectiveSentience ? 1 + 1e-6 * Math.pow($resource.cheeseMonster, 3) : 1
 )
 
 // how much each monster boosts thoughts/s (additive per monster)
-const monsterThoughtFactorBase = 2
-export const monsterThoughtFactor = derived(
-  [upgrades, collectiveSentienceBoost],
-  ([$upgrades, $collectiveSentienceBoost]) =>
-    (monsterThoughtFactorBase + $upgrades.cheeseMonsterSentience.bought) * $collectiveSentienceBoost
-)
+export const monsterThoughtFactor = derived(upgrades, $upgrades => 1 + 1 * $upgrades.cheeseMonsterSentience.bought)
 
 export const monsterThoughtMult = derived(
-  [monsterThoughtFactor, resource, resourceFactorFromBrainMode],
-  ([$monsterThoughtFactor, $resource, $resourceFactorFromBrainMode]) =>
-    $monsterThoughtFactor * $resource.cheeseMonster * $resourceFactorFromBrainMode.thoughts
+  [monsterThoughtFactor, resource, resourceFactorFromBrainMode, collectiveSentienceBoost],
+  ([$monsterThoughtFactor, $resource, $resourceFactorFromBrainMode, $collectiveSentienceBoost]) =>
+    1 + $monsterThoughtFactor * $collectiveSentienceBoost * $resource.cheeseMonster * $resourceFactorFromBrainMode
+)
+
+export const monsterMoldyCheeseFactor = derived(upgrades, $upgrades => 0.01 * $upgrades.cheeseMonsterMoldiness.bought)
+
+export const monsterMoldyCheeseMult = derived(
+  [monsterMoldyCheeseFactor, resource, resourceFactorFromBrainMode],
+  ([$monsterMoldyCheeseFactor, $resource, $resourceFactorFromBrainMode]) =>
+    1 + $monsterMoldyCheeseFactor * $resource.cheeseMonster * $resourceFactorFromBrainMode
 )

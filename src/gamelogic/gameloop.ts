@@ -1,8 +1,9 @@
-import { lastSaved as lastSavedStore, resource } from '../stores/mainStore'
+import { lastSaved as lastSavedStore, resource, highestMilk } from '../stores/mainStore'
 import { moldyCheeseHalfLifeSeconds } from '../stores/derived/moldyCheese'
 import { thoughtsPerSec } from '../stores/derived/thoughts'
 import { get } from 'svelte/store'
 import { handleCheeseMonster } from './cheeseMonster'
+import { milkPowerPerSec } from '../stores/derived/milk'
 
 console.log('gameloop.ts')
 // import {upgrades} from './upgrades'
@@ -100,6 +101,9 @@ function gameUpdate(deltaTimeSeconds: number): void {
     $resource.moldyCheese *= Math.exp((-LN2 * deltaTimeSeconds) / get(moldyCheeseHalfLifeSeconds))
 
     handleCheeseMonster($resource, deltaTimeSeconds)
+
+    if ($resource.milk > get(highestMilk)) highestMilk.set($resource.milk)
+    $resource.milkPower += get(milkPowerPerSec) * deltaTimeSeconds
 
     return $resource
   })

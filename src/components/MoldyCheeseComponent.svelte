@@ -1,7 +1,6 @@
 <script lang="ts">
   import { formatNumber, formatWhole } from '../gamelogic/utils'
   import Window from './Window.svelte'
-  import UnlockButton from './UnlockButton.svelte'
   import UpgradeButton from './UpgradeButton.svelte'
   import {
     LORCA_OVERRIDE,
@@ -13,16 +12,22 @@
   } from '../stores/mainStore'
   import { cheeseCycleBatchSize, cheeseCycleDuration, cheeseModeFactor } from '../stores/derived/cheese'
   import { moldyCheeseHalfLifeSeconds, moldyCheeseChance } from '../stores/derived/moldyCheese'
-  import { cheeseMonsterCapacity, cheeseMonsterSpawnrate } from '../stores/derived/cheeseMonster'
+  import {
+    cheeseMonsterCapacity,
+    cheeseMonsterSpawnrate,
+    monsterMoldyCheeseMult,
+  } from '../stores/derived/cheeseMonster'
   import { unlocks } from '../stores/unlocks'
+  import UnlockDrawer from './UnlockDrawer.svelte'
 
   const buyMaxUpgrades = false
 
   let conversionOnCD = false
   $: conversionCooldownMS = $unlocked.manualMoldyCheeseConversionBoost ? 5000 * 10 : 5000
+  // softcap upgrade when exponent > 1? (currently at >323 bought)
   $: conversionExponent = 0.1 + 0.05 * Math.sqrt($upgrades.moldyCheeseConversionExponent.bought + 1)
   // reactive so it is updated when conversionExponent changes
-  $: conversionAmount = (cheese: number): number => Math.pow(cheese, conversionExponent)
+  $: conversionAmount = (cheese: number): number => Math.pow(cheese, conversionExponent) * $monsterMoldyCheeseMult
   $: manualConversionAmount = conversionAmount($resource.cheese) * ($unlocked.manualMoldyCheeseConversionBoost ? 10 : 1)
   $: byproductConversionAmount =
     $cheeseFactoryMode === 'warpSpeed'
@@ -64,7 +69,7 @@
   }
 </script>
 
-<Window title="Moldy Cheese" --bg="linear-gradient(90deg, rgb(75, 121, 0) 0%, rgb(136, 255, 0) 100%)">
+<Window title="Moldy Cheese" themeColor1="rgb(75, 121, 0)" themeColor2="rgb(136, 255, 0)">
   <div style="display: flex; flex-direction: column; gap: 8px;">
     <span class="resourceDisplay">
       You have {formatNumber($resource.moldyCheese, 2)} <strong class="colorText">moldy cheese</strong>
@@ -77,10 +82,9 @@
       )}%/s) <br />
       (Moldy cheese is an unstable isotope of cheese and can decay) <br />
       {#if $unlocked.moldyCheeseByproduct || $LORCA_OVERRIDE}
-        You gain {formatNumber(byproductConversionAmount, 2)} moldy cheese with a {formatNumber(
-          $moldyCheeseChance * 100,
-          1
-        )}% chance whenever a cheese cycle completes
+        You gain {formatNumber(byproductConversionAmount, 2)} moldy cheese
+        {#if $moldyCheeseChance !== 1} with a {formatWhole($moldyCheeseChance * 100)}% chance {/if}
+        whenever a cheese cycle completes
         <br />
         Estimated rate: {formatNumber(
           (byproductConversionAmount / ($cheeseCycleDuration / 1000)) * $moldyCheeseChance,
@@ -102,15 +106,17 @@
     {/if}
   </button>
 
+  <UnlockDrawer unlocks={unlocks.moldyCheese} folderName="Free Alchemical Ingredient Icons Pack" />
+
   <div class="flexRowContainer">
     <div class="gridColumn">
       <UpgradeButton upgradeName="moldyCheeseConversionExponent" {buyMaxUpgrades}>
-        Improve the conversion function ({$upgrades.moldyCheeseConversionExponent.bought})<br />
+        Improve the conversion function <br />
         Currently: cheese^{formatNumber(conversionExponent, 4)}
       </UpgradeButton>
 
       <UpgradeButton upgradeName="moldyCheeseHalfLife" {buyMaxUpgrades} tooltipText="+10s">
-        Increase MC half-life ({$upgrades.moldyCheeseHalfLife.bought})<br />
+        Increase MC half-life <br />
         Currently: {formatWhole($moldyCheeseHalfLifeSeconds)}s
       </UpgradeButton>
 
@@ -120,12 +126,12 @@
         btnUnlocked={$unlocked.moldyCheeseByproduct}
         tooltipText="+10%"
       >
-        Increase MC byproduct chance ({$upgrades.moldyCheeseChance.bought}/{$upgrades.moldyCheeseChance.maxBuy})<br />
+        Increase MC byproduct chance <br />
         Currently: {formatNumber($moldyCheeseChance * 100, 1)}%
       </UpgradeButton>
 
       <UpgradeButton upgradeName="cheeseMonsterSpawnrate" {buyMaxUpgrades} btnUnlocked={$unlocked.cheeseyard}>
-        Better spawn rate in the cheeseyard ({$upgrades.cheeseMonsterSpawnrate.bought})<br />
+        Better spawn rate in the cheeseyard <br />
         Currently: {$cheeseMonsterSpawnrate < 1
           ? `${formatWhole($cheeseMonsterSpawnrate * 60)}/min`
           : `${formatNumber($cheeseMonsterSpawnrate, 2)}/s`}
@@ -137,13 +143,13 @@
         btnUnlocked={$unlocked.cheeseyard}
         tooltipText="+10 Capacity"
       >
-        Expand the Cheeseyard ({$upgrades.cheeseMonsterCapacity.bought})<br />
+        Expand the Cheeseyard <br />
         Current Capacity: {formatWhole($cheeseMonsterCapacity)}
       </UpgradeButton>
     </div>
 
     <div class="gridColumn">
-      <UnlockButton unlock={unlocks.moldyCheeseByproduct}>
+      <!-- <UnlockButton unlock={unlocks.moldyCheeseByproduct}>
         Your cheese factory can produce moldy cheese as a byproduct
       </UnlockButton>
 
@@ -151,22 +157,20 @@
         <span>Construct the <strong style="color:crimson">Cheeseyard</strong></span>
       </UnlockButton>
 
-      <UnlockButton unlock={unlocks.manualMoldyCheeseConversionBoost}>
+      <UnlockButton unlock={unlocks.manualMoldyCheeseConversionBoost} btnUnlocked={$unlocked.cheeseyard}>
         Cheese sacrifice produces 10x more moldy cheese (but cooldown also 10x)
       </UnlockButton>
 
-      <UnlockButton unlock={unlocks.moldyCheeseCycleDurationBoost}>
-        Moldy cheese byproduct yield is boosted by relative duration of the cheese cycle <br />
-        <!-- Boost: x^1.5 -->
-      </UnlockButton>
+      <UnlockButton unlock={unlocks.moldyCheeseCycleDurationBoost} btnUnlocked={$unlocked.cheeseyard}>
+        MC byproduct is boosted by (relative duration of the cheese cycle)^1.5 <br />
+      </UnlockButton> -->
     </div>
   </div>
 </Window>
 
 <style>
   * {
-    --unlockedColor: rgb(60, 255, 0);
-    --maxedColor: var(--unlockedColor);
+    --maxedColor: rgb(60, 255, 0);
   }
   .colorText {
     color: rgb(60, 255, 0);
