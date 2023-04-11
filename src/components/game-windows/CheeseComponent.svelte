@@ -35,7 +35,6 @@
   import { cheeseThoughtMult, cheeseCyclesThoughtMult } from '@store/derived/thoughts'
   import { unlocks, UnlockName } from '@store/primitive/unlocks'
   import UnlockDrawer from '../UnlockDrawer.svelte'
-  import SimpleTooltip from '../tooltips/SimpleTooltip.svelte'
   import { tooltip } from '../tooltips/tooltip'
 
   const cheeseModeDescription: Record<CheeseFactoryMode, string> = {
@@ -191,8 +190,7 @@
           style="display:flex; flex-direction:column; background-color: var(--Gray800)"
           class="button-border"
           use:tooltip={{
-            Component: SimpleTooltip,
-            data: 'Increases the speed of a cheese cycle. <br> Every level increases SPEED by 5%, but doubles the COST. <br> (multiplicative scaling)',
+            data: 'Increases the speed of a cheese cycle. <br> Every level increases SPEED by 5%, but doubles the COST. <br> (multiplicative)',
           }}
         >
           <div

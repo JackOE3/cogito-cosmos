@@ -3,7 +3,6 @@
   import { buyUpgrade } from '@gamelogic/buy-upgrade'
   import { upgrades, resource, LORCA_OVERRIDE } from '@store/primitive'
   import { tooltip } from './tooltips/tooltip'
-  import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
   import { derived, get } from 'svelte/store'
   import { fade } from 'svelte/transition'
 
@@ -33,7 +32,7 @@
   <button
     on:click={handleUpgradeClicked}
     class:disabled={!$canAfford}
-    use:tooltip={{ Component: SimpleTooltip, data: tooltipText }}
+    use:tooltip={{ data: tooltipText }}
     class:maxed={$isMaxed}
     transition:fade={{ duration: 1000 }}
   >

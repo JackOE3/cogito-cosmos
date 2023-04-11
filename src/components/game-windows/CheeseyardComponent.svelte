@@ -2,7 +2,6 @@
   import Window from './window-model/Window.svelte'
   import { formatNumber, formatWhole } from '@gamelogic/utils'
   import { tooltip } from '../tooltips/tooltip'
-  import SimpleTooltip from '../tooltips/SimpleTooltip.svelte'
   import UpgradeButton from '../UpgradeButton.svelte'
   import { unlocks, UnlockName } from '@store/primitive/unlocks'
   import { type BrainMode, brainMode, totalCheeseMonsterDeaths, resource, upgrades, unlocked } from '@store/primitive'
@@ -23,9 +22,9 @@
     collectiveSentienceBoost,
   } from '@store/derived/cheeseMonster'
   import { fade } from 'svelte/transition'
-  import UnlockDrawer from './UnlockDrawer.svelte'
-  import AffixComponent from './AffixComponent.svelte'
-  import Affix from './Affix.svelte'
+  import UnlockDrawer from '../UnlockDrawer.svelte'
+  import AffixComponent from '../AffixComponent.svelte'
+  import Affix from '../Affix.svelte'
 
   const buyMaxUpgrades = false
 
@@ -98,7 +97,7 @@
       style="height:50px"
       on:click={unlockBrainWaveController}
       disabled={$resource.cheeseMonster < 10}
-      use:tooltip={{ Component: SimpleTooltip, data: 'Are you sure?' }}
+      use:tooltip={{ data: 'Are you sure?' }}
     >
       Activate the monster brain wave controller <br />
       Requires 10 cheese monsters
@@ -130,7 +129,6 @@
           <span
             class="backgroundOnHover"
             use:tooltip={{
-              Component: SimpleTooltip,
               data: 'The less preoccupied the monsters are with killing each<br> other, the more they can ponder and produce stuff.',
             }}
             >Relative resource generation: {$resourceFactorFromBrainMode}x

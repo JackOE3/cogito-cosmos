@@ -2,7 +2,6 @@
   import { formatNumber } from '../gamelogic/utils'
   import { fade } from 'svelte/transition'
   import { tooltip } from './tooltips/tooltip'
-  import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
 
   export let factor: number
   export let unlocked = true
@@ -13,7 +12,7 @@
   <span
     class="affix"
     transition:fade={{ duration: 1000 }}
-    use:tooltip={{ Component: SimpleTooltip, data: tooltipText }}
+    use:tooltip={{ data: tooltipText }}
     class:backgroundOnHover={tooltipText !== null}
   >
     <slot>No Description</slot>

@@ -34,7 +34,7 @@
   <button
     on:click={buyUpgrade}
     disabled={!$canAfford || $isMaxed}
-    use:tooltip={{ Component: SimpleTooltip, data: tooltipText }}
+    use:tooltip={{ data: tooltipText }}
     class:maxed={$isMaxed}
     data-after={$isMaxed ? 'MAX' : $upgradesBought}
   >

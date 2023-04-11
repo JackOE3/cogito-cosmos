@@ -34,7 +34,7 @@
     <button
       on:click={unlockFeature}
       class:disabled={$unlocked[unlock.name] || $resource[unlock.resource] < unlock.cost}
-      use:tooltip={{ Component: SimpleTooltip, data: unlock.tooltipText }}
+      use:tooltip={{ data: unlock.tooltipText }}
       class:unlocked={$unlocked[unlock.name]}
       data-unlockType={temp}
     >

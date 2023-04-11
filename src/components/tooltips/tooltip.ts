@@ -1,20 +1,19 @@
-import type SimpleTooltip from './SimpleTooltip.svelte'
+import Tooltip from './Tooltip.svelte'
 
 export function tooltip(
   element: HTMLElement,
   options: {
-    Component: typeof SimpleTooltip // <-- else you are referring to the instance of that component, not the class type
     data: string | null
   }
 ): object {
-  let tooltipComponent: SimpleTooltip
+  let tooltipComponent: Tooltip
   let tooltipData: string | null = options.data ?? null
   let mousePressed = false
   let tooltipShown = false
 
   function mouseEnter(_event: MouseEvent): void {
     if (tooltipData === null || mousePressed) return
-    tooltipComponent = new options.Component({
+    tooltipComponent = new Tooltip({
       props: {
         data: tooltipData,
         rect: element.getBoundingClientRect(),

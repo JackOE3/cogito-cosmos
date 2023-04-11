@@ -1,5 +1,5 @@
 import type { IUnlock } from '@store/primitive/unlocks'
-import type UnlockTooltip from './UnlockTooltip.svelte'
+import UnlockTooltip from './UnlockTooltip.svelte'
 
 export function tooltipForUnlocks(
   element: HTMLElement,
@@ -15,7 +15,7 @@ export function tooltipForUnlocks(
 
   function mouseEnter(_event: MouseEvent): void {
     if (tooltipData === null || mousePressed) return
-    tooltipComponent = new options.Component({
+    tooltipComponent = new UnlockTooltip({
       props: {
         data: tooltipData,
         rect: element.offsetParent?.getBoundingClientRect() ?? new DOMRect(0, 0, 0, 0),

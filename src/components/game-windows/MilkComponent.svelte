@@ -1,8 +1,6 @@
 <script lang="ts">
   import Window from './window-model/WindowOLD.svelte'
   import { formatNumber, formatWhole } from '@gamelogic/utils'
-  import { tooltip } from '../tooltips/tooltip'
-  import SimpleTooltip from '../tooltips/SimpleTooltip.svelte'
   import UpgradeButton from '../UpgradeButton.svelte'
   import { get } from 'svelte/store'
   import {
@@ -13,6 +11,7 @@
     milkUpgradeTier,
   } from '@store/derived/milk'
   import { highestMilk, upgrades, resource } from '@store/primitive'
+  import { tooltip } from '../tooltips/tooltip'
 
   function handleMilkReset(): void {
     const milkGain = Math.floor(get(milkFromReset))
@@ -31,7 +30,6 @@
   <button
     style="width: 250px; "
     use:tooltip={{
-      Component: SimpleTooltip,
       data: 'You keep all your content unlocks. <br/> The reward amount depends on your thoughts and <br/>cheese, and scales ~thoughts^0.25*cheese^0.5.',
     }}
     on:click={handleMilkReset}
