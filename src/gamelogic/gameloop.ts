@@ -1,9 +1,13 @@
-import { lastSaved as lastSavedStore, resource, highestMilk } from '@store/primitive'
-import { moldyCheeseHalfLifeSeconds } from '@store/derived/moldyCheese'
-import { thoughtsPerSec } from '@store/derived/thoughts'
 import { get } from 'svelte/store'
 import { handleCheeseMonster } from './cheeseMonster'
-import { milkPowerPerSec } from '@store/derived/milk'
+import {
+  lastSaved as lastSavedStore,
+  resource,
+  highestMilk,
+  mcHalfLifeSeconds,
+  thoughtsPerSec,
+  milkPowerPerSec,
+} from '@store'
 
 console.log('gameloop.ts')
 // import {upgrades} from './upgrades'
@@ -95,10 +99,10 @@ function gameUpdate(deltaTimeSeconds: number): void {
   resource.update($resource => {
     $resource.thoughts += get(thoughtsPerSec) * deltaTimeSeconds
     // moldy cheese decay (linear extrapolation)
-    // moldyCheese.update(value => value * (1 - LN2/get(moldyCheeseHalfLifeSeconds) * deltaTimeSeconds))
+    // moldyCheese.update(value => value * (1 - LN2/get(mcHalfLifeSeconds) * deltaTimeSeconds))
     // OR: moldy cheese decay (exact)
     // if statement so while offline for longer than 10s you dont lose moldy cheese (?)
-    $resource.moldyCheese *= Math.exp((-LN2 * deltaTimeSeconds) / get(moldyCheeseHalfLifeSeconds))
+    $resource.moldyCheese *= Math.exp((-LN2 * deltaTimeSeconds) / get(mcHalfLifeSeconds))
 
     handleCheeseMonster($resource, deltaTimeSeconds)
 

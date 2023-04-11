@@ -1,7 +1,7 @@
 <script lang="ts">
   import { formatResourceName, formatWhole } from '@gamelogic/utils'
-  import { resource } from '@store/primitive'
-  import type { IUnlock, unlockType } from '@store/primitive/unlocks'
+  import { resource } from '@store'
+  import type { IUnlock, unlockType } from '@store'
 
   export let data: IUnlock
   export let rect: DOMRect

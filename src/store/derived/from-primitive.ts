@@ -11,7 +11,7 @@ import {
   totalCheeseMonsterDeaths,
   type CheeseFactoryMode,
 } from '../primitive'
-import { checkBoolForNum } from '../../gamelogic/utils'
+import { checkBoolForNum } from '@gamelogic/utils'
 
 export const thoughtBoostMax = derived(
   upgrades,
@@ -32,6 +32,8 @@ export const cheeseThoughtMult = derived(
   ([$resource, $upgrades]) =>
     1 + Math.log($resource.cheese + 1) * $upgrades.cheeseThoughtMult.bought * $upgrades.cheeseThoughtMult.bought
 )
+
+export const maxCheeseQueue = derived(upgrades, $upgrades => 5 + 5 * $upgrades.cheeseQueueLength.bought)
 
 export const cheeseCyclesThoughtMult = derived(
   [unlocked, cheeseQueueTotalCycles],
@@ -73,12 +75,25 @@ export const cheeseBoostFactorYield = derived([unlocked, currentThoughtBoost], (
   checkBoolForNum($unlocked.cheeseBoost, $currentThoughtBoost)
 )
 
-const moldyCheeseHalfLifeStartingValue = 10
-export const moldyCheeseHalfLifeSeconds = derived(
+// MOLDY STUFF
+
+const mcHalfLifeStartingValue = 10
+export const mcHalfLifeSeconds = derived(
   upgrades,
-  $upgrades => moldyCheeseHalfLifeStartingValue + 10 * $upgrades.moldyCheeseHalfLife.bought
+  $upgrades => mcHalfLifeStartingValue + 10 * $upgrades.moldyCheeseHalfLife.bought
 )
 export const moldyCheeseChance = derived(upgrades, $upgrades => 0.1 + 0.1 * $upgrades.moldyCheeseChance.bought)
+
+export const mcConversionCooldownMS = derived(unlocked, $unlocked =>
+  $unlocked.manualMoldyCheeseConversionBoost ? 5000 * 10 : 5000
+)
+// softcap upgrade when exponent > 1? (currently at >323 bought)
+export const mcConversionExponent = derived(
+  upgrades,
+  $upgrades => 0.1 + 0.05 * Math.sqrt($upgrades.moldyCheeseConversionExponent.bought + 1)
+)
+
+// CHEESEYARD STUFF
 
 export const resourceFactorFromBrainMode = derived(brainMode, $brainMode => {
   switch ($brainMode) {

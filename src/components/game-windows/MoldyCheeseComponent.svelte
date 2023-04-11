@@ -9,11 +9,16 @@
     cheeseFactoryMode,
     unlocked,
     upgrades,
-  } from '@store/primitive'
-  import { cheeseCycleBatchSize, cheeseCycleDuration, cheeseModeFactor } from '@store/derived/cheese'
-  import { moldyCheeseHalfLifeSeconds, moldyCheeseChance } from '@store/derived/moldyCheese'
-  import { cheeseMonsterCapacity, cheeseMonsterSpawnrate, monsterMoldyCheeseMult } from '@store/derived/cheeseMonster'
-  import { UnlockName, unlocks } from '@store/primitive/unlocks'
+    cheeseCycleBatchSize,
+    cheeseCycleDuration,
+    cheeseModeFactor,
+    mcHalfLifeSeconds,
+    moldyCheeseChance,
+    cheeseMonsterCapacity,
+    cheeseMonsterSpawnrate,
+    monsterMoldyCheeseMult,
+    unlocks,
+  } from '@store'
   import UnlockDrawer from '../UnlockDrawer.svelte'
   import AffixComponent from '../AffixComponent.svelte'
   import Affix from '../Affix.svelte'
@@ -30,7 +35,7 @@
 
   const moldyCheeseCycleDurationBoostExponent = 1.5
   $: moldyCheeseCycleDurationBoostFactor = Math.pow($cheeseModeFactor.duration, moldyCheeseCycleDurationBoostExponent)
-  $: moldyCheeseHalflifeBoostFactor = 1 + 1e-6 * Math.pow($moldyCheeseHalfLifeSeconds, 3)
+  $: moldyCheeseHalflifeBoostFactor = 1 + 1e-6 * Math.pow($mcHalfLifeSeconds, 3)
 
   $: moldyCheeseByproductGain =
     $cheeseFactoryMode !== 'warpSpeed'
@@ -80,8 +85,8 @@
       <br />
     </span>
     <span>
-      Half-life: {formatWhole($moldyCheeseHalfLifeSeconds)}s (-{formatNumber(
-        100 - 100 * (1 - Math.log(2) / $moldyCheeseHalfLifeSeconds),
+      Half-life: {formatWhole($mcHalfLifeSeconds)}s (-{formatNumber(
+        100 - 100 * (1 - Math.log(2) / $mcHalfLifeSeconds),
         2
       )}%/s) <br />
       (Moldy cheese is an unstable isotope of cheese and can decay) <br />
@@ -129,7 +134,7 @@
       <UpgradeButton
         upgradeName="moldyCheeseHalfLife"
         {buyMaxUpgrades}
-        tooltipText={`+10s half-life <br> Currently: ${formatWhole($moldyCheeseHalfLifeSeconds)}s`}
+        tooltipText={`+10s half-life <br> Currently: ${formatWhole($mcHalfLifeSeconds)}s`}
       >
         Increase MC half-life <br />
       </UpgradeButton>

@@ -3,15 +3,21 @@
   import UnlockDrawer from '../UnlockDrawer.svelte'
   import { formatNumber, formatTime, formatWhole } from '@gamelogic/utils'
   import UpgradeButton from '../UpgradeButton.svelte'
-  import { unlocks } from '@store/primitive/unlocks'
-  import { LORCA_OVERRIDE, resource, unlocked, upgrades, currentThoughtBoost, currentThoughtBoostTime } from '@store'
   import {
+    unlocks,
+    LORCA_OVERRIDE,
+    resource,
+    unlocked,
+    upgrades,
+    currentThoughtBoost,
+    currentThoughtBoostTime,
     thoughtBoostMax,
     thoughtBoostDuration,
     thoughtBoostMaxStacks,
     thoughtsPerSec,
     thoughtsPerSecBase,
-  } from '@store/derived/thoughts'
+  } from '@store'
+
   import { onMount } from 'svelte'
   import { derived, get } from 'svelte/store'
 

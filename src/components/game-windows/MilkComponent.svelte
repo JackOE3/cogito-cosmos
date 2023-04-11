@@ -3,14 +3,8 @@
   import { formatNumber, formatWhole } from '@gamelogic/utils'
   import UpgradeButton from '../UpgradeButton.svelte'
   import { get } from 'svelte/store'
-  import {
-    cummulativeUpgradesToTier,
-    milkFromReset,
-    milkPowerPerSec,
-    milkUpgradeEffect,
-    milkUpgradeTier,
-  } from '@store/derived/milk'
-  import { highestMilk, upgrades, resource } from '@store/primitive'
+  import { cummulativeUpgradesToTier, milkFromReset, milkPowerPerSec, milkUpgradeEffect, milkUpgradeTier } from '@store'
+  import { highestMilk, upgrades, resource } from '@store'
   import { tooltip } from '../tooltips/tooltip'
 
   function handleMilkReset(): void {

@@ -18,22 +18,25 @@
     cheeseQueueTotalCycles,
     type CheeseFactoryMode,
     currentThoughtBoost,
-  } from '@store/primitive'
+  } from '@store'
   import {
     cheeseModeFactor,
     cheeseCycleDuration,
     cheeseCycleBatchSize,
     cheeseCycleCost,
     cheeseQueueCostDivideBy,
-    cheeseQueue,
+    cheeseCycleBase,
+    cheeseQueueActive,
     cheeseQueueOverclockSpeedMult,
     maxCheeseQueue,
     cheeseYieldDeltaDuration,
     cheeseQueueLengthBoostFactor,
     cheeseCycleAcceleratorFactor,
-  } from '@store/derived/cheese'
-  import { cheeseThoughtMult, cheeseCyclesThoughtMult } from '@store/derived/thoughts'
-  import { unlocks, UnlockName } from '@store/primitive/unlocks'
+    cheeseThoughtMult,
+    cheeseCyclesThoughtMult,
+    unlocks,
+    UnlockName,
+  } from '@store'
   import UnlockDrawer from '../UnlockDrawer.svelte'
   import { tooltip } from '../tooltips/tooltip'
 
@@ -44,14 +47,14 @@
   }
 
   const buyMaxUpgrades = false
-  // extracting the stores from the cheeseQueue object
-  const cheeseQueueYield = cheeseQueue.yield
-  const cheeseQueueCycleDuration = cheeseQueue.cycleDuration
-  const cheeseQueueCost = cheeseQueue.cost
+  // extracting the stores from the cheeseCycleBase object
+  const cheeseCycleBaseYield = cheeseCycleBase.yield
+  const cheeseCycleBaseDuration = cheeseCycleBase.duration
+  const cheeseCycleBaseCost = cheeseCycleBase.cost
 
   // 1 if it's active, 0 when not
-  $: cheeseQueueActive = cheeseQueue.state === 'running'
-  $: cheesePerSecFromQueue = +cheeseQueueActive * 1000 * ($cheeseCycleBatchSize / $cheeseCycleDuration)
+  // $: cheeseQueueActive = cheeseCycleBase.state === 'running'
+  $: cheesePerSecFromQueue = +$cheeseQueueActive * 1000 * ($cheeseCycleBatchSize / $cheeseCycleDuration)
 
   let cheeseBarProgress = 0
   let lastTime: number | null = null
@@ -63,14 +66,14 @@
    * Triggered when manually starting the cheese generation (with button or input range)
    */
   function handleCheeseGenerationInit(): void {
-    if ($resource.thoughts < $cheeseCycleCost || cheeseQueue.state === 'running') return
+    if ($resource.thoughts < $cheeseCycleCost || $cheeseQueueActive) return
     $resource.thoughts -= $cheeseCycleCost
     if ($currentCheeseQueue >= 1) $currentCheeseQueue--
-    cheeseQueue.state = 'running'
+    cheeseQueueActive.set(true)
 
     lastTime = null
 
-    /* TODO: insert here logic for if cheeseQueueCycleDuration exceeds a certain speed, then no animation, just a static bar with
+    /* TODO: insert here logic for if cheeseCycleBaseDuration exceeds a certain speed, then no animation, just a static bar with
     statistical averages for calculations */
     requestAnimationFrame(animateCheeseBar)
   }
@@ -87,7 +90,7 @@
       cheeseBarProgress -= $cheeseCycleDuration
       if (cheeseBarProgress < $cheeseCycleDuration) cheeseBarProgress = 0
     }
-    if (cheeseQueue.state === 'running') requestAnimationFrame(animateCheeseBar)
+    if ($cheeseQueueActive) requestAnimationFrame(animateCheeseBar)
   }
 
   /**
@@ -96,13 +99,13 @@
   function handleCheeseGeneration(): void {
     $resource.cheese += $cheeseCycleBatchSize
 
-    if (!cheeseQueue.infinite && !$currentCheeseQueue) {
+    if (!cheeseCycleBase.infinite && !$currentCheeseQueue) {
       // 'initial' better than 'paused', because the animation might've already started a small bit
-      cheeseQueue.state = 'initial'
+      cheeseQueueActive.set(false)
       return
     }
     if ($resource.thoughts < $cheeseCycleCost) {
-      cheeseQueue.state = 'initial'
+      cheeseQueueActive.set(false)
       return
     }
 
@@ -123,7 +126,7 @@
 
   <div>
     <div class="flexRowContainer">
-      <button style="width:170px;" on:click={handleCheeseGenerationInit} disabled={cheeseQueue.state === 'running'}>
+      <button style="width:170px;" on:click={handleCheeseGenerationInit} disabled={$cheeseQueueActive}>
         Make cheese <br />
         {formatNumber($cheeseCycleCost, 2)} thoughts
       </button>
@@ -219,7 +222,7 @@
               >
                 COST
               </span>
-              <span> {formatNumber($cheeseQueueCost, 2)} thoughts/cycle</span>
+              <span> {formatNumber($cheeseCycleBaseCost, 2)} thoughts/cycle</span>
             </div>
           </div>
         </div>
@@ -287,11 +290,11 @@
         upgradeName="cheeseYield"
         {buyMaxUpgrades}
         tooltipText={`+${formatNumber(
-          (($upgrades.cheeseYield.bought + 1) * $cheeseCycleBatchSize) / $cheeseQueueYield,
+          (($upgrades.cheeseYield.bought + 1) * $cheeseCycleBatchSize) / $cheeseCycleBaseYield,
           2
         )} 
         cheese per cycle <br>
-        +${formatTime((cheeseYieldDeltaDuration * $cheeseCycleDuration) / $cheeseQueueCycleDuration / 1000)} 
+        +${formatTime((cheeseYieldDeltaDuration * $cheeseCycleDuration) / $cheeseCycleBaseDuration / 1000)} 
         cycle duration <br>(without scaling: +0.5s cycle duration)`}
       >
         Your workers create more cheese but also take longer
@@ -301,7 +304,7 @@
         upgradeName="cheeseQueueLength"
         {buyMaxUpgrades}
         btnUnlocked={$unlocked.cheeseQueue}
-        tooltipText={`+${cheeseQueue.capDelta} capacity <br> Currently: ${$maxCheeseQueue}`}
+        tooltipText={`+${5} capacity <br> Currently: ${$maxCheeseQueue}`}
       >
         <span>Lengthen the <span style="color:yellow; font-weight: bold">Cheese Queue</span></span>
       </UpgradeButton>
@@ -387,16 +390,16 @@
 
 <!-- <Window --width="max-content" --bg="linear-gradient(90deg, rgb(121, 119, 0) 0%, yellow 100%)">
   <div class="gridColumn">
-    <UnlockButton unlock={unlocks.cheeseQueue}>
+    <UnlockButton unlock={unlocks.cheeseCycleBase}>
       <span>Unlock the <strong style="color:yellow">Cheese Queue</strong></span>
     </UnlockButton>
 
-    <UnlockButton unlock={unlocks.cheeseQueueLengthBoost} btnUnlocked={$unlocked.cheeseQueue}>
+    <UnlockButton unlock={unlocks.cheeseQueueLengthBoost} btnUnlocked={$unlocked.cheeseCycleBase}>
       Cheese Queue Length boosts cheese production<br />
       Currently: {formatNumber($cheeseQueueLengthBoostFactor, 2)}x
     </UnlockButton>
 
-    <UnlockButton unlock={unlocks.cheeseBoost} btnUnlocked={$unlocked.cheeseQueue}>
+    <UnlockButton unlock={unlocks.cheeseBoost} btnUnlocked={$unlocked.cheeseCycleBase}>
       Thought Boost also affects cheese production <br />
       Currently: {formatNumber($currentThoughtBoost, 2)}x
     </UnlockButton>

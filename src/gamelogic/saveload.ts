@@ -1,7 +1,7 @@
 import { get } from 'svelte/store'
 import { sendMessage } from './notifications'
-import * as store from '@store/primitive'
-import { upgradesInitial } from '@store/primitive/upgrades'
+import * as store from '@store/primitive/to-save'
+import { upgradesInitial } from '@store'
 // import {compress, decompress} from 'lz-string'
 
 console.log('savedload.ts')

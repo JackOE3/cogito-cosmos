@@ -1,10 +1,9 @@
-import type { IUnlock } from '@store/primitive/unlocks'
+import type { IUnlock } from '@store'
 import UnlockTooltip from './UnlockTooltip.svelte'
 
 export function tooltipForUnlocks(
   element: HTMLElement,
   options: {
-    Component: typeof UnlockTooltip // <-- else you are referring to the instance of that component, not the class type
     data: IUnlock
   }
 ): object {

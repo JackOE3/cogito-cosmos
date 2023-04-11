@@ -1,11 +1,13 @@
 console.log('primitive.ts')
 
-export { resource } from './resources'
+export * from './resources'
 
-export { upgrades } from './upgrades'
+export * from './upgrades'
 
-export { unlocked } from './unlocks'
+export * from './unlocks'
 
-export { milkBoostActive } from './boosts'
+export * from './boosts'
 
 export * from './misc'
+
+export * from './upgradesTiered'

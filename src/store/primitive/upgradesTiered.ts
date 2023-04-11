@@ -36,9 +36,9 @@ class UpgradeTiered implements IUpgradeTiered {
   }
 }
 
-export const upgradesInitial: Record<string, IUpgradeTiered> = {}
+export const upgradesTieredInitial: Record<string, IUpgradeTiered> = {}
 
-export const upgradesTiered = makeUpgradesStore(upgradesInitial)
+export const upgradesTiered = makeUpgradesStore(upgradesTieredInitial)
 
 interface upgradesStore<T> extends baseStore<T> {
   buy: (name: string) => void

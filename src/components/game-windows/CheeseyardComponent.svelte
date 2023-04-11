@@ -3,9 +3,9 @@
   import { formatNumber, formatWhole } from '@gamelogic/utils'
   import { tooltip } from '../tooltips/tooltip'
   import UpgradeButton from '../UpgradeButton.svelte'
-  import { unlocks, UnlockName } from '@store/primitive/unlocks'
-  import { type BrainMode, brainMode, totalCheeseMonsterDeaths, resource, upgrades, unlocked } from '@store/primitive'
   import {
+    unlocks,
+    UnlockName,
     monsterThoughtMult,
     resourceFactorFromBrainMode,
     totalMonsterDeathsLootBoost,
@@ -20,7 +20,8 @@
     cheeseMonsterMassacreMultiplier,
     cheeseMonsterDeathsPerSec,
     collectiveSentienceBoost,
-  } from '@store/derived/cheeseMonster'
+  } from '@store'
+  import { type BrainMode, brainMode, totalCheeseMonsterDeaths, resource, upgrades, unlocked } from '@store'
   import { fade } from 'svelte/transition'
   import UnlockDrawer from '../UnlockDrawer.svelte'
   import AffixComponent from '../AffixComponent.svelte'
@@ -57,7 +58,6 @@
           class="backgroundOnHover"
           transition:fade={{ duration: 1000 }}
           use:tooltip={{
-            Component: SimpleTooltip,
             data: 'In bigger populations, a sort of global thinking <br/> emerges, giving an additional multiplier. <br/> (~population^3)',
           }}
         >
@@ -78,7 +78,6 @@
               class="backgroundOnHover"
               transition:fade={{ duration: 1000 }}
               use:tooltip={{
-                Component: SimpleTooltip,
                 data: 'Higher deaths/s are disproportionally rewarded. <br/> (~deathsPerSec^1.3)',
               }}
             >

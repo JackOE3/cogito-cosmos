@@ -1,8 +1,7 @@
 <script lang="ts">
   import { formatWhole } from '../gamelogic/utils'
-  import type { IUnlock } from '@store/primitive/unlocks'
-  import { unlocked, resource } from '@store/primitive'
-  import UnlockTooltip from './tooltips/UnlockTooltip.svelte'
+  import type { IUnlock } from '@store'
+  import { unlocked, resource } from '@store'
   import { tooltipForUnlocks } from './tooltips/tooltipForUnlocks'
 
   export let unlock: IUnlock
@@ -29,7 +28,6 @@
     class:disabled={$unlocked[unlock.name] || $resource[unlock.resource] < unlock.cost}
     class:unlocked={$unlocked[unlock.name]}
     use:tooltipForUnlocks={{
-      Component: UnlockTooltip,
       data: unlock,
     }}
   >

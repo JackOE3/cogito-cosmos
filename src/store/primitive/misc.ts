@@ -9,6 +9,7 @@ export const currentThoughtBoost = makeStore(1)
 export const currentThoughtBoostTime = makeStore(0)
 
 export const currentCheeseQueue = makeStore(0)
+export const cheeseQueueActive = makeStore(false)
 export const cheeseQueueOverclockLvl = makeStore(0)
 export const cheeseQueueTotalCycles = makeStore(0)
 export type CheeseFactoryMode = 'meticulous' | 'nominal' | 'warpSpeed'

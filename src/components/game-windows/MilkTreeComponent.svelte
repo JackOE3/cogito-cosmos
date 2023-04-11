@@ -3,9 +3,8 @@
   import { formatNumber } from '@gamelogic/utils'
   import { tooltip } from '../tooltips/tooltip'
   import FixedSizeTooltip from '../tooltips/FixedSizeTooltip.svelte'
-  import { resource } from '@store/primitive'
+  import { resource, skillTree, allowedSkillTreeConnections } from '@store'
   import { onMount } from 'svelte'
-  import { skillTree, allowedSkillTreeConnections } from '@store/primitive/boosts'
 
   const rows: HTMLElement[] = []
 
