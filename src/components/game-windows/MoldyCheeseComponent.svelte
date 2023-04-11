@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { formatNumber, formatWhole } from '../gamelogic/utils'
-  import Window from './Window.svelte'
-  import UpgradeButton from './UpgradeButton.svelte'
+  import Window from './window-model/Window.svelte'
+  import { formatNumber, formatWhole } from '@gamelogic/utils'
+  import UpgradeButton from '../UpgradeButton.svelte'
   import {
     LORCA_OVERRIDE,
     resource,
@@ -14,9 +14,9 @@
   import { moldyCheeseHalfLifeSeconds, moldyCheeseChance } from '@store/derived/moldyCheese'
   import { cheeseMonsterCapacity, cheeseMonsterSpawnrate, monsterMoldyCheeseMult } from '@store/derived/cheeseMonster'
   import { UnlockName, unlocks } from '@store/primitive/unlocks'
-  import UnlockDrawer from './UnlockDrawer.svelte'
-  import AffixComponent from './AffixComponent.svelte'
-  import Affix from './Affix.svelte'
+  import UnlockDrawer from '../UnlockDrawer.svelte'
+  import AffixComponent from '../AffixComponent.svelte'
+  import Affix from '../Affix.svelte'
 
   const buyMaxUpgrades = false
 

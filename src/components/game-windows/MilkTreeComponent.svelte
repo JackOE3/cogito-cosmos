@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { formatNumber } from '../gamelogic/utils'
-  import { tooltip } from './tooltips/tooltip'
-  import FixedSizeTooltip from './tooltips/FixedSizeTooltip.svelte'
-  import Window from './WindowOLD.svelte'
+  import Window from './window-model/WindowOLD.svelte'
+  import { formatNumber } from '@gamelogic/utils'
+  import { tooltip } from '../tooltips/tooltip'
+  import FixedSizeTooltip from '../tooltips/FixedSizeTooltip.svelte'
   import { resource } from '@store/primitive'
   import { onMount } from 'svelte'
   import { skillTree, allowedSkillTreeConnections } from '@store/primitive/boosts'

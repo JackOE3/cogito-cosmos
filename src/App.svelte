@@ -1,16 +1,17 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import Notifications from './components/Notifications.svelte'
+  import Notifications from './components/misc/Notifications.svelte'
   import { saveSaveGame, resetSaveGame, exportSaveGame, importSaveGame } from '@gamelogic/saveload'
   import { devToolsEnabled, LORCA_OVERRIDE, unlocked } from '@store'
-  import DevTools from './components/DevTools.svelte'
-  import ToggleUnlocks from './components/ToggleUnlocks.svelte'
-  import ThoughtComponent from './components/ThoughtComponent.svelte'
-  import CheeseComponent from './components/CheeseComponent.svelte'
-  import MoldyCheeseComponent from './components/MoldyCheeseComponent.svelte'
-  import CheeseyardComponent from './components/CheeseyardComponent.svelte'
-  import MilkComponent from './components/MilkComponent.svelte'
-  import MilkTreeComponent from './components/MilkTreeComponent.svelte'
+  import DevTools from './components/dev/DevTools.svelte'
+  import ToggleUnlocks from './components/dev/ToggleUnlocks.svelte'
+
+  import ThoughtComponent from './components/game-windows/ThoughtComponent.svelte'
+  import CheeseComponent from './components/game-windows/CheeseComponent.svelte'
+  import MoldyCheeseComponent from './components/game-windows/MoldyCheeseComponent.svelte'
+  import CheeseyardComponent from './components/game-windows/CheeseyardComponent.svelte'
+  import MilkComponent from './components/game-windows/MilkComponent.svelte'
+  import MilkTreeComponent from './components/game-windows/MilkTreeComponent.svelte'
 
   console.log('App.svelte')
   let secretImage: HTMLElement

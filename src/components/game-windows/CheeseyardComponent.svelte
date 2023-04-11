@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { formatNumber, formatWhole } from '../gamelogic/utils'
-  import Window from './Window.svelte'
-  import { tooltip } from './tooltips/tooltip'
-  import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
-  import UpgradeButton from './UpgradeButton.svelte'
+  import Window from './window-model/Window.svelte'
+  import { formatNumber, formatWhole } from '@gamelogic/utils'
+  import { tooltip } from '../tooltips/tooltip'
+  import SimpleTooltip from '../tooltips/SimpleTooltip.svelte'
+  import UpgradeButton from '../UpgradeButton.svelte'
   import { unlocks, UnlockName } from '@store/primitive/unlocks'
   import { type BrainMode, brainMode, totalCheeseMonsterDeaths, resource, upgrades, unlocked } from '@store/primitive'
   import {

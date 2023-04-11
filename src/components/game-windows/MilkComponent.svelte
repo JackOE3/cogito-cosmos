@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { formatNumber, formatWhole } from '../gamelogic/utils'
-  import { tooltip } from './tooltips/tooltip'
-  import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
-  import UpgradeButton from './UpgradeButton.svelte'
-  import Window from './WindowOLD.svelte'
+  import Window from './window-model/WindowOLD.svelte'
+  import { formatNumber, formatWhole } from '@gamelogic/utils'
+  import { tooltip } from '../tooltips/tooltip'
+  import SimpleTooltip from '../tooltips/SimpleTooltip.svelte'
+  import UpgradeButton from '../UpgradeButton.svelte'
   import { get } from 'svelte/store'
   import {
     cummulativeUpgradesToTier,

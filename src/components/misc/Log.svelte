@@ -1,18 +1,17 @@
 <script lang="ts">
-  
-  import StoryBook from './StoryBook.svelte';
-
-  let logTypes = ['Log', 'Prestige', 'Achievements',]
-	let active = logTypes[0]
-
+  const logTypes = ['Log', 'Prestige', 'Achievements']
+  let active = logTypes[0]
 </script>
 
 <div id="log">
-
   <div class="tabs">
     <ul>
       {#each logTypes as logType}
-        <li on:click={() => {active = logType}}>
+        <li
+          on:click={() => {
+            active = logType
+          }}
+        >
           <div class:active={logType === active}>{logType}</div>
         </li>
       {/each}
@@ -21,15 +20,13 @@
 
   <div id="logText">
     {#if active === 'Log'}
-      <StoryBook/>
+      Empty
     {:else if active === 'Prestige'}
       Prestige stuff
     {:else if active === 'Achievements'}
       Achievement stuff
     {/if}
-
   </div>
- 
 </div>
 
 <style>
@@ -45,7 +42,6 @@
     margin: 0 0px;
     /*border: 2px solid black;*/
   }
-
 
   .tabs {
     margin-bottom: 10px;
@@ -66,6 +62,5 @@
     color: var(--secondary);
     border-bottom: 1px solid var(--secondary);
     padding-bottom: 2px;
-    
   }
 </style>

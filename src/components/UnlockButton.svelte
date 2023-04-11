@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { formatWhole, formatResourceName } from '../gamelogic/utils'
-  import { unlocked, resource, LORCA_OVERRIDE } from '@stores/primitive'
+  import { formatWhole, formatResourceName } from '@gamelogic/utils'
+  import { unlocked, resource, LORCA_OVERRIDE } from '@store/primitive'
   import { tooltip } from './tooltips/tooltip'
   import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
-  import type { IUnlock, unlockType } from '@stores/primitive/unlocks'
+  import type { IUnlock, unlockType } from '@store/primitive/unlocks'
 
   export let unlock: IUnlock
   // export let tooltipText: string | null = null

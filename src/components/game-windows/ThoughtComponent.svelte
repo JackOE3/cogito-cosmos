@@ -1,8 +1,8 @@
 <script lang="ts">
-  import UnlockDrawer from './UnlockDrawer.svelte'
-  import { formatNumber, formatTime, formatWhole } from '../gamelogic/utils'
-  import Window from './Window.svelte'
-  import UpgradeButton from './UpgradeButton.svelte'
+  import Window from './window-model/Window.svelte'
+  import UnlockDrawer from '../UnlockDrawer.svelte'
+  import { formatNumber, formatTime, formatWhole } from '@gamelogic/utils'
+  import UpgradeButton from '../UpgradeButton.svelte'
   import { unlocks } from '@store/primitive/unlocks'
   import { LORCA_OVERRIDE, resource, unlocked, upgrades, currentThoughtBoost, currentThoughtBoostTime } from '@store'
   import {

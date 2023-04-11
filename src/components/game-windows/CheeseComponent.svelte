@@ -1,12 +1,12 @@
 <script lang="ts">
-  import AffixComponent from './AffixComponent.svelte'
-  import Affix from './Affix.svelte'
-  import { formatNumber, formatTime, formatWhole } from '../gamelogic/utils'
+  import Window from './window-model/Window.svelte'
+  import AffixComponent from '../AffixComponent.svelte'
+  import Affix from '../Affix.svelte'
+  import { formatNumber, formatTime, formatWhole } from '@gamelogic/utils'
   import { fade, slide } from 'svelte/transition'
-  import ProgBar from './ProgBar.svelte'
-  import Window from './Window.svelte'
-  import UpgradeButton from './UpgradeButton.svelte'
-  import InputRange from './InputRange.svelte'
+  import ProgBar from '../misc/ProgBar.svelte'
+  import UpgradeButton from '../UpgradeButton.svelte'
+  import InputRange from '../misc/InputRange.svelte'
   import {
     LORCA_OVERRIDE,
     resource,
@@ -34,9 +34,9 @@
   } from '@store/derived/cheese'
   import { cheeseThoughtMult, cheeseCyclesThoughtMult } from '@store/derived/thoughts'
   import { unlocks, UnlockName } from '@store/primitive/unlocks'
-  import UnlockDrawer from './UnlockDrawer.svelte'
-  import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
-  import { tooltip } from './tooltips/tooltip'
+  import UnlockDrawer from '../UnlockDrawer.svelte'
+  import SimpleTooltip from '../tooltips/SimpleTooltip.svelte'
+  import { tooltip } from '../tooltips/tooltip'
 
   const cheeseModeDescription: Record<CheeseFactoryMode, string> = {
     meticulous: '"Quality over quantity"',
