@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { formatWhole, formatResourceName } from '../gamelogic/utils'
-  import { upgrades, resource, LORCA_OVERRIDE } from '../stores/mainStore'
+  import { formatWhole, formatResourceName } from '@gamelogic/utils'
+  import { buyUpgrade } from '@gamelogic/buy-upgrade'
+  import { upgrades, resource, LORCA_OVERRIDE } from '@store/primitive'
   import { tooltip } from './tooltips/tooltip'
   import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
   import { derived, get } from 'svelte/store'
@@ -8,7 +9,7 @@
 
   export let upgradeName: string
   export let tooltipText: string | null = null
-  export let buyMaxUpgrades = false
+  export let buyMaxUpgrades = false // setContext/getContext better?
   export let btnUnlocked = true
 
   const resourceName = get(upgrades)[upgradeName].resource
@@ -23,18 +24,14 @@
 
   // beforeUpdate(() => console.log('beforeUpdate'))
 
-  function buyUpgrade(): void {
-    upgrades.buy(upgradeName, buyMaxUpgrades)
-    /* upgrades.update($upgrades => {
-      $upgrades[upgradeName].buy(buyMaxUpgrades)
-    } )
-    */
+  function handleUpgradeClicked(): void {
+    buyUpgrade(upgrades)(upgradeName, buyMaxUpgrades)
   }
 </script>
 
 {#if btnUnlocked || $LORCA_OVERRIDE}
   <button
-    on:click={buyUpgrade}
+    on:click={handleUpgradeClicked}
     class:disabled={!$canAfford}
     use:tooltip={{ Component: SimpleTooltip, data: tooltipText }}
     class:maxed={$isMaxed}

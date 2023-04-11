@@ -3,9 +3,9 @@
   import { tooltip } from './tooltips/tooltip'
   import FixedSizeTooltip from './tooltips/FixedSizeTooltip.svelte'
   import Window from './WindowOLD.svelte'
-  import { resource } from '../stores/resources'
+  import { resource } from '@store/primitive'
   import { onMount } from 'svelte'
-  import { skillTree, allowedSkillTreeConnections } from '../stores/boosts'
+  import { skillTree, allowedSkillTreeConnections } from '@store/primitive/boosts'
 
   const rows: HTMLElement[] = []
 

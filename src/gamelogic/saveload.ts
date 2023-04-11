@@ -1,7 +1,7 @@
 import { get } from 'svelte/store'
 import { sendMessage } from './notifications'
-import * as store from '../stores/mainStore'
-import { upgradesInitial } from '../stores/upgrades'
+import * as store from '@store/primitive'
+import { upgradesInitial } from '@store/primitive/upgrades'
 // import {compress, decompress} from 'lz-string'
 
 console.log('savedload.ts')
@@ -17,8 +17,6 @@ const storageName = 'cogitoErgoSum'
  * It should only be used for values that must be saved. Anything transient should go directly on the GameModel.
  */
 export class SaveData {
-  // maybe make private with getters? throws error though...
-
   public version: string = CURRENT_SAVE_VERSION
   public data: object = {} // ALL STORE-RELATED DATA
 
@@ -41,7 +39,7 @@ export function loadSaveGame(): void {
     // see if data exists first
     if (localStorage.getItem(storageName) !== null) {
       // get data from localstorage, decompress it using lz-string, then parse it back into a javascript object
-      const saveDataFromLocalStorage = JSON.parse(localStorage.getItem(storageName) as string)
+      const saveDataFromLocalStorage: SaveData = JSON.parse(localStorage.getItem(storageName) as string)
 
       // sendMessage("Savefile loaded.")
       console.log('saveData loaded:')
@@ -70,9 +68,8 @@ export function loadSaveGame(): void {
  */
 function hydrateStores(fromStorage: SaveData): void {
   for (const key in store) {
-    store[key].set(fromStorage.data[key])
+    if (fromStorage.data[key] !== undefined) store[key].set(fromStorage.data[key])
   }
-  // for(let key in store) console.log(key, get(store[key]))
   console.log('Stores hydrated.')
 }
 
@@ -108,7 +105,7 @@ export function exportSaveGame(): string {
 }
 export function importSaveGame(data: string): void {
   try {
-    const importedSaveData = JSON.parse(data)
+    const importedSaveData: SaveData = JSON.parse(data) as SaveData
     dataMigrate(importedSaveData)
     hydrateStores(importedSaveData)
   } catch (error) {
@@ -127,22 +124,24 @@ function dataMigrate(fromStorage: SaveData): void {
   const master = new SaveData()
 
   console.log('fromStorage', fromStorage.version)
-  if (fromStorage.version !== master.version) {
+
+  if (typeof fromStorage.version !== 'string') {
     // TODO: define more rigorous type
-    if (typeof fromStorage.version !== 'string') {
-      console.log('Corrupted save file found: Invalid version number.')
-    } else {
-      console.log('Outdated version save file found.')
-      // Logic for upgrading to newer versions goes here.
-    }
+    console.log('Corrupted save file found: Invalid version number: ' + typeof fromStorage.version)
+    return
   }
 
-  // TODO: check version: if(master.version !== fromStorage.version) {...}
-  // -> Logic for upgrading from version A to version B? (if theres breaking changes idk)
+  if (fromStorage.version !== master.version) {
+    console.log(
+      'Outdated version save file found:' + fromStorage.version + ' (Current version: ' + master.version + ')'
+    )
+    // Logic for upgrading to newer versions goes here.
+  }
 
   // get an array of the properties of saveData
   // would also return functions of an object, but NOT methods from a class apparently, so it's fine
   const propertiesMaster = Object.getOwnPropertyNames(master.data)
+  // check if data property exists?
   const propertiesFromStorage = Object.getOwnPropertyNames(fromStorage.data)
 
   // check each property to make sure it exists on the save data, if not add it

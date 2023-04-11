@@ -54,7 +54,9 @@ export function formatTime(sec: number): string {
   const seconds = Math.floor(sec % 60)
   if (sec >= 3600) return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
   if (sec >= 60) return `${minutes}:${seconds.toString().padStart(2, '0')}`
-  return `${formatNumber(sec, 1)}s`
+  if (sec >= 1e-1) return `${formatNumber(sec, 2)}s`
+  if (sec >= 1e-4) return `${formatNumber(sec * 1000, 2)}ms`
+  return `${formatNumber(sec * 1000, 2)}µs`
 }
 
 /**

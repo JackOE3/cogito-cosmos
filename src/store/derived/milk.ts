@@ -1,8 +1,8 @@
 import { derived } from 'svelte/store'
-import { unlocked } from '../unlocks'
-import { upgrades } from '../upgrades'
-import { resource } from '../resources'
-import { highestMilk } from '../mainStore'
+import { unlocked } from '../primitive/unlocks'
+import { upgrades } from '../primitive/upgrades'
+import { resource } from '../primitive/resources'
+import { highestMilk } from '../primitive'
 
 export const milkFromReset = derived(
   resource,

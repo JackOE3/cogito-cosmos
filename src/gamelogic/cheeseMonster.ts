@@ -1,5 +1,5 @@
 import { get } from 'svelte/store'
-import type { Resource } from '../stores/resources'
+import type { Resource } from '@store/primitive/resources'
 import {
   totalMonsterDeathsLootBoost,
   cheeseMonsterSpawnrate,
@@ -7,8 +7,8 @@ import {
   cheeseMonsterCapacity,
   cheeseMonsterDropRate,
   cheeseMonsterLootAmount,
-} from '../stores/derived/cheeseMonster'
-import { totalCheeseMonsterDeaths } from '../stores/mainStore'
+} from '@store/derived/cheeseMonster'
+import { totalCheeseMonsterDeaths } from '@store/primitive'
 
 console.log('cheeseMonster.ts')
 

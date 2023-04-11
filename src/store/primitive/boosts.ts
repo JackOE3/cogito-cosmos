@@ -1,6 +1,4 @@
-import { get } from 'svelte/store'
-import { makeStore } from './customStore'
-import { resource } from './resources'
+import { makeStore } from '../customStore'
 
 export enum MilkBoost {
   ThoughtAccelBoostsItself = 'thoughtAccelBoostsItself',

@@ -81,6 +81,9 @@ a:visited {
 label {
 	display: block;
 }
+legend {
+  width: max-content;
+}
 
 input, button, select, textarea {
 	font-family: inherit;

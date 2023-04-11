@@ -9,7 +9,7 @@
 
 <style>
   div {
-          background-color: black;
+    background-color: black;
     color: #e2e2e2;
     /* border: 1px var(--color) solid; */
 

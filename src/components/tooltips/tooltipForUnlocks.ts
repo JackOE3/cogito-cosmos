@@ -1,14 +1,14 @@
-import type { SvelteComponent } from 'svelte'
-import type { IUnlock } from '../../stores/unlocks'
+import type { IUnlock } from '@store/primitive/unlocks'
+import type UnlockTooltip from './UnlockTooltip.svelte'
 
 export function tooltipForUnlocks(
   element: HTMLElement,
   options: {
-    Component: typeof SvelteComponent // <-- else you are referring to the instance of that component, not the class type
+    Component: typeof UnlockTooltip // <-- else you are referring to the instance of that component, not the class type
     data: IUnlock
   }
 ): object {
-  let tooltipComponent: SvelteComponent
+  let tooltipComponent: UnlockTooltip
   let tooltipData = options.data ?? null
   let mousePressed = false
   let tooltipShown = false
@@ -18,7 +18,7 @@ export function tooltipForUnlocks(
     tooltipComponent = new options.Component({
       props: {
         data: tooltipData,
-        rect: element.offsetParent?.getBoundingClientRect(),
+        rect: element.offsetParent?.getBoundingClientRect() ?? new DOMRect(0, 0, 0, 0),
       },
       target: document.body,
     })

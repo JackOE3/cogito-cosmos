@@ -1,13 +1,11 @@
 <script lang="ts">
-  console.log('cheeseyard.svelte')
   import { formatNumber, formatWhole } from '../gamelogic/utils'
   import Window from './Window.svelte'
   import { tooltip } from './tooltips/tooltip'
   import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
   import UpgradeButton from './UpgradeButton.svelte'
-  import { unlocks, unlocked } from '../stores/unlocks'
-  import { resource } from '../stores/resources'
-  import { type BrainMode, brainMode, totalCheeseMonsterDeaths, upgrades } from '../stores/mainStore'
+  import { unlocks, UnlockName } from '@store/primitive/unlocks'
+  import { type BrainMode, brainMode, totalCheeseMonsterDeaths, resource, upgrades, unlocked } from '@store/primitive'
   import {
     monsterThoughtMult,
     resourceFactorFromBrainMode,
@@ -23,9 +21,11 @@
     cheeseMonsterMassacreMultiplier,
     cheeseMonsterDeathsPerSec,
     collectiveSentienceBoost,
-  } from '../stores/derived/cheeseMonster'
+  } from '@store/derived/cheeseMonster'
   import { fade } from 'svelte/transition'
   import UnlockDrawer from './UnlockDrawer.svelte'
+  import AffixComponent from './AffixComponent.svelte'
+  import Affix from './Affix.svelte'
 
   const buyMaxUpgrades = false
 
@@ -168,56 +168,56 @@
 
     <div class="flexRowContainer" transition:fade={{ duration: 1000 }}>
       <div class="gridColumn">
-        <UpgradeButton upgradeName="cheeseMonsterDropRate" {buyMaxUpgrades}>
-          Increase the drop rate of cheese monsters ({$upgrades.cheeseMonsterDropRate.bought}/{$upgrades
-            .cheeseMonsterDropRate.maxBuy})<br />
-          Currently: {formatWhole($cheeseMonsterDropRate * 100)}%
+        <UpgradeButton
+          upgradeName="cheeseMonsterDropRate"
+          {buyMaxUpgrades}
+          tooltipText={`+5% drop rate (additive) <br> Currently: ${formatWhole($cheeseMonsterDropRate * 100)}%`}
+        >
+          Increase the drop rate of cheese monsters
         </UpgradeButton>
 
-        <UpgradeButton upgradeName="cheeseMonsterLoot" {buyMaxUpgrades}>
-          Increase the loot obtained from cheese monster corpses ({$upgrades.cheeseMonsterLoot.bought})<br />
-          Currently: {formatWhole($cheeseMonsterLootAmount)} cheese brains/death
+        <UpgradeButton
+          upgradeName="cheeseMonsterLoot"
+          {buyMaxUpgrades}
+          tooltipText={`+1 brain/death <br> Currently: ${formatWhole($cheeseMonsterLootAmount)} cheese brains/death`}
+        >
+          Increase the loot obtained from cheese monster corpses
         </UpgradeButton>
 
         <UpgradeButton
           upgradeName="cheeseMonsterSentience"
           {buyMaxUpgrades}
-          tooltipText={'Surely nothing bad will happen.'}
+          tooltipText={`+1x thoughts/s/monster <br> Currently: +${formatNumber(
+            $monsterThoughtFactor,
+            2
+          )}x thoughts/s/monster`}
         >
-          Nurture the sentience of monsters ({$upgrades.cheeseMonsterSentience.bought})<br />
-          Currently: +{formatNumber($monsterThoughtFactor, 2)}x thoughts/s/monster
+          Nurture the sentience of monsters
         </UpgradeButton>
 
-        <UpgradeButton upgradeName="cheeseMonsterMoldiness" {buyMaxUpgrades} tooltipText={'This smells...'}>
-          Improve the moldiness of monsters ({$upgrades.cheeseMonsterMoldiness.bought})<br />
-          Currently: +{formatNumber($monsterMoldyCheeseFactor, 2)}x MC gain/monster
+        <UpgradeButton
+          btnUnlocked={$unlocked.cheeseyardMoldUpgrade}
+          upgradeName="cheeseMonsterMoldiness"
+          {buyMaxUpgrades}
+          tooltipText={`+0.01x MC gain/monster <br> Currently: +${formatNumber(
+            $monsterMoldyCheeseFactor,
+            2
+          )}x MC gain/monster <br> (MC = moldy cheese)`}
+        >
+          Improve the moldiness of monsters
         </UpgradeButton>
       </div>
 
-      <div class="gridColumn">
-        <!-- <UnlockButton
-          unlock={unlocks.cheeseMonsterMassacre}
-          tooltipText={'Rewarding genocide! <br /> (only applies in this game and NOT in real life)'}
-        >
-          <span>
-            <strong>Massacre effect</strong>: When killing many cheese monsters at once, the loot is massively boosted.
-          </span>
-        </UnlockButton>
-
-        <UnlockButton unlock={unlocks.cheeseMonsterCollectiveSentience} tooltipText={'Completely harmless.'}>
-          <span>
-            <strong>Collective sentience</strong>: Bigger populations give a (much) bigger global boost to thinking due
-            to emergence.
-          </span>
-        </UnlockButton>
-
-        <UnlockButton unlock={unlocks.cheeseMonsterTotalDeathsBoost}>
-          Total monster deaths boost loot gain <br />
-
-          {#if $unlocked.cheeseMonsterTotalDeathsBoost}
-            Currently: {formatNumber($totalMonsterDeathsLootBoost, 2)}x (quadratic scaling)
-          {/if}
-        </UnlockButton> -->
+      <div class="gridColumn" style="height:264px; width: 100%">
+        <AffixComponent>
+          <Affix
+            factor={$totalMonsterDeathsLootBoost}
+            unlocked={$unlocked.cheeseMonsterTotalDeathsBoost}
+            tooltipText={`Scales ^2 with total deaths`}
+          >
+            {unlocks.cheeseBrains.find(v => v.name === UnlockName.CHEESE_MONSTER_TOTAL_DEATHS_BOOST)?.description}
+          </Affix>
+        </AffixComponent>
       </div>
     </div>
   {/if}
@@ -232,8 +232,7 @@
     color: var(--unlockedColor);
   }
   fieldset {
-    width: 180px;
-    height: fit-content;
+    width: max-content;
   }
   #brainWaveContainer {
     width: var(--window-width);

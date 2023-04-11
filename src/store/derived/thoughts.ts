@@ -1,14 +1,18 @@
 import { derived } from 'svelte/store'
-import { unlocked } from '../unlocks'
-import { upgrades } from '../upgrades'
-import { resource } from '../resources'
-import { currentThoughtBoost, cheeseQueueTotalCycles } from '../mainStore'
+import { unlocked } from '../primitive/unlocks'
+import { upgrades } from '../primitive/upgrades'
+import { resource } from '../primitive/resources'
+import { currentThoughtBoost, cheeseQueueTotalCycles } from '../primitive'
 import { monsterThoughtMult } from './cheeseMonster' // potentially dangerous importing from other derived/stores (cyclical dependencies)
 import { checkBoolForNum } from '../../gamelogic/utils'
 
 console.log('stores/thoughts.ts')
 
-export const thoughtBoostMax = derived(upgrades, $upgrades => 2 + 0.25 * $upgrades.thoughtBoostStrength.bought)
+/* export const thoughtBoostMax = derived(upgrades, $upgrades => 2 + 0.25 * $upgrades.thoughtBoostStrength.bought) */
+export const thoughtBoostMax = derived(
+  upgrades,
+  $upgrades => 1.5 + 0.2 * Math.pow($upgrades.thoughtBoostStrength.bought, 1.5)
+)
 export const thoughtBoostDuration = derived(upgrades, $upgrades => 5000 + 5000 * $upgrades.thoughtBoostDuration.bought)
 export const thoughtBoostMaxStacks = derived(upgrades, $upgrades => 1 + $upgrades.thoughtBoostStack.bought)
 

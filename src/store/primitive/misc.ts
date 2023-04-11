@@ -1,19 +1,9 @@
-import { makeStore } from './customStore'
-
-console.log('mainStore.ts')
+import { makeStore } from '../customStore'
 
 export const LORCA_OVERRIDE = makeStore(true)
 export const devToolsEnabled = makeStore(true)
 
 export const lastSaved = makeStore(Date.now())
-
-export { resource } from './resources'
-
-export { upgrades } from './upgrades'
-
-export { unlocked } from './unlocks'
-
-export { milkBoostActive } from './boosts'
 
 export const currentThoughtBoost = makeStore(1)
 export const currentThoughtBoostTime = makeStore(0)

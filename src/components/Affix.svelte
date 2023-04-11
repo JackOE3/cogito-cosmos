@@ -14,6 +14,7 @@
     class="affix"
     transition:fade={{ duration: 1000 }}
     use:tooltip={{ Component: SimpleTooltip, data: tooltipText }}
+    class:backgroundOnHover={tooltipText !== null}
   >
     <slot>No Description</slot>
     [<span style="color:var(--themeColor2)">{formatNumber(factor, 2)}x</span>]
@@ -24,6 +25,10 @@
   .affix {
     position: relative;
     padding-left: 1rem;
+  }
+  .backgroundOnHover:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
   }
   .affix::before {
     content: '⯁ ';

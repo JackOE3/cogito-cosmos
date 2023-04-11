@@ -1,8 +1,8 @@
 import { derived } from 'svelte/store'
-import { unlocked } from '../unlocks'
-import { upgrades } from '../upgrades'
-import { resource } from '../resources'
-import { brainMode, totalCheeseMonsterDeaths } from '../mainStore'
+import { unlocked } from '../primitive/unlocks'
+import { upgrades } from '../primitive/upgrades'
+import { resource } from '../primitive/resources'
+import { brainMode, totalCheeseMonsterDeaths } from '../primitive'
 
 console.log('stores/cheeseMonster.ts')
 
@@ -20,15 +20,15 @@ export const resourceFactorFromBrainMode = derived(brainMode, $brainMode => {
   }
 })
 
-export const cheeseMonsterCapacityDelta = derived(upgrades, $upgrades =>
-  $upgrades.cheeseMonsterCapacityDelta.bought > 0
-    ? 0.1 * Math.pow($upgrades.cheeseMonsterCapacityDelta.bought + 10, 2)
+export const cheeseMonsterCapacityPerUpgrade = derived(upgrades, $upgrades =>
+  $upgrades.cheeseMonsterCapacityPerUpgrade.bought > 0
+    ? 0.1 * Math.pow($upgrades.cheeseMonsterCapacityPerUpgrade.bought + 10, 2)
     : 10
 )
 export const cheeseMonsterCapacity = derived(
-  [upgrades, cheeseMonsterCapacityDelta],
-  ([$upgrades, $cheeseMonsterCapacityDelta]) =>
-    $cheeseMonsterCapacityDelta * (1 + $upgrades.cheeseMonsterCapacity.bought)
+  [upgrades, cheeseMonsterCapacityPerUpgrade],
+  ([$upgrades, $cheeseMonsterCapacityPerUpgrade]) =>
+    $cheeseMonsterCapacityPerUpgrade * (1 + $upgrades.cheeseMonsterCapacity.bought)
 )
 
 /** per second */

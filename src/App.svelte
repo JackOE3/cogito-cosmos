@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import Notifications from './components/Notifications.svelte'
-  import { saveSaveGame, resetSaveGame, exportSaveGame, importSaveGame } from './gamelogic/saveload'
-  import { devToolsEnabled, LORCA_OVERRIDE, unlocked } from './stores/mainStore'
+  import { saveSaveGame, resetSaveGame, exportSaveGame, importSaveGame } from '@gamelogic/saveload'
+  import { devToolsEnabled, LORCA_OVERRIDE, unlocked } from '@store'
   import DevTools from './components/DevTools.svelte'
   import ToggleUnlocks from './components/ToggleUnlocks.svelte'
   import ThoughtComponent from './components/ThoughtComponent.svelte'
@@ -17,6 +17,7 @@
   let background: HTMLElement
   let gameWindow: HTMLElement
   let dragWindow: HTMLElement | null = null
+  let homeComponent: HTMLElement | null = null
 
   // for moving with mouse:
   let offsetX: number, offsetY: number
@@ -51,6 +52,7 @@
   let isDarkMode: boolean
 
   onMount(() => {
+    homeComponent = gameWindow.querySelector('#thoughtComponent')
     returnToHome()
     background.style.backgroundPositionX = '0px'
     background.style.backgroundPositionY = '0px'
@@ -93,7 +95,7 @@
     })
 
     // drag the entire game window around freely:
-    window.document.onmousedown = function (e: MouseEvent): void {
+    window.document.onmousedown = (e: MouseEvent): void => {
       // keep eg. sliders draggable without moving the window
       if ((e.target as HTMLElement).classList.contains('draggable')) return
       movingWithMouse = true
@@ -107,7 +109,7 @@
       clickedAtSecretImagePosX = parseInt(secretImage.style.left)
       clickedAtSecretImagePosY = parseInt(secretImage.style.top)
     }
-    window.document.onmousemove = function (e: MouseEvent): void {
+    window.document.onmousemove = (e: MouseEvent): void => {
       if (dragWindow === null) return
       dragWindow.style.left = e.pageX - offsetX + 'px'
       dragWindow.style.top = e.pageY - offsetY + 'px'
@@ -120,7 +122,7 @@
       secretImage.style.left = clickedAtSecretImagePosX + (e.pageX - clickedAtX) * backgroundParallaxRatio + 'px'
       secretImage.style.top = clickedAtSecretImagePosY + (e.pageY - clickedAtY) * backgroundParallaxRatio + 'px'
     }
-    window.document.onmouseup = function (): void {
+    window.document.onmouseup = (): void => {
       movingWithMouse = false
       dragWindow = null
     }
@@ -196,7 +198,6 @@
   }
 
   function returnToHome(): void {
-    const homeComponent = gameWindow.querySelector('#thoughtComponent')
     if (homeComponent !== null) {
       const gameRect = gameWindow.getBoundingClientRect()
       const homeRect = homeComponent.getBoundingClientRect()
@@ -231,6 +232,7 @@
     saveDataString = exportSaveGame()
   }
   function handleImport(): void {
+    // ideally check if saveDataString is of type SaveData
     if (saveDataString !== null) importSaveGame(saveDataString)
   }
   function showCredits(): void {

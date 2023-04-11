@@ -1,4 +1,4 @@
-import { makeStore, type baseStore } from './customStore'
+import { makeStore, type baseStore } from '../customStore'
 import { resource } from './resources'
 import { get } from 'svelte/store'
 

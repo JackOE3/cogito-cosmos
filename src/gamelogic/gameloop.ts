@@ -1,9 +1,9 @@
-import { lastSaved as lastSavedStore, resource, highestMilk } from '../stores/mainStore'
-import { moldyCheeseHalfLifeSeconds } from '../stores/derived/moldyCheese'
-import { thoughtsPerSec } from '../stores/derived/thoughts'
+import { lastSaved as lastSavedStore, resource, highestMilk } from '@store/primitive'
+import { moldyCheeseHalfLifeSeconds } from '@store/derived/moldyCheese'
+import { thoughtsPerSec } from '@store/derived/thoughts'
 import { get } from 'svelte/store'
 import { handleCheeseMonster } from './cheeseMonster'
-import { milkPowerPerSec } from '../stores/derived/milk'
+import { milkPowerPerSec } from '@store/derived/milk'
 
 console.log('gameloop.ts')
 // import {upgrades} from './upgrades'

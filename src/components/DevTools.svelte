@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { devToolsEnabled, resource } from '../stores/mainStore'
+  import { devToolsEnabled, resource } from '@store/primitive'
   import { recalculateStores } from '../gamelogic/saveload'
 </script>
 

@@ -1,13 +1,13 @@
 import { derived } from 'svelte/store'
-import { unlocked } from '../unlocks'
-import { upgrades } from '../upgrades'
+import { unlocked } from '../primitive/unlocks'
+import { upgrades } from '../primitive/upgrades'
 import {
   type CheeseFactoryMode,
   cheeseFactoryMode,
   cheeseQueueTotalCycles,
   currentThoughtBoost,
   cheeseQueueOverclockLvl,
-} from '../mainStore'
+} from '../primitive'
 import { checkBoolForNum } from '../../gamelogic/utils'
 
 export const cheeseSpeedFactor = { duration: 0.95, cost: 1.4 }
@@ -27,6 +27,14 @@ export const cheeseQueueCostDivideBy = derived(upgrades, $upgrades =>
     : 1
 )
 
+export const cheeseQueueOverclockSpeedMult = derived(cheeseQueueOverclockLvl, $cheeseQueueOverclockLvl =>
+  Math.pow(1.05, $cheeseQueueOverclockLvl)
+)
+export const cheeseQueueOverclockCostMult = derived(
+  cheeseQueueOverclockLvl,
+  $cheeseQueueOverclockLvl => 1 * Math.pow(2, $cheeseQueueOverclockLvl)
+)
+
 const baseCost = 10
 export const cheeseQueue = {
   infinite: false,
@@ -38,11 +46,9 @@ export const cheeseQueue = {
     $upgrades => 1 + 0.5 * ($upgrades.cheeseYield.bought + $upgrades.cheeseYield.bought * $upgrades.cheeseYield.bought)
   ),
   cost: derived(
-    [cheeseQueueOverclockLvl, cheeseQueueCostDivideBy],
-    ([$cheeseQueueOverclockLvl, $cheeseQueueCostDivideBy]) => {
-      if ($cheeseQueueOverclockLvl > 0)
-        return (baseCost * (1 * Math.pow(2, $cheeseQueueOverclockLvl))) / $cheeseQueueCostDivideBy
-      return baseCost
+    [cheeseQueueOverclockCostMult, cheeseQueueCostDivideBy],
+    ([$cheeseQueueOverclockCostMult, $cheeseQueueCostDivideBy]) => {
+      return (baseCost * $cheeseQueueOverclockCostMult) / $cheeseQueueCostDivideBy
     }
   ),
 }
@@ -56,10 +62,6 @@ export const cheeseCycleAcceleratorFactor = derived(
   [unlocked, cheeseQueueTotalCycles],
   ([$unlocked, $cheeseQueueTotalCycles]) =>
     checkBoolForNum($unlocked.cheeseCycleAccelerator, 1 + Math.log($cheeseQueueTotalCycles / 100 + 1))
-)
-
-export const cheeseQueueOverclockFactor = derived(cheeseQueueOverclockLvl, $cheeseQueueOverclockLvl =>
-  Math.pow(1.05, $cheeseQueueOverclockLvl)
 )
 
 export const cheeseBoostFactorYield = derived([unlocked, currentThoughtBoost], ([$unlocked, $currentThoughtBoost]) =>
@@ -79,10 +81,10 @@ export const cheeseCycleBatchSize = derived(
 )
 
 export const cheeseCycleDuration = derived(
-  [cheeseQueue.cycleDuration, cheeseQueueOverclockFactor, cheeseModeFactor, cheeseCycleAcceleratorFactor],
-  ([$cheeseQueueCycleDuration, $cheeseQueueOverclockFactor, $cheeseModeFactor, $cheeseCycleAcceleratorFactor]) =>
+  [cheeseQueue.cycleDuration, cheeseQueueOverclockSpeedMult, cheeseModeFactor, cheeseCycleAcceleratorFactor],
+  ([$cheeseQueueCycleDuration, $cheeseQueueOverclockSpeedMult, $cheeseModeFactor, $cheeseCycleAcceleratorFactor]) =>
     $cheeseQueueCycleDuration *
-    (1 / $cheeseQueueOverclockFactor) *
+    (1 / $cheeseQueueOverclockSpeedMult) *
     $cheeseModeFactor.duration *
     (1 / $cheeseCycleAcceleratorFactor)
 )

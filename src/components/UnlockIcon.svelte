@@ -1,7 +1,7 @@
 <script lang="ts">
   import { formatWhole } from '../gamelogic/utils'
-  import type { IUnlock } from '../stores/unlocks'
-  import { unlocked, resource } from '../stores/mainStore'
+  import type { IUnlock } from '@store/primitive/unlocks'
+  import { unlocked, resource } from '@store/primitive'
   import UnlockTooltip from './tooltips/UnlockTooltip.svelte'
   import { tooltipForUnlocks } from './tooltips/tooltipForUnlocks'
 

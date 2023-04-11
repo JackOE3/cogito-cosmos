@@ -9,16 +9,14 @@
     cheeseFactoryMode,
     unlocked,
     upgrades,
-  } from '../stores/mainStore'
-  import { cheeseCycleBatchSize, cheeseCycleDuration, cheeseModeFactor } from '../stores/derived/cheese'
-  import { moldyCheeseHalfLifeSeconds, moldyCheeseChance } from '../stores/derived/moldyCheese'
-  import {
-    cheeseMonsterCapacity,
-    cheeseMonsterSpawnrate,
-    monsterMoldyCheeseMult,
-  } from '../stores/derived/cheeseMonster'
-  import { unlocks } from '../stores/unlocks'
+  } from '@store/primitive'
+  import { cheeseCycleBatchSize, cheeseCycleDuration, cheeseModeFactor } from '@store/derived/cheese'
+  import { moldyCheeseHalfLifeSeconds, moldyCheeseChance } from '@store/derived/moldyCheese'
+  import { cheeseMonsterCapacity, cheeseMonsterSpawnrate, monsterMoldyCheeseMult } from '@store/derived/cheeseMonster'
+  import { UnlockName, unlocks } from '@store/primitive/unlocks'
   import UnlockDrawer from './UnlockDrawer.svelte'
+  import AffixComponent from './AffixComponent.svelte'
+  import Affix from './Affix.svelte'
 
   const buyMaxUpgrades = false
 
@@ -29,18 +27,24 @@
   // reactive so it is updated when conversionExponent changes
   $: conversionAmount = (cheese: number): number => Math.pow(cheese, conversionExponent) * $monsterMoldyCheeseMult
   $: manualConversionAmount = conversionAmount($resource.cheese) * ($unlocked.manualMoldyCheeseConversionBoost ? 10 : 1)
-  $: byproductConversionAmount =
-    $cheeseFactoryMode === 'warpSpeed'
-      ? 0
-      : conversionAmount($cheeseCycleBatchSize) *
-        ($unlocked.moldyCheeseCycleDurationBoost ? Math.pow($cheeseModeFactor.duration, 1.5) : 1)
+
+  const moldyCheeseCycleDurationBoostExponent = 1.5
+  $: moldyCheeseCycleDurationBoostFactor = Math.pow($cheeseModeFactor.duration, moldyCheeseCycleDurationBoostExponent)
+  $: moldyCheeseHalflifeBoostFactor = 1 + 1e-6 * Math.pow($moldyCheeseHalfLifeSeconds, 3)
+
+  $: moldyCheeseByproductGain =
+    $cheeseFactoryMode !== 'warpSpeed'
+      ? conversionAmount($cheeseCycleBatchSize) *
+        ($unlocked.moldyCheeseCycleDurationBoost ? moldyCheeseCycleDurationBoostFactor : 1) *
+        ($unlocked.moldyCheeseHalflifeBoost ? moldyCheeseHalflifeBoostFactor : 1)
+      : 0
 
   // passive moldy cheese generation
   let lastCheeseQueueTotalCycles = 0
   $: {
     if ($unlocked.moldyCheeseByproduct && $cheeseQueueTotalCycles > lastCheeseQueueTotalCycles) {
       if ($cheeseFactoryMode !== 'warpSpeed' && Math.random() < $moldyCheeseChance)
-        $resource.moldyCheese += byproductConversionAmount
+        $resource.moldyCheese += moldyCheeseByproductGain
       lastCheeseQueueTotalCycles = $cheeseQueueTotalCycles
     }
   }
@@ -82,14 +86,18 @@
       )}%/s) <br />
       (Moldy cheese is an unstable isotope of cheese and can decay) <br />
       {#if $unlocked.moldyCheeseByproduct || $LORCA_OVERRIDE}
-        You gain {formatNumber(byproductConversionAmount, 2)} moldy cheese
+        You gain {formatNumber(moldyCheeseByproductGain, 2)} moldy cheese
         {#if $moldyCheeseChance !== 1} with a {formatWhole($moldyCheeseChance * 100)}% chance {/if}
         whenever a cheese cycle completes
         <br />
         Estimated rate: {formatNumber(
-          (byproductConversionAmount / ($cheeseCycleDuration / 1000)) * $moldyCheeseChance,
+          (moldyCheeseByproductGain / ($cheeseCycleDuration / 1000)) * $moldyCheeseChance,
           2
         )} moldy cheese/s
+      {:else}
+        ...???
+        <br />
+        ...???
       {/if}
     </span>
   </div>
@@ -110,60 +118,65 @@
 
   <div class="flexRowContainer">
     <div class="gridColumn">
-      <UpgradeButton upgradeName="moldyCheeseConversionExponent" {buyMaxUpgrades}>
+      <UpgradeButton
+        upgradeName="moldyCheeseConversionExponent"
+        {buyMaxUpgrades}
+        tooltipText={`Currently: cheese^${formatNumber(conversionExponent, 4)}`}
+      >
         Improve the conversion function <br />
-        Currently: cheese^{formatNumber(conversionExponent, 4)}
       </UpgradeButton>
 
-      <UpgradeButton upgradeName="moldyCheeseHalfLife" {buyMaxUpgrades} tooltipText="+10s">
+      <UpgradeButton
+        upgradeName="moldyCheeseHalfLife"
+        {buyMaxUpgrades}
+        tooltipText={`+10s half-life <br> Currently: ${formatWhole($moldyCheeseHalfLifeSeconds)}s`}
+      >
         Increase MC half-life <br />
-        Currently: {formatWhole($moldyCheeseHalfLifeSeconds)}s
       </UpgradeButton>
 
       <UpgradeButton
         upgradeName="moldyCheeseChance"
         {buyMaxUpgrades}
         btnUnlocked={$unlocked.moldyCheeseByproduct}
-        tooltipText="+10%"
+        tooltipText={`+10% chance (additive) <br> Currently: ${formatNumber($moldyCheeseChance * 100, 1)}%`}
       >
         Increase MC byproduct chance <br />
-        Currently: {formatNumber($moldyCheeseChance * 100, 1)}%
       </UpgradeButton>
 
-      <UpgradeButton upgradeName="cheeseMonsterSpawnrate" {buyMaxUpgrades} btnUnlocked={$unlocked.cheeseyard}>
-        Better spawn rate in the cheeseyard <br />
-        Currently: {$cheeseMonsterSpawnrate < 1
-          ? `${formatWhole($cheeseMonsterSpawnrate * 60)}/min`
-          : `${formatNumber($cheeseMonsterSpawnrate, 2)}/s`}
+      <UpgradeButton
+        upgradeName="cheeseMonsterSpawnrate"
+        {buyMaxUpgrades}
+        btnUnlocked={$unlocked.cheeseyard}
+        tooltipText={$cheeseMonsterSpawnrate < 1
+          ? `+${formatWhole(10)} spawns/min <br> Currently: ${formatWhole($cheeseMonsterSpawnrate * 60)} spawns/min`
+          : `+${formatNumber(10 / 60, 2)} spawns/s <br> Currently: ${formatNumber(
+              $cheeseMonsterSpawnrate,
+              2
+            )} spawns/s`}
+      >
+        Improve the spawn rate in the cheeseyard <br />
       </UpgradeButton>
 
       <UpgradeButton
         upgradeName="cheeseMonsterCapacity"
         {buyMaxUpgrades}
         btnUnlocked={$unlocked.cheeseyard}
-        tooltipText="+10 Capacity"
+        tooltipText={`+10 capacity <br> Currently: ${formatWhole($cheeseMonsterCapacity)}`}
       >
         Expand the Cheeseyard <br />
-        Current Capacity: {formatWhole($cheeseMonsterCapacity)}
       </UpgradeButton>
     </div>
 
-    <div class="gridColumn">
-      <!-- <UnlockButton unlock={unlocks.moldyCheeseByproduct}>
-        Your cheese factory can produce moldy cheese as a byproduct
-      </UnlockButton>
-
-      <UnlockButton unlock={unlocks.cheeseyard}>
-        <span>Construct the <strong style="color:crimson">Cheeseyard</strong></span>
-      </UnlockButton>
-
-      <UnlockButton unlock={unlocks.manualMoldyCheeseConversionBoost} btnUnlocked={$unlocked.cheeseyard}>
-        Cheese sacrifice produces 10x more moldy cheese (but cooldown also 10x)
-      </UnlockButton>
-
-      <UnlockButton unlock={unlocks.moldyCheeseCycleDurationBoost} btnUnlocked={$unlocked.cheeseyard}>
-        MC byproduct is boosted by (relative duration of the cheese cycle)^1.5 <br />
-      </UnlockButton> -->
+    <div class="gridColumn" style="height:332px; width: 100%">
+      <AffixComponent>
+        <Affix
+          factor={moldyCheeseHalflifeBoostFactor}
+          unlocked={$unlocked.moldyCheeseHalflifeBoost}
+          tooltipText={`scales ^${3} with half life`}
+        >
+          MC byproduct gain is additionally boosted by MC half-life
+        </Affix>
+      </AffixComponent>
     </div>
   </div>
 </Window>

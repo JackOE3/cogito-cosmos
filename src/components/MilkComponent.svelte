@@ -4,7 +4,6 @@
   import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
   import UpgradeButton from './UpgradeButton.svelte'
   import Window from './WindowOLD.svelte'
-  import { resource } from '../stores/resources'
   import { get } from 'svelte/store'
   import {
     cummulativeUpgradesToTier,
@@ -12,8 +11,8 @@
     milkPowerPerSec,
     milkUpgradeEffect,
     milkUpgradeTier,
-  } from '../stores/derived/milk'
-  import { highestMilk, upgrades } from '../stores/mainStore'
+  } from '@store/derived/milk'
+  import { highestMilk, upgrades, resource } from '@store/primitive'
 
   function handleMilkReset(): void {
     const milkGain = Math.floor(get(milkFromReset))
@@ -58,7 +57,7 @@
       </UpgradeButton>
     </div>
     <div class="gridColumn">
-      <UpgradeButton upgradeName="cheeseMonsterCapacityDelta">
+      <UpgradeButton upgradeName="cheeseMonsterCapacityPerUpgrade">
         Cheeseyard Expansions are larger<br />
         Currently: +10 per Upgrade
       </UpgradeButton>

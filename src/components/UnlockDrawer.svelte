@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { unlocked, type IUnlock } from '../stores/unlocks'
+  import type { IUnlock } from '@store/primitive/unlocks'
+  import { unlocked } from '@store/primitive'
   import UnlockIcon from './UnlockIcon.svelte'
 
   export let unlocks: IUnlock[]

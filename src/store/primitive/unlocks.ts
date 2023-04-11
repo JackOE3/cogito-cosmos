@@ -1,4 +1,4 @@
-import { makeStore } from './customStore'
+import { makeStore } from '../customStore'
 
 console.log('unlocks.ts')
 
@@ -25,9 +25,11 @@ export enum UnlockName {
   CHEESE_CYCLES_BOOST_THOUGHTS = 'cheeseCyclesBoostThoughts',
   // Moldy Cheese
   MOLDY_CHEESE_BYPRODUCT = 'moldyCheeseByproduct',
-  MANUAL_MOLDY_CHEESE_CONVERSION_BOOST = 'manualMoldyCheeseConversionBoost',
   CHEESEYARD = 'cheeseyard',
+  MANUAL_MOLDY_CHEESE_CONVERSION_BOOST = 'manualMoldyCheeseConversionBoost',
+  CHEESEYARD_MOLD_UPGRADE = 'cheeseyardMoldUpgrade',
   MOLDY_CHEESE_CYCLE_DURATION_BOOST = 'moldyCheeseCycleDurationBoost',
+  MOLDY_CHEESE_HALFLIFE_BOOST = 'moldyCheeseHalflifeBoost',
   // Cheeseyard
   MONSTER_BRAIN_WAVE_CONTROLLER = 'monsterBrainWaveController',
   CHEESE_MONSTER_MASSACRE = 'cheeseMonsterMassacre',
@@ -241,7 +243,7 @@ export const unlocks: Record<string, IUnlock[]> = {
       name: UnlockName.CHEESEYARD,
       type: 'Unlock',
       resource: 'moldyCheese',
-      cost: 1000,
+      cost: 2000,
       title: 'End Times',
       description:
         'Construct the <strong style="color:crimson">Cheeseyard</strong>, a place where abominations made of cheese reside.',
@@ -251,20 +253,41 @@ export const unlocks: Record<string, IUnlock[]> = {
       name: UnlockName.MANUAL_MOLDY_CHEESE_CONVERSION_BOOST,
       type: 'Boost',
       resource: 'moldyCheese',
-      cost: 2000,
+      cost: 4000,
       title: 'Passiveness',
       description: 'Cheese sacrifice produces 10x more moldy cheese, but its cooldown is also increased by 10x.',
       tooltipText: 'Some scientists are still unsure whether this will increase your effective gain.',
     },
     {
+      name: UnlockName.CHEESEYARD_MOLD_UPGRADE,
+      type: 'Unlock',
+      resource: 'moldyCheese',
+      cost: 8000,
+      title: 'Em(b)olden',
+      description: 'Your cheese monsters can get moldy. <br> Unlock an additional upgrade in the Cheeseyard.',
+      tooltipText: 'This smells...',
+      availableAt: UnlockName.CHEESEYARD,
+    },
+    {
       name: UnlockName.MOLDY_CHEESE_CYCLE_DURATION_BOOST,
       type: 'Affix',
       resource: 'moldyCheese',
-      cost: 4000,
+      cost: 16000,
       title: 'Slow and Steady',
       description:
         'Moldy cheese byproduct gain is boosted by the relative duration of the cheese cycle (which depends on the cheese factory protocol).',
       tooltipText: 'The most meticulously crafted cheese is the moldiest.',
+      availableAt: UnlockName.CHEESEYARD,
+    },
+    {
+      name: UnlockName.MOLDY_CHEESE_HALFLIFE_BOOST,
+      type: 'Affix',
+      resource: 'moldyCheese',
+      cost: 1e6,
+      title: 'Half-important Upgrade',
+      description: 'Moldy cheese byproduct gain is additionally boosted by MC half-life.',
+      tooltipText: 'How much are 2 half-lives? They drop your braincells by 75%.',
+      availableAt: UnlockName.CHEESEYARD_MOLD_UPGRADE,
     },
   ],
 
@@ -284,7 +307,7 @@ export const unlocks: Record<string, IUnlock[]> = {
       name: UnlockName.CHEESE_MONSTER_COLLECTIVE_SENTIENCE,
       type: 'Mechanic',
       resource: 'cheeseBrains',
-      cost: 1000,
+      cost: 1e5,
       title: 'Emancipation',
       description:
         '<strong>Collective sentience</strong>: Bigger populations give a (much) bigger global boost to thinking due to emergence.',
@@ -294,7 +317,7 @@ export const unlocks: Record<string, IUnlock[]> = {
       name: UnlockName.CHEESE_MONSTER_TOTAL_DEATHS_BOOST,
       type: 'Affix',
       resource: 'cheeseBrains',
-      cost: 10000,
+      cost: 1e6,
       title: 'Mass Murder',
       description: 'Total cheese monster deaths boost their dropped loot.',
       tooltipText: 'You have to perfect to art of killing to extract the most out of corpses.',

@@ -8,6 +8,13 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "strictNullChecks": true,
-    "ignoreDeprecations": "5.0"
+    "ignoreDeprecations": "5.0",
+    "baseUrl": "./",
+    "paths": {
+      "@store": ["src/store"],
+      "@store/*": ["src/store/*"],
+      "@gamelogic/*": ["src/gamelogic/*"],
+      "@assets/*": ["public/assets/*"]
+    }
   }
 }
