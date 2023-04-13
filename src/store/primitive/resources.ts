@@ -1,7 +1,5 @@
 import { makeStore } from '../customStore'
 
-console.log('resources.ts')
-
 export interface Resource {
   thoughts: number
   cheese: number
