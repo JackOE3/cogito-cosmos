@@ -19,7 +19,6 @@ export function tooltipOnParent(
     if (options.anchor === 'parentElement') {
       rect = element.parentElement?.getBoundingClientRect() ?? new DOMRect(0, 0, 0, 0)
     } else {
-      console.log('default')
       rect = element.getBoundingClientRect()
     }
 

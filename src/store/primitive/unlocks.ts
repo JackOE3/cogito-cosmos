@@ -1,7 +1,5 @@
 import { makeStore } from '../customStore'
 
-console.log('unlocks.ts')
-
 export enum UnlockName {
   // Thoughts
   START = 'start',

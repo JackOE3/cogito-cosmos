@@ -1,16 +1,14 @@
 import { get } from 'svelte/store'
-import type { Resource } from '@store'
 import {
+  type Resource,
   totalMonsterDeathsLootBoost,
   cheeseMonsterSpawnrate,
   cheeseMonsterDeathrate,
   cheeseMonsterCapacity,
   cheeseMonsterDropRate,
   cheeseMonsterLootAmount,
+  totalCheeseMonsterDeaths,
 } from '@store'
-import { totalCheeseMonsterDeaths } from '@store'
-
-console.log('cheeseMonster.ts')
 
 let accumulateSecond = 0
 

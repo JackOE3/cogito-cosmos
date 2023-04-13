@@ -14,7 +14,6 @@
   import MilkTreeComponent from './components/game-windows/MilkTreeComponent.svelte'
   import Log from './components/misc/Log.svelte'
 
-  console.log('App.svelte')
   let secretImage: HTMLElement
   let background: HTMLElement
   let gameWindow: HTMLElement

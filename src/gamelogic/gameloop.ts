@@ -10,9 +10,6 @@ import {
   totalTimePlayed,
 } from '@store'
 
-console.log('gameloop.ts')
-// import {upgrades} from './upgrades'
-
 // natural log of 2
 const LN2 = 0.69314718056
 
@@ -114,8 +111,6 @@ function gameUpdate(deltaTimeSeconds: number): void {
   })
 
   totalTimePlayed.update($value => $value + deltaTimeSeconds)
-
-  // upgradesBought.update(value => value)
 }
 
 /**

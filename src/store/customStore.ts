@@ -1,8 +1,6 @@
 import { writable, type Writable } from 'svelte/store'
 import { noRef } from '../gamelogic/utils'
 
-console.log('customStore.ts')
-
 export interface baseStore<T> extends Writable<T> {
   refresh: () => void
   reset: () => void

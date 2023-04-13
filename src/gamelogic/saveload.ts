@@ -4,8 +4,6 @@ import * as store from '@store/primitive/to-save'
 import { upgradesInitial } from '@store'
 // import {compress, decompress} from 'lz-string'
 
-console.log('savedload.ts')
-
 const CURRENT_SAVE_VERSION = '0.0.1'
 /**
  * This is the key the save data will be stored under inside localstorage
