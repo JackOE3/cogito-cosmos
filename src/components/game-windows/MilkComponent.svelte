@@ -1,10 +1,18 @@
 <script lang="ts">
-  import Window from './window-model/WindowOLD.svelte'
+  import Window from './window-model/Window.svelte'
   import { formatNumber, formatWhole } from '@gamelogic/utils'
   import UpgradeButton from '../UpgradeButton.svelte'
   import { get } from 'svelte/store'
-  import { cummulativeUpgradesToTier, milkFromReset, milkPowerPerSec, milkUpgradeEffect, milkUpgradeTier } from '@store'
-  import { highestMilk, upgrades, resource } from '@store'
+  import {
+    cummulativeUpgradesToTier,
+    milkFromReset,
+    milkPowerPerSec,
+    milkUpgradeEffect,
+    milkUpgradeTier,
+    highestMilk,
+    upgrades,
+    resource,
+  } from '@store'
   import { tooltip } from '../tooltips/tooltip'
 
   function handleMilkReset(): void {
@@ -14,7 +22,7 @@
   }
 </script>
 
-<Window title="Milk" --bg="linear-gradient(90deg, #bdbdbd 0%, #ffffff 100%)">
+<!-- <Window title="Milk" themeColor1="#bdbdbd" themeColor2="#ffffff">
   <div>
     <span class="resourceDisplay"
       >You have {formatNumber($resource.milk, 2)} <strong style="color:white">milk</strong> <br />
@@ -87,6 +95,19 @@
 
     <div class="gridColumn" />
   </div>
+</Window> -->
+<Window title="Milk" themeColor1="#bdbdbd" themeColor2="#ffffff">
+  <div>
+    <span class="resourceDisplay"
+      >You have {formatNumber($resource.milk, 2)} <strong style="color:white">milk</strong> <br />
+    </span>
+  </div>
+
+  <span>
+    This is the end of the demo! <br />
+    Milk would/will be a prestige layer interacting with all of the stuff so far. <br />
+    I would appreciate any feedback, suggestions, etc!
+  </span>
 </Window>
 
 <style>

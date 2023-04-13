@@ -1,6 +1,5 @@
 <script lang="ts">
-  import type { IUnlock } from '@store'
-  import { unlocked } from '@store'
+  import { unlocked, type IUnlock } from '@store'
   import UnlockIcon from './UnlockIcon.svelte'
 
   export let unlocks: IUnlock[]
@@ -8,7 +7,7 @@
 </script>
 
 <div style="position:relative; width: max-content; height: max-content">
-  <div class="unlockDrawer grid themeBorder">
+  <div class="unlockDrawer grid theme-border">
     {#each unlocks as unlock, tempCount}
       {#if !$unlocked[unlock.name] && $unlocked[unlock.availableAt ?? 'start']}
         <UnlockIcon {unlock} {tempCount} {folderName} />

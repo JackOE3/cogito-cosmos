@@ -1,7 +1,7 @@
 <script lang="ts">
   import { formatWhole, formatResourceName } from '@gamelogic/utils'
   import { buyUpgrade } from '@gamelogic/buy-upgrade'
-  import { upgrades, resource, LORCA_OVERRIDE } from '@store/primitive'
+  import { upgrades, resource, LORCA_OVERRIDE } from '@store'
   import { tooltip } from './tooltips/tooltip'
   import { derived, get } from 'svelte/store'
   import { fade } from 'svelte/transition'

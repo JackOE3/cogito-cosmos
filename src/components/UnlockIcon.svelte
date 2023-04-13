@@ -1,8 +1,8 @@
 <script lang="ts">
   import { formatWhole } from '../gamelogic/utils'
-  import type { IUnlock } from '@store'
-  import { unlocked, resource } from '@store'
-  import { tooltipForUnlocks } from './tooltips/tooltipForUnlocks'
+  import { unlocked, resource, type IUnlock } from '@store'
+  import { Direction, tooltip } from './tooltips/tooltip'
+  import UnlockTooltip from './tooltips/UnlockTooltip.svelte'
 
   export let unlock: IUnlock
   export let tempCount: number
@@ -16,7 +16,6 @@
       $unlocked[unlock.name] = true
       return $unlocked
     })
-    // $unlocked[unlock.name] = true
   }
 </script>
 
@@ -27,19 +26,13 @@
     data-unlockType={unlock.type}
     class:disabled={$unlocked[unlock.name] || $resource[unlock.resource] < unlock.cost}
     class:unlocked={$unlocked[unlock.name]}
-    use:tooltipForUnlocks={{
-      data: unlock,
-    }}
+    use:tooltip={{ data: unlock, Component: UnlockTooltip, direction: Direction.RIGHT, anchor: 'offsetParent' }}
   >
     <img alt="upgrade icon" src={`assets/${folderName}/PNG/${tempCount + 1}.png`} draggable="false" />
   </button>
 </div>
 
 <style>
-  /* * {
-    --themeColor1: rgb(129, 0, 204);
-    --themeColor2: rgb(182, 122, 255);
-  } */
   button.disabled {
     filter: saturate(50%);
   }
@@ -55,12 +48,6 @@
     outline: 2px solid rgba(0, 0, 0, 0.6);
     padding: 2px;
   }
-  /* .silver {
-    border: 2px rgb(139, 139, 139) solid;
-  }
-  .gold {
-    border: 2px rgb(180, 153, 0) solid;
-  } */
 
   button:not(.disabled):not(.unlocked):hover {
     filter: contrast(150%);

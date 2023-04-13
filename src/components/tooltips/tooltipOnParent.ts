@@ -1,26 +1,14 @@
-import { type SvelteComponentDev } from 'svelte/internal'
 import Tooltip from './Tooltip.svelte'
 
-export enum Direction {
-  TOP = 'top',
-  RIGHT = 'right',
-  LEFT = 'left',
-  BOTTOM = 'bottom',
-}
-
-export function tooltip(
+export function tooltipOnParent(
   element: HTMLElement,
   options: {
-    data?: unknown
+    data: string | null
     anchor?: string
-    direction?: Direction
-    Component?: typeof SvelteComponentDev
   }
 ): object {
-  let tooltipComponent: SvelteComponentDev
-  const TooltipConstructor = options.Component ?? Tooltip
-
-  let tooltipData: unknown | null = options.data ?? null
+  let tooltipComponent: Tooltip
+  let tooltipData = options.data ?? null
   let mousePressed = false
   let tooltipShown = false
 
@@ -28,29 +16,18 @@ export function tooltip(
     if (tooltipData === null || mousePressed) return
 
     let rect: DOMRect
-    let top: number
-    let left: number
     if (options.anchor === 'parentElement') {
       rect = element.parentElement?.getBoundingClientRect() ?? new DOMRect(0, 0, 0, 0)
-    } else if (options.anchor === 'offsetParent') {
-      rect = element.offsetParent?.getBoundingClientRect() ?? new DOMRect(0, 0, 0, 0)
     } else {
+      console.log('default')
       rect = element.getBoundingClientRect()
     }
 
-    if (options.direction === Direction.RIGHT) {
-      top = rect.top
-      left = rect.right + 8
-    } else {
-      top = rect.bottom + 10
-      left = rect.left
-    }
-
-    tooltipComponent = new TooltipConstructor({
+    tooltipComponent = new Tooltip({
       props: {
         data: tooltipData,
-        top,
-        left,
+        top: rect.top,
+        left: rect.left + rect.width,
       },
       target: document.body,
     })
@@ -66,11 +43,6 @@ export function tooltip(
     if (tooltipData === null || !mousePressed || !tooltipShown) return
     tooltipComponent.$destroy()
     tooltipShown = false
-
-    /*  tooltipComponent.$set({
-      x: event.pageX,
-      y: event.pageY,
-    }) */
   }
 
   function mouseDown(_event: MouseEvent): void {

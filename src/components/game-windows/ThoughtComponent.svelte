@@ -1,7 +1,7 @@
 <script lang="ts">
   import Window from './window-model/Window.svelte'
   import UnlockDrawer from '../UnlockDrawer.svelte'
-  import { formatNumber, formatTime, formatWhole } from '@gamelogic/utils'
+  import { formatNumber, formatTime } from '@gamelogic/utils'
   import UpgradeButton from '../UpgradeButton.svelte'
   import {
     unlocks,
@@ -16,10 +16,13 @@
     thoughtBoostMaxStacks,
     thoughtsPerSec,
     thoughtsPerSecBase,
+    UnlockName,
   } from '@store'
 
   import { onMount } from 'svelte'
   import { derived, get } from 'svelte/store'
+  import EffectComponent from '../EffectComponent.svelte'
+  import Effect from '../Effect.svelte'
 
   let buyMaxUpgrades = false
   let thoughtBoostCurrentStacks = 0
@@ -27,7 +30,6 @@
   let lastTime: number | null = null
   let myReq: number
 
-  // $: thoughtAccelDisplay = ($upgrades.thoughtJerk.bought + 1 )
   $: thoughtAccelDisplay =
     $upgrades.thoughtAcceleration.bought > 0
       ? ($thoughtsPerSec / $upgrades.thoughtAcceleration.bought) * (1 - 1 / $thoughtsPerSecBase)
@@ -98,10 +100,12 @@
       {#if $unlocked.thinkPassively || LORCA_OVERRIDE}
         <span class:green={$currentThoughtBoost > 1}>{formatNumber($thoughtsPerSec, 2)}/s</span>
         {#if $currentThoughtBoost > 1}
-          - {formatNumber($currentThoughtBoost, 2)}x for
-          {formatTime($currentThoughtBoostTime / 1000)}
-          {#if $unlocked.thoughtBoostStack}
-            - {thoughtBoostCurrentStacks}/{$thoughtBoostMaxStacks} Stack{$thoughtBoostMaxStacks > 1 ? 's' : ''}
+          - {formatNumber($currentThoughtBoost, 2)}x
+          {#if $currentThoughtBoostTime >= 100}
+            for {formatTime($currentThoughtBoostTime / 1000, 1)}
+            {#if $unlocked.thoughtBoostStack}
+              - {thoughtBoostCurrentStacks}/{$thoughtBoostMaxStacks} Stack{$thoughtBoostMaxStacks > 1 ? 's' : ''}
+            {/if}
           {/if}
         {/if}
       {/if}
@@ -172,7 +176,15 @@
       </UpgradeButton>
     </div>
 
-    <div class="gridColumn" />
+    <div class="gridColumn" style="height:332px; width: 100%">
+      <EffectComponent
+        title={$upgrades.cheeseThoughtMult.bought > 0 || $unlocked.cheeseQueueLengthBoost ? 'Effects' : '???'}
+      >
+        <Effect factor={$currentThoughtBoost} unlocked={$unlocked.cheeseBoost}>
+          {unlocks.cheese.find(v => v.name === UnlockName.CHEESE_BOOST)?.description}
+        </Effect>
+      </EffectComponent>
+    </div>
   </div>
 </Window>
 
@@ -180,8 +192,5 @@
   .green {
     color: rgb(0, 216, 0);
     font-weight: bold;
-  }
-  label {
-    display: inline-block;
   }
 </style>

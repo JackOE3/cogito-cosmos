@@ -2,7 +2,6 @@
   import { formatWhole, formatResourceName } from '@gamelogic/utils'
   import { unlocked, resource, LORCA_OVERRIDE } from '@store'
   import { tooltip } from './tooltips/tooltip'
-  import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
   import type { IUnlock, unlockType } from '@store'
 
   export let unlock: IUnlock
@@ -20,13 +19,6 @@
     })
     // $unlocked[unlock.name] = true
   }
-
-  const unlockTypeSymbol: Record<unlockType, string> = {
-    static: '≡',
-    dynamic: '≋',
-    content: '✪',
-  }
-  const temp = unlock.type !== undefined ? unlockTypeSymbol[unlock.type] : ''
 </script>
 
 {#if !btnHidden}
@@ -36,7 +28,6 @@
       class:disabled={$unlocked[unlock.name] || $resource[unlock.resource] < unlock.cost}
       use:tooltip={{ data: unlock.tooltipText }}
       class:unlocked={$unlocked[unlock.name]}
-      data-unlockType={temp}
     >
       <slot />
       <br />

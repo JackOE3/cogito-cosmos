@@ -37,7 +37,7 @@ export enum UnlockName {
   CHEESE_MONSTER_TOTAL_DEATHS_BOOST = 'cheeseMonsterTotalDeathsBoost',
 }
 
-export type unlockType = 'Unlock' | 'Mechanic' | 'Boost' | 'Affix'
+export type unlockType = 'Unlock' | 'Mechanic' | 'Boost' | 'Effect'
 export interface IUnlock {
   name: UnlockName
   type: unlockType
@@ -128,7 +128,7 @@ export const unlocks: Record<string, IUnlock[]> = {
       name: UnlockName.MILK,
       type: 'Unlock',
       resource: 'thoughts',
-      cost: 1e16,
+      cost: 1e22,
       title: 'Prestige?',
       description: '<span>You can reset your progress for a glass of calcium-rich <strong>Milk</strong></span>.',
       tooltipText: 'From cheese you get milk...I think.',
@@ -158,7 +158,7 @@ export const unlocks: Record<string, IUnlock[]> = {
     },
     {
       name: UnlockName.CHEESE_QUEUE_LENGTH_BOOST,
-      type: 'Affix',
+      type: 'Effect',
       resource: 'cheese',
       cost: 500,
       title: 'Length Boost',
@@ -168,7 +168,7 @@ export const unlocks: Record<string, IUnlock[]> = {
     },
     {
       name: UnlockName.CHEESE_BOOST,
-      type: 'Affix',
+      type: 'Effect',
       resource: 'cheese',
       cost: 50_000,
       title: 'Cheese Boost',
@@ -188,9 +188,9 @@ export const unlocks: Record<string, IUnlock[]> = {
     },
     {
       name: UnlockName.CHEESE_CYCLE_ACCELERATOR,
-      type: 'Affix',
+      type: 'Effect',
       resource: 'cheese',
-      cost: 2e6,
+      cost: 5e6,
       title: 'Experience is key',
       description: 'Cheese production speeds up based on the amount of cheese cycles completed.',
       tooltipText: 'The mastery of cheese, a very important life skill to have.',
@@ -200,7 +200,7 @@ export const unlocks: Record<string, IUnlock[]> = {
       name: UnlockName.THOUGHT_JERK,
       type: 'Unlock',
       resource: 'cheese',
-      cost: 5e6,
+      cost: 3e7,
       title: 'More to think about',
       description: 'Jerk(?) your thinking.',
       tooltipText: 'something something per second cubed',
@@ -210,7 +210,7 @@ export const unlocks: Record<string, IUnlock[]> = {
       name: UnlockName.CHEESE_MODES,
       type: 'Mechanic',
       resource: 'cheese',
-      cost: 1e7,
+      cost: 5e7,
       title: 'Cheese Factory Protocol',
       description: 'Gain access to 3 modes to help manage your cheese production',
       tooltipText: 'Micromanaging your employees will lead to universal happiness.',
@@ -218,9 +218,9 @@ export const unlocks: Record<string, IUnlock[]> = {
     },
     {
       name: UnlockName.CHEESE_CYCLES_BOOST_THOUGHTS,
-      type: 'Affix',
+      type: 'Effect',
       resource: 'cheese',
-      cost: 2e7,
+      cost: 1e8,
       title: 'Return on Investment',
       description: 'Total cheese cycles give a boost (multiplier) to your thinking.',
       tooltipText: 'I like cycling. My favorite is cheese.',
@@ -266,26 +266,26 @@ export const unlocks: Record<string, IUnlock[]> = {
       title: 'Em(b)olden',
       description: 'Your cheese monsters can get moldy. <br> Unlock an additional upgrade in the Cheeseyard.',
       tooltipText: 'This smells...',
-      availableAt: UnlockName.CHEESEYARD,
+      availableAt: UnlockName.MONSTER_BRAIN_WAVE_CONTROLLER,
     },
     {
       name: UnlockName.MOLDY_CHEESE_CYCLE_DURATION_BOOST,
-      type: 'Affix',
+      type: 'Effect',
       resource: 'moldyCheese',
       cost: 16000,
       title: 'Slow and Steady',
       description:
         'Moldy cheese byproduct gain is boosted by the relative duration of the cheese cycle (which depends on the cheese factory protocol).',
       tooltipText: 'The most meticulously crafted cheese is the moldiest.',
-      availableAt: UnlockName.CHEESEYARD,
+      availableAt: UnlockName.MONSTER_BRAIN_WAVE_CONTROLLER,
     },
     {
       name: UnlockName.MOLDY_CHEESE_HALFLIFE_BOOST,
-      type: 'Affix',
+      type: 'Effect',
       resource: 'moldyCheese',
       cost: 1e6,
       title: 'Half-important Upgrade',
-      description: 'Moldy cheese byproduct gain is additionally boosted by MC half-life.',
+      description: 'Cheese gain is additionally boosted by MC half-life.',
       tooltipText: 'How much are 2 half-lives? They drop your braincells by 75%.',
       availableAt: UnlockName.CHEESEYARD_MOLD_UPGRADE,
     },
@@ -299,8 +299,7 @@ export const unlocks: Record<string, IUnlock[]> = {
       resource: 'cheeseBrains',
       cost: 200,
       title: 'No Morals',
-      description:
-        '<strong>Massacre effect</strong>: When killing many cheese monsters at once, the loot is massively boosted.',
+      description: 'When killing many cheese monsters at once, the loot is massively boosted.',
       tooltipText: 'Rewarding genocide! <br /> (only applies in this game and NOT in real life)',
     },
     {
@@ -308,18 +307,17 @@ export const unlocks: Record<string, IUnlock[]> = {
       type: 'Mechanic',
       resource: 'cheeseBrains',
       cost: 1e5,
-      title: 'Emancipation',
-      description:
-        '<strong>Collective sentience</strong>: Bigger populations give a (much) bigger global boost to thinking due to emergence.',
+      title: 'Collective Sentience',
+      description: 'Bigger populations give a (much) bigger global boost to thinking due to emergence.',
       tooltipText: 'Completely harmless.',
     },
     {
       name: UnlockName.CHEESE_MONSTER_TOTAL_DEATHS_BOOST,
-      type: 'Affix',
+      type: 'Effect',
       resource: 'cheeseBrains',
       cost: 1e6,
       title: 'Mass Murder',
-      description: 'Total cheese monster deaths boost their dropped loot.',
+      description: 'Total cheese monster deaths boost dropped monster loot.',
       tooltipText: 'You have to perfect to art of killing to extract the most out of corpses.',
     },
   ],

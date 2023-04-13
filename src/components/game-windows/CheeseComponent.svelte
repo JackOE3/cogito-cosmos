@@ -1,7 +1,7 @@
 <script lang="ts">
   import Window from './window-model/Window.svelte'
-  import AffixComponent from '../AffixComponent.svelte'
-  import Affix from '../Affix.svelte'
+  import EffectComponent from '../EffectComponent.svelte'
+  import Effect from '../Effect.svelte'
   import { formatNumber, formatTime, formatWhole } from '@gamelogic/utils'
   import { fade, slide } from 'svelte/transition'
   import ProgBar from '../misc/ProgBar.svelte'
@@ -18,8 +18,6 @@
     cheeseQueueTotalCycles,
     type CheeseFactoryMode,
     currentThoughtBoost,
-  } from '@store'
-  import {
     cheeseModeFactor,
     cheeseCycleDuration,
     cheeseCycleBatchSize,
@@ -36,15 +34,14 @@
     cheeseCyclesThoughtMult,
     unlocks,
     UnlockName,
+    mcCycleDurationBoostFactor,
+    moldyCheeseChance,
+    mcByproductAmount,
   } from '@store'
   import UnlockDrawer from '../UnlockDrawer.svelte'
   import { tooltip } from '../tooltips/tooltip'
-
-  const cheeseModeDescription: Record<CheeseFactoryMode, string> = {
-    meticulous: '"Quality over quantity"',
-    nominal: 'Everything is working nominally.',
-    warpSpeed: 'Trains the hand speed of your workers.',
-  }
+  import CheeseFactoryProtocol from '../tooltips/CheeseFactoryProtocol.svelte'
+  import { onMount } from 'svelte'
 
   const buyMaxUpgrades = false
   // extracting the stores from the cheeseCycleBase object
@@ -58,6 +55,10 @@
 
   let cheeseBarProgress = 0
   let lastTime: number | null = null
+
+  onMount(() => {
+    if ($cheeseQueueActive) requestAnimationFrame(animateCheeseBar)
+  })
 
   function resetCheeseBar(): void {
     cheeseBarProgress = 0
@@ -99,7 +100,7 @@
   function handleCheeseGeneration(): void {
     $resource.cheese += $cheeseCycleBatchSize
 
-    if (!cheeseCycleBase.infinite && !$currentCheeseQueue) {
+    if (!$currentCheeseQueue) {
       // 'initial' better than 'paused', because the animation might've already started a small bit
       cheeseQueueActive.set(false)
       return
@@ -112,6 +113,13 @@
     $resource.thoughts -= $cheeseCycleCost
     if ($currentCheeseQueue >= 1) $currentCheeseQueue--
     $cheeseQueueTotalCycles++
+
+    // HANDLEMOLDY CHEESE
+    if ($unlocked.moldyCheeseByproduct) {
+      if (Math.random() < $moldyCheeseChance) {
+        $resource.moldyCheese += $mcByproductAmount
+      }
+    }
   }
 </script>
 
@@ -124,7 +132,7 @@
     ~ {formatNumber(cheesePerSecFromQueue, 2)}/s
   </div>
 
-  <div>
+  <div style="display:flex; flex-direction:column;">
     <div class="flexRowContainer">
       <button style="width:170px;" on:click={handleCheeseGenerationInit} disabled={$cheeseQueueActive}>
         Make cheese <br />
@@ -184,10 +192,22 @@
         thoughts/s)
       </span>
     </p>
+
+    <span style="margin-top: .25rem" transition:fade={{ duration: 500 }}>
+      {#if $unlocked.cheeseCycleAccelerator}
+        Total Cheese Cycles: {formatWhole($cheeseQueueTotalCycles)}
+      {:else}
+        ...???
+      {/if}
+    </span>
   </div>
 
   {#if $unlocked.cheeseQueueOverclocking || $LORCA_OVERRIDE}
-    <div class="flexRowContainer" transition:slide={{ duration: 1000 }}>
+    <div
+      class="flexRowContainer"
+      transition:slide={{ duration: 1000 }}
+      style="align-items:flex-end; margin-top: -8px; height: 71px"
+    >
       <div style="display:flex; flex-direction:row; gap: 2px;">
         <div
           style="display:flex; flex-direction:column; background-color: var(--Gray800)"
@@ -239,46 +259,27 @@
           </button>
         </div>
       </div>
-      <div>
-        {#if $unlocked.cheeseCycleAccelerator}
-          <span transition:fade={{ duration: 500 }}>
-            Total Cheese Cycles: {formatWhole($cheeseQueueTotalCycles)} <br />
-            Cycle Duration: {formatNumber($cheeseCycleDuration / 1000, 2)}s <br />
-          </span>
-        {/if}
-      </div>
-    </div>
-  {/if}
 
-  {#if $unlocked.cheeseModes || $LORCA_OVERRIDE}
-    <div id="cheeseFactoryProtocolContainer" transition:slide={{ duration: 1000 }}>
-      <fieldset on:change={resetCheeseBar}>
-        <legend>cheese factory protocol</legend>
+      {#if $unlocked.cheeseModes || $LORCA_OVERRIDE}
+        <div transition:slide={{ duration: 1000 }}>
+          <fieldset on:change={resetCheeseBar}>
+            <legend>Cheese Factory Protocol</legend>
 
-        <label>
-          <input type="radio" name="cheeseFactoryMode" bind:group={$cheeseFactoryMode} value="meticulous" />
-          meticulous
-        </label>
-        <label>
-          <input type="radio" name="cheeseFactoryMode" bind:group={$cheeseFactoryMode} value="nominal" />
-          nominal
-        </label>
-        <label>
-          <input type="radio" name="cheeseFactoryMode" bind:group={$cheeseFactoryMode} value="warpSpeed" />
-          warp speed
-        </label>
-      </fieldset>
-      <div id="cheeseFactoryProtocolInfo">
-        <span class="colorText" style="text-decoration: underline; font-weight: bold">Cheesy Info</span> <br />
-        <span>
-          <p style="margin:0">{cheeseModeDescription[$cheeseFactoryMode]}</p>
-          Relative yield/duration/cost: {$cheeseModeFactor.yield}x / {$cheeseModeFactor.duration}x / {$cheeseModeFactor.cost}x
-          <br />
-          {#if $cheeseFactoryMode === 'warpSpeed'}
-            In this mode you are unable to produce byprodcuts.
-          {/if}
-        </span>
-      </div>
+            <label use:tooltip={{ data: 'meticulous', Component: CheeseFactoryProtocol, anchor: 'parentElement' }}>
+              <input type="radio" name="cheeseFactoryMode" bind:group={$cheeseFactoryMode} value="meticulous" />
+              meticulous
+            </label>
+            <label use:tooltip={{ data: 'nominal', Component: CheeseFactoryProtocol, anchor: 'parentElement' }}>
+              <input type="radio" name="cheeseFactoryMode" bind:group={$cheeseFactoryMode} value="nominal" />
+              nominal
+            </label>
+            <label use:tooltip={{ data: 'warpSpeed', Component: CheeseFactoryProtocol, anchor: 'parentElement' }}>
+              <input type="radio" name="cheeseFactoryMode" bind:group={$cheeseFactoryMode} value="warpSpeed" />
+              warp speed
+            </label>
+          </fieldset>
+        </div>
+      {/if}
     </div>
   {/if}
 
@@ -315,7 +316,7 @@
         btnUnlocked={$unlocked.cheeseQueue}
         tooltipText={`Currently: ${
           $upgrades.cheeseThoughtMult.bought * $upgrades.cheeseThoughtMult.bought
-        }x <br> Scales ^2 with #upgrades`}
+        }x <br> Scales ^2 with #upgrades.`}
       >
         {#if $upgrades.cheeseThoughtMult.bought === 0}
           Cheese increases thought gain
@@ -335,10 +336,10 @@
     </div>
 
     <div class="gridColumn" style="height:264px; width: 100%">
-      <AffixComponent
-        title={$upgrades.cheeseThoughtMult.bought > 0 || $unlocked.cheeseQueueLengthBoost ? 'Affixes' : '???'}
+      <EffectComponent
+        title={$upgrades.cheeseThoughtMult.bought > 0 || $unlocked.cheeseQueueLengthBoost ? 'Effects' : '???'}
       >
-        <Affix
+        <Effect
           factor={$cheeseThoughtMult}
           unlocked={$upgrades.cheeseThoughtMult.bought > 0}
           tooltipText={`Scaling: log(cheese) &times; ${
@@ -346,108 +347,49 @@
           }`}
         >
           Cheese increases thoughts/s
-        </Affix>
+        </Effect>
 
-        <Affix
+        <Effect
           factor={$cheeseQueueLengthBoostFactor}
           unlocked={$unlocked.cheeseQueueLengthBoost}
           tooltipText="Scaling: capacity^2"
         >
           {unlocks.cheese.find(v => v.name === UnlockName.CHEESE_QUEUE_LENGTH_BOOST)?.description}
-        </Affix>
+        </Effect>
 
-        <Affix factor={$currentThoughtBoost} unlocked={$unlocked.cheeseBoost}>
-          {unlocks.cheese.find(v => v.name === UnlockName.CHEESE_BOOST)?.description}
-        </Affix>
-
-        <Affix
+        <Effect
           factor={$cheeseCycleAcceleratorFactor}
           unlocked={$unlocked.cheeseCycleAccelerator}
           tooltipText="Scaling: log(cycles)"
         >
           {unlocks.cheese.find(v => v.name === UnlockName.CHEESE_CYCLE_ACCELERATOR)?.description}
-        </Affix>
+        </Effect>
 
-        <Affix
+        <Effect
           factor={$cheeseCyclesThoughtMult}
           unlocked={$unlocked.cheeseCyclesBoostThoughts}
           tooltipText="Scaling: cycles^1.5"
         >
           {unlocks.cheese.find(v => v.name === UnlockName.CHEESE_CYCLES_BOOST_THOUGHTS)?.description}
-        </Affix>
+        </Effect>
 
-        <!-- <Affix
-          factor={moldyCheeseCycleDurationBoostFactor}
+        <Effect
+          factor={$mcCycleDurationBoostFactor}
           unlocked={$unlocked.moldyCheeseCycleDurationBoost}
-          tooltipText={`scales ^${moldyCheeseCycleDurationBoostExponent} with relative duration`}
+          tooltipText={`Scales ^${1.5} with relative duration.`}
         >
           MC byproduct gain is boosted by the rel. duration of the cheese cycle
-        </Affix> -->
-      </AffixComponent>
+        </Effect>
+      </EffectComponent>
     </div>
   </div>
 </Window>
 
-<!-- <Window --width="max-content" --bg="linear-gradient(90deg, rgb(121, 119, 0) 0%, yellow 100%)">
-  <div class="gridColumn">
-    <UnlockButton unlock={unlocks.cheeseCycleBase}>
-      <span>Unlock the <strong style="color:yellow">Cheese Queue</strong></span>
-    </UnlockButton>
-
-    <UnlockButton unlock={unlocks.cheeseQueueLengthBoost} btnUnlocked={$unlocked.cheeseCycleBase}>
-      Cheese Queue Length boosts cheese production<br />
-      Currently: {formatNumber($cheeseQueueLengthBoostFactor, 2)}x
-    </UnlockButton>
-
-    <UnlockButton unlock={unlocks.cheeseBoost} btnUnlocked={$unlocked.cheeseCycleBase}>
-      Thought Boost also affects cheese production <br />
-      Currently: {formatNumber($currentThoughtBoost, 2)}x
-    </UnlockButton>
-
-    <UnlockButton unlock={unlocks.cheeseCycleAccelerator} btnUnlocked={$unlocked.cheeseQueueLengthBoost}>
-      Cheese production speeds up based on amount of cycles completed <br />
-      Current Speed Factor: {formatNumber($cheeseCycleAcceleratorFactor, 2)}x
-    </UnlockButton>
-
-    <UnlockButton
-      unlock={unlocks.thoughtJerk}
-      btnUnlocked={$unlocked.cheeseBoost}
-      tooltipText={'something something per second cubed'}
-    >
-      Jerk(?) your thinking
-    </UnlockButton>
-
-    <UnlockButton unlock={unlocks.cheeseModes} btnUnlocked={$unlocked.cheeseCycleAccelerator}>
-      Unlock 3 modes to help manage your cheese production
-    </UnlockButton>
-
-    <UnlockButton unlock={unlocks.cheeseCyclesBoostThoughts} btnUnlocked={$unlocked.cheeseModes}>
-      Total cheese cycles boost your thinking <br />
-      Currently: {formatNumber($cheeseCyclesThoughtMult, 2)}x
-    </UnlockButton>
-
-
-  </div>
-</Window> -->
 <style>
   .colorText {
     color: var(--themeColor2);
   }
   #cheeseBar {
     width: 100%;
-  }
-  #cheeseFactoryProtocolContainer {
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
-  }
-  #cheeseFactoryProtocolInfo {
-    width: 300px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  fieldset {
-    width: max-content;
   }
 </style>

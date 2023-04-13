@@ -11,7 +11,7 @@ import {
   cheeseQueueOverclockSpeedMult,
   cheeseThoughtMult,
   cheeseYieldDeltaDuration,
-  collectiveSentienceBoost,
+  cheeseMonsterCollectiveSentienceMultiplier,
   maxCheeseQueue,
   mcConversionExponent,
   mcHalfLifeSeconds,
@@ -20,6 +20,9 @@ import {
   resourceFactorFromBrainMode,
   thoughtMultFromUnlocks,
   thoughtsPerSecBase,
+  cheeseMonsterDropRate,
+  totalMonsterDeathsLootBoost,
+  moldyCheeseChance,
 } from './from-primitive'
 import { cheeseFactoryMode, currentThoughtBoost, resource, unlocked, upgrades } from '../primitive'
 import { checkBoolForNum } from '@gamelogic/utils'
@@ -43,12 +46,32 @@ export const cheeseQueueLengthBoostFactor = derived([unlocked, maxCheeseQueue], 
   checkBoolForNum($unlocked.cheeseQueueLengthBoost, ($maxCheeseQueue * $maxCheeseQueue) / 100)
 )
 
+export const mcHalflifeBoostFactor = derived([mcHalfLifeSeconds, unlocked], ([$mcHalfLifeSeconds, $unlocked]) =>
+  $unlocked.moldyCheeseHalflifeBoost ? 1 + 1e-6 * Math.pow($mcHalfLifeSeconds, 3) : 1
+)
+
 /* Reactive variables for Yield, Duration & Cost of the cheese cycle */
 
 export const cheeseCycleBatchSize = derived(
-  [cheeseCycleBase.yield, cheeseQueueLengthBoostFactor, cheeseBoostFactorYield, cheeseModeFactor],
-  ([$cheeseCycleBaseYield, $cheeseQueueLengthBoostFactor, $cheeseBoostFactorYield, $cheeseModeFactor]) =>
-    $cheeseCycleBaseYield * $cheeseQueueLengthBoostFactor * $cheeseBoostFactorYield * $cheeseModeFactor.yield
+  [
+    cheeseCycleBase.yield,
+    cheeseQueueLengthBoostFactor,
+    cheeseBoostFactorYield,
+    cheeseModeFactor,
+    mcHalflifeBoostFactor,
+  ],
+  ([
+    $cheeseCycleBaseYield,
+    $cheeseQueueLengthBoostFactor,
+    $cheeseBoostFactorYield,
+    $cheeseModeFactor,
+    $mcHalflifeBoostFactor,
+  ]) =>
+    $cheeseCycleBaseYield *
+    $cheeseQueueLengthBoostFactor *
+    $cheeseBoostFactorYield *
+    $cheeseModeFactor.yield *
+    $mcHalflifeBoostFactor
 )
 
 export const cheeseCycleDuration = derived(
@@ -67,11 +90,6 @@ export const cheeseCycleCost = derived(
 
 export const mcCycleDurationBoostFactor = derived(cheeseModeFactor, $cheeseModeFactor =>
   Math.pow($cheeseModeFactor.duration, 1.5)
-)
-
-export const mcHalflifeBoostFactor = derived(
-  mcHalfLifeSeconds,
-  $mcHalfLifeSeconds => +1e-6 * Math.pow($mcHalfLifeSeconds, 3)
 )
 
 export const cheeseMonsterCapacity = derived(
@@ -97,10 +115,20 @@ export const cheeseMonsterLootAmount = derived(
     (1 + $upgrades.cheeseMonsterLoot.bought) * $cheeseMonsterMassacreMultiplier
 )
 
+export const approxCheeseBrainsPerSec = derived(
+  [cheeseMonsterDeathsPerSec, cheeseMonsterDropRate, cheeseMonsterLootAmount, totalMonsterDeathsLootBoost],
+  ([$cheeseMonsterDeathsPerSec, $cheeseMonsterDropRate, $cheeseMonsterLootAmount, $totalMonsterDeathsLootBoost]) =>
+    $cheeseMonsterDeathsPerSec * $cheeseMonsterDropRate * $cheeseMonsterLootAmount * $totalMonsterDeathsLootBoost
+)
+
 export const monsterThoughtMult = derived(
-  [monsterThoughtFactor, resource, resourceFactorFromBrainMode, collectiveSentienceBoost],
-  ([$monsterThoughtFactor, $resource, $resourceFactorFromBrainMode, $collectiveSentienceBoost]) =>
-    1 + $monsterThoughtFactor * $collectiveSentienceBoost * $resource.cheeseMonster * $resourceFactorFromBrainMode
+  [monsterThoughtFactor, resource, resourceFactorFromBrainMode, cheeseMonsterCollectiveSentienceMultiplier],
+  ([$monsterThoughtFactor, $resource, $resourceFactorFromBrainMode, $cheeseMonsterCollectiveSentienceMultiplier]) =>
+    1 +
+    $monsterThoughtFactor *
+      $cheeseMonsterCollectiveSentienceMultiplier *
+      $resource.cheeseMonster *
+      $resourceFactorFromBrainMode
 )
 
 export const monsterMoldyCheeseMult = derived(
@@ -117,7 +145,6 @@ export const mcByproductAmount = derived(
     cheeseFactoryMode,
     cheeseCycleBatchSize,
     mcCycleDurationBoostFactor,
-    mcHalflifeBoostFactor,
   ],
   ([
     $unlocked,
@@ -126,13 +153,11 @@ export const mcByproductAmount = derived(
     $cheeseFactoryMode,
     $cheeseCycleBatchSize,
     $mcCycleDurationBoostFactor,
-    $mcHalflifeBoostFactor,
   ]) =>
     $cheeseFactoryMode !== 'warpSpeed'
       ? Math.pow($cheeseCycleBatchSize, $mcConversionExponent) *
         $monsterMoldyCheeseMult *
-        ($unlocked.moldyCheeseCycleDurationBoost ? $mcCycleDurationBoostFactor : 1) *
-        ($unlocked.moldyCheeseHalflifeBoost ? $mcHalflifeBoostFactor : 1)
+        ($unlocked.moldyCheeseCycleDurationBoost ? $mcCycleDurationBoostFactor : 1)
       : 0
 )
 

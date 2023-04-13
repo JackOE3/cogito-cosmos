@@ -2,7 +2,7 @@
   import { onMount } from 'svelte'
   import Notifications from './components/misc/Notifications.svelte'
   import { saveSaveGame, resetSaveGame, exportSaveGame, importSaveGame } from '@gamelogic/saveload'
-  import { devToolsEnabled, LORCA_OVERRIDE, unlocked } from '@store'
+  import { ADMIN_MODE, devToolsEnabled, LORCA_OVERRIDE, unlocked } from '@store'
   import DevTools from './components/dev/DevTools.svelte'
   import ToggleUnlocks from './components/dev/ToggleUnlocks.svelte'
 
@@ -12,6 +12,7 @@
   import CheeseyardComponent from './components/game-windows/CheeseyardComponent.svelte'
   import MilkComponent from './components/game-windows/MilkComponent.svelte'
   import MilkTreeComponent from './components/game-windows/MilkTreeComponent.svelte'
+  import Log from './components/misc/Log.svelte'
 
   console.log('App.svelte')
   let secretImage: HTMLElement
@@ -67,6 +68,7 @@
     // window.document.onkeydown = (e: KeyboardEvent) => e.key !== 'Enter'
 
     window.document.addEventListener('keypress', (e: KeyboardEvent) => {
+      if (!$ADMIN_MODE) return
       if (e.key === 'f') $LORCA_OVERRIDE = !$LORCA_OVERRIDE
       if (e.key === 'g') $devToolsEnabled = !$devToolsEnabled
       if (e.key === 'u') unlockTogglesShown = !unlockTogglesShown
@@ -253,12 +255,12 @@
   <div id="saveload">
     <button on:click={switchTheme}>Theme: {isDarkMode ? 'Dark' : 'Light'}</button>
     <button on:click={returnToHome}>Home</button>
-    <input type="string" bind:value={saveDataString} />
+    <!-- <input type="string" bind:value={saveDataString} />
     <button on:click={handleExport}>Export</button>
-    <button on:click={handleImport}>Import</button>
+    <button on:click={handleImport}>Import</button> -->
     <button on:click={saveSaveGame}>Save</button>
     <button on:click={resetSaveGame}>Reset</button>
-    <button on:click={showCredits}>Credits</button>
+    <!-- <button on:click={showCredits}>Credits</button> -->
   </div>
 
   <div id="display" bind:this={background}>
@@ -280,16 +282,12 @@
       {#if $unlocked.cheeseyard || $LORCA_OVERRIDE}
         <div id="cheeseyardComponent"><CheeseyardComponent /></div>
       {/if}
-      <!--{#if $unlocked.milk || $LORCA_OVERRIDE}
+      {#if $unlocked.milk || $LORCA_OVERRIDE}
         <div id="milkComponent"><MilkComponent /></div>
       {/if}
-      {#if true || $LORCA_OVERRIDE}
+      <!-- {#if true || $LORCA_OVERRIDE}
         <div id="milkTreeComponent"><MilkTreeComponent /></div>
       {/if} -->
-
-      <!--<Log/>-->
-
-      <!--  <RandomIdea/> -->
     </div>
   </div>
 </main>
@@ -297,7 +295,7 @@
 <style>
   * {
     --x0: 2; /* Column of home*/
-    --y0: 1; /* Row of home*/
+    --y0: 2; /* Row of home*/
   }
 
   #display {
@@ -335,16 +333,16 @@
     grid-column-start: calc(var(--x0) + 1);
   }
   #moldyCheeseComponent {
-    grid-row-start: calc(var(--y0) + 1);
-    grid-column-start: calc(var(--x0) + 1);
+    grid-row-start: var(--y0);
+    grid-column-start: calc(var(--x0) + 2);
   }
   #cheeseyardComponent {
-    grid-row-start: calc(var(--y0) + 1);
-    grid-column-start: var(--x0);
+    grid-row-start: var(--y0);
+    grid-column-start: calc(var(--x0) + 3);
   }
   #milkComponent {
-    grid-row-start: var(--y0);
-    grid-column-start: calc(var(--x0) - 1);
+    grid-row-start: calc(var(--y0) - 1);
+    grid-column-start: calc(var(--x0));
   }
   #milkTreeComponent {
     grid-row-start: calc(var(--y0) - 1);

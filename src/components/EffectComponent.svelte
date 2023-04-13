@@ -1,39 +1,39 @@
 <script lang="ts">
-  export let title = 'Affixes'
+  export let title = 'Effects'
 </script>
 
-<div id="affixContainer" class="themeBorder">
-  <div id="affixHeader">
+<div id="effectContainer" class="theme-border">
+  <div id="effectHeader">
     <span style="text-align:center">{title}</span>
     <hr />
   </div>
-  <div id="affixBody">
+  <div id="effectBody">
     <slot />
   </div>
 </div>
 
 <style>
-  #affixContainer {
+  #effectContainer {
     width: 100%;
     min-height: max-content;
     background-color: var(--Gray800);
+    overflow: hidden;
   }
-  #affixHeader {
+  #effectHeader {
     width: 100%;
     margin-top: 0.5rem;
     text-align: center;
   }
-  #affixBody {
+  #effectBody {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
-
     padding-bottom: 0.5rem;
     padding-right: 0.5rem;
     padding-left: 0.5rem;
   }
 
-  #affixContainer hr {
+  #effectContainer hr {
     width: 200px;
     border: 0;
     height: 1px;

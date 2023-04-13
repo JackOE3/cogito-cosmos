@@ -10,6 +10,7 @@ import {
   brainMode,
   totalCheeseMonsterDeaths,
   type CheeseFactoryMode,
+  type BrainMode,
 } from '../primitive'
 import { checkBoolForNum } from '@gamelogic/utils'
 
@@ -95,19 +96,15 @@ export const mcConversionExponent = derived(
 
 // CHEESEYARD STUFF
 
-export const resourceFactorFromBrainMode = derived(brainMode, $brainMode => {
-  switch ($brainMode) {
-    case 'peaceful': {
-      return 1
-    }
-    case 'neutral': {
-      return 0.2
-    }
-    case 'destructive': {
-      return 0
-    }
-  }
-})
+export const cheeseMonsterBrainModeResourceFactors: Record<BrainMode, number> = {
+  peaceful: 1,
+  neutral: 0.2,
+  destructive: 0,
+}
+export const resourceFactorFromBrainMode = derived(
+  brainMode,
+  $brainMode => cheeseMonsterBrainModeResourceFactors[$brainMode]
+)
 
 export const cheeseMonsterCapacityPerUpgrade = derived(upgrades, $upgrades =>
   $upgrades.cheeseMonsterCapacityPerUpgrade.bought > 0
@@ -118,19 +115,23 @@ export const cheeseMonsterCapacityPerUpgrade = derived(upgrades, $upgrades =>
 /** per second */
 export const cheeseMonsterSpawnrate = derived(
   [unlocked, upgrades],
-  ([$unlocked, $upgrades]) => (+$unlocked.cheeseyard * $upgrades.cheeseMonsterSpawnrate.bought) / 6
+  ([$unlocked, $upgrades]) => (+$unlocked.cheeseyard * $upgrades.cheeseMonsterSpawnrate.bought) / 3
 )
-export const cheeseMonsterDeathrate = derived(brainMode, $brainMode =>
-  $brainMode === 'peaceful' ? 0 : $brainMode === 'neutral' ? 0.01 : 0.1
-)
+export const cheeseMonsterDeathRateStats: Record<BrainMode, number> = {
+  peaceful: 0,
+  neutral: 0.01,
+  destructive: 0.1,
+}
+
+export const cheeseMonsterDeathrate = derived(brainMode, $brainMode => cheeseMonsterDeathRateStats[$brainMode])
 
 export const cheeseMonsterDropRate = derived(upgrades, $upgrades => 0.1 + 0.05 * $upgrades.cheeseMonsterDropRate.bought)
 
 export const totalMonsterDeathsLootBoost = derived([unlocked, totalCheeseMonsterDeaths], ([$unlocked, $totalDeaths]) =>
-  $unlocked.cheeseMonsterTotalDeathsBoost ? 1 + 1e-6 * $totalDeaths * $totalDeaths : 1
+  $unlocked.cheeseMonsterTotalDeathsBoost ? 1 + 1e-6 * Math.pow($totalDeaths, 2) : 1
 )
 
-export const collectiveSentienceBoost = derived([resource, unlocked], ([$resource, $unlocked]) =>
+export const cheeseMonsterCollectiveSentienceMultiplier = derived([resource, unlocked], ([$resource, $unlocked]) =>
   $unlocked.cheeseMonsterCollectiveSentience ? 1 + 1e-6 * Math.pow($resource.cheeseMonster, 3) : 1
 )
 

@@ -2,7 +2,6 @@
   import { formatWhole, formatResourceName } from '../gamelogic/utils'
   import { upgrades, resource, LORCA_OVERRIDE } from '@store'
   import { tooltip } from './tooltips/tooltip'
-  import SimpleTooltip from './tooltips/SimpleTooltip.svelte'
   import { derived, get } from 'svelte/store'
 
   export let upgradeName: string

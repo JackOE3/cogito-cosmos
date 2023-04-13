@@ -7,7 +7,6 @@
     unlocks,
     UnlockName,
     monsterThoughtMult,
-    resourceFactorFromBrainMode,
     totalMonsterDeathsLootBoost,
     monsterThoughtFactor,
     cheeseMonsterSpawnrate,
@@ -19,26 +18,23 @@
     monsterMoldyCheeseMult,
     cheeseMonsterMassacreMultiplier,
     cheeseMonsterDeathsPerSec,
-    collectiveSentienceBoost,
+    cheeseMonsterCollectiveSentienceMultiplier,
+    brainMode,
+    totalCheeseMonsterDeaths,
+    approxCheeseBrainsPerSec,
+    resource,
+    upgrades,
+    unlocked,
   } from '@store'
-  import { type BrainMode, brainMode, totalCheeseMonsterDeaths, resource, upgrades, unlocked } from '@store'
   import { fade } from 'svelte/transition'
   import UnlockDrawer from '../UnlockDrawer.svelte'
-  import AffixComponent from '../AffixComponent.svelte'
-  import Affix from '../Affix.svelte'
+  import EffectComponent from '../EffectComponent.svelte'
+  import Effect from '../Effect.svelte'
+  import MonsterBrainWaveController from '../tooltips/MonsterBrainWaveController.svelte'
 
   const buyMaxUpgrades = false
 
-  const brainModeDescription: Record<BrainMode, string> = {
-    peaceful: 'Inner peace lets your monsters supress their destructive urges',
-    neutral: 'Occasionally some monsters may start a fight to the death if they feel like it',
-    destructive: 'Monsters attack each other on sight, ripping out their brains',
-  }
-
   $: controllerUnlocked = $unlocked.monsterBrainWaveController
-
-  $: approxCheeseBrainsPerSec =
-    $cheeseMonsterDeathsPerSec * $cheeseMonsterDropRate * $cheeseMonsterLootAmount * $totalMonsterDeathsLootBoost
 
   function unlockBrainWaveController(): void {
     if ($resource.cheeseMonster < 10) return
@@ -50,22 +46,9 @@
   <div style="display: flex; flex-direction: column; gap: 8px; width: var(--window-width);">
     <span class="resourceDisplay">
       Current population: {formatWhole($resource.cheeseMonster)}/{formatWhole($cheeseMonsterCapacity)}
-      <strong class="colorText">cheese monsters</strong> <br />
+      <span style="font-weight: bold" class="colorText">cheese monsters</span> <br />
     </span>
     <span>
-      {#if $unlocked.cheeseMonsterCollectiveSentience}
-        <span
-          class="backgroundOnHover"
-          transition:fade={{ duration: 1000 }}
-          use:tooltip={{
-            data: 'In bigger populations, a sort of global thinking <br/> emerges, giving an additional multiplier. <br/> (~population^3)',
-          }}
-        >
-          Collective Sentience: {formatNumber($collectiveSentienceBoost, 2)}x<br />
-        </span>
-      {:else}
-        <span>...??? <br /></span>
-      {/if}
       Spawn rate: {$cheeseMonsterSpawnrate < 1
         ? `${formatWhole($cheeseMonsterSpawnrate * 60)}/min`
         : `${formatNumber($cheeseMonsterSpawnrate, 2)}/s`}
@@ -73,92 +56,83 @@
       {#if $totalCheeseMonsterDeaths > 0}
         <span transition:fade={{ duration: 1000 }}>
           Approx. deaths: {$cheeseMonsterDeathrate > 0 ? `${formatNumber($cheeseMonsterDeathsPerSec, 2)}/s` : 'None'}
-          {#if $unlocked.cheeseMonsterMassacre}
-            <span
-              class="backgroundOnHover"
-              transition:fade={{ duration: 1000 }}
-              use:tooltip={{
-                data: 'Higher deaths/s are disproportionally rewarded. <br/> (~deathsPerSec^1.3)',
-              }}
-            >
-              -> Massacre multiplier: {formatNumber($cheeseMonsterMassacreMultiplier, 2)}x
-            </span>
-          {/if}
           <br />
           Total deaths: {formatWhole($totalCheeseMonsterDeaths)}
+        </span>
+      {:else}
+        <span>
+          ...???
+          <br />
+          ...???
         </span>
       {/if}
     </span>
   </div>
 
-  {#if !controllerUnlocked}
-    <button
-      style="height:50px"
-      on:click={unlockBrainWaveController}
-      disabled={$resource.cheeseMonster < 10}
-      use:tooltip={{ data: 'Are you sure?' }}
-    >
-      Activate the monster brain wave controller <br />
-      Requires 10 cheese monsters
-    </button>
-  {:else}
-    <div id="brainWaveContainer" transition:fade={{ duration: 1000 }}>
-      <fieldset>
-        <legend>monster brain wave controller</legend>
-        <label>
-          <input type="radio" name="brainMode" bind:group={$brainMode} value={'peaceful'} />
-          peaceful
-        </label>
-        <label>
-          <input type="radio" name="brainMode" bind:group={$brainMode} value={'neutral'} />
-          neutral
-        </label>
-        <label>
-          <input type="radio" name="brainMode" bind:group={$brainMode} value={'destructive'} />
-          destructive
-        </label>
-      </fieldset>
-      <div id="brainWaveInfo">
-        <strong class="colorText" style="text-decoration: underline;">Monster Info</strong> <br />
-        <span>
-          <p style="margin:0">{brainModeDescription[$brainMode]}.</p>
-          <!-- Sentiment: {brainMode} <br /> -->
-          Death toll: {$cheeseMonsterDeathrate > 0 ? `${formatNumber($cheeseMonsterDeathrate, 2)}/s/monster` : 'None'}
-          <br />
-          <span
-            class="backgroundOnHover"
-            use:tooltip={{
-              data: 'The less preoccupied the monsters are with killing each<br> other, the more they can ponder and produce stuff.',
-            }}
-            >Relative resource generation: {$resourceFactorFromBrainMode}x
-          </span>
-        </span>
+  <div class="flexRowContainer" style="margin-top: -8px;">
+    {#if !controllerUnlocked}
+      <button
+        style="height:max-content; width: 202.5px"
+        on:click={unlockBrainWaveController}
+        disabled={$resource.cheeseMonster < 10}
+        use:tooltip={{ data: 'Are you sure?' }}
+      >
+        Activate the monster brain wave controller <br />
+        Requires 10 cheese monsters
+      </button>
+    {:else}
+      <div transition:fade={{ duration: 1000 }}>
+        <fieldset>
+          <legend>monster brain wave controller</legend>
+          <label
+            use:tooltip={{ data: 'peaceful', Component: MonsterBrainWaveController, anchor: 'parentElement' }}
+            class="bg-on-hover"
+          >
+            <input type="radio" name="brainMode" bind:group={$brainMode} value={'peaceful'} />
+            peaceful
+          </label>
+          <label
+            use:tooltip={{ data: 'neutral', Component: MonsterBrainWaveController, anchor: 'parentElement' }}
+            class="bg-on-hover"
+          >
+            <input type="radio" name="brainMode" bind:group={$brainMode} value={'neutral'} />
+            neutral
+          </label>
+          <label
+            use:tooltip={{ data: 'destructive', Component: MonsterBrainWaveController, anchor: 'parentElement' }}
+            class="bg-on-hover"
+          >
+            <input type="radio" name="brainMode" bind:group={$brainMode} value={'destructive'} />
+            destructive
+          </label>
+        </fieldset>
       </div>
+    {/if}
+    <div>
+      <span>Your current cheese monsters want to help you.</span>
+      <br />
+      <span>
+        ⮞ thoughts/s are boosted by {formatNumber($monsterThoughtMult, 2)}x
+      </span>
+      <br />
+      <span>
+        {#if $upgrades.cheeseMonsterMoldiness.bought > 0}
+          ⮞ MC gain is boosted by {formatNumber($monsterMoldyCheeseMult, 2)}x
+        {:else}
+          ⮞ ...???
+        {/if}
+      </span>
     </div>
-  {/if}
-
-  <div>
-    <span>Your current cheese monsters want to help you: <br /> </span>
-    <span>
-      ⮞ thoughts/s are boosted by {formatNumber($monsterThoughtMult, 2)}x <br />
-    </span>
-    <span>
-      {#if $upgrades.cheeseMonsterMoldiness.bought > 0}
-        ⮞ MC gain is boosted by {formatNumber($monsterMoldyCheeseMult, 2)}x
-      {:else}
-        ⮞ ...???
-      {/if}
-    </span>
   </div>
 
   {#if controllerUnlocked}
     <div transition:fade={{ duration: 1000 }}>
       <span class="resourceDisplay">
         You have {formatNumber($resource.cheeseBrains, 2)}
-        <strong style="color: rgb(250, 142, 0)">cheese brains</strong>
+        <span style="color: rgb(250, 142, 0); font-weight:bold">cheese brains</span>
         <br />
       </span>
-      <span>~ {formatNumber(approxCheeseBrainsPerSec, 2)}/s</span>
+      <span>~ {formatNumber($approxCheeseBrainsPerSec, 2)}/s</span>
     </div>
 
     <UnlockDrawer unlocks={unlocks.cheeseBrains} folderName="Free Warlock Skills" />
@@ -206,44 +180,36 @@
       </div>
 
       <div class="gridColumn" style="height:264px; width: 100%">
-        <AffixComponent>
-          <Affix
+        <EffectComponent>
+          <Effect
+            factor={$cheeseMonsterMassacreMultiplier}
+            unlocked={$unlocked.cheeseMonsterMassacre}
+            tooltipText={`Higher deaths/s are disproportionally rewarded. <br/> Scales ^1.3 with deaths/s.`}
+          >
+            {unlocks.cheeseBrains.find(v => v.name === UnlockName.CHEESE_MONSTER_MASSACRE)?.description}
+          </Effect>
+          <Effect
+            factor={$cheeseMonsterCollectiveSentienceMultiplier}
+            unlocked={$unlocked.cheeseMonsterCollectiveSentience}
+            tooltipText={`In bigger populations, a sort of global thinking <br/> emerges, giving an additional multiplier. <br/> Scales ^3 with current population.`}
+          >
+            {unlocks.cheeseBrains.find(v => v.name === UnlockName.CHEESE_MONSTER_COLLECTIVE_SENTIENCE)?.description}
+          </Effect>
+          <Effect
             factor={$totalMonsterDeathsLootBoost}
             unlocked={$unlocked.cheeseMonsterTotalDeathsBoost}
             tooltipText={`Scales ^2 with total deaths`}
           >
             {unlocks.cheeseBrains.find(v => v.name === UnlockName.CHEESE_MONSTER_TOTAL_DEATHS_BOOST)?.description}
-          </Affix>
-        </AffixComponent>
+          </Effect>
+        </EffectComponent>
       </div>
     </div>
   {/if}
 </Window>
 
 <style>
-  * {
-    --unlockedColor: rgb(255, 0, 98);
-    --maxedColor: var(--unlockedColor);
-  }
   .colorText {
-    color: var(--unlockedColor);
-  }
-  fieldset {
-    width: max-content;
-  }
-  #brainWaveContainer {
-    width: var(--window-width);
-    display: flex;
-    flex-direction: row;
-    gap: 8px;
-  }
-  #brainWaveInfo {
-    width: 300px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .backgroundOnHover:hover {
-    background-color: var(--Gray800);
+    color: var(--themeColor2);
   }
 </style>

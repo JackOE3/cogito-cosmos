@@ -33,7 +33,7 @@ class Upgrade implements IUpgrade {
 export const upgradesInitial: Record<string, IUpgrade> = {
   // Cogito Ergo Sum
   thoughtAcceleration: new Upgrade('thoughts', 10, 1.15),
-  thoughtJerk: new Upgrade('thoughts', 5e7, 1.3),
+  thoughtJerk: new Upgrade('thoughts', 1e8, 1.3),
   thoughtBoostStrength: new Upgrade('thoughts', 100, 2),
   thoughtBoostDuration: new Upgrade('thoughts', 150, 4, 11),
   thoughtBoostStack: new Upgrade('thoughts', 1e7, 5, 9),
@@ -48,8 +48,8 @@ export const upgradesInitial: Record<string, IUpgrade> = {
   moldyCheeseConversionExponent: new Upgrade('moldyCheese', 5, 1.5),
   moldyCheeseHalfLife: new Upgrade('moldyCheese', 20, 1.3),
   moldyCheeseChance: new Upgrade('moldyCheese', 200, 2.5, 9),
-  cheeseMonsterSpawnrate: new Upgrade('moldyCheese', 500, 2.0),
-  cheeseMonsterCapacity: new Upgrade('moldyCheese', 1000, 1.3), // multipler for cap should be smaller than for spawnrate, so neutral brainMode doesnt fill up 100% capacity
+  cheeseMonsterSpawnrate: new Upgrade('moldyCheese', 250, 2.0),
+  cheeseMonsterCapacity: new Upgrade('moldyCheese', 500, 1.3), // multipler for cap should be smaller than for spawnrate, so neutral brainMode doesnt fill up 100% capacity
 
   // Loot
   cheeseMonsterDropRate: new Upgrade('cheeseBrains', 5, 2, 18),

@@ -4,7 +4,10 @@
   import type { IUnlock, unlockType } from '@store'
 
   export let data: IUnlock
-  export let rect: DOMRect
+  export let top: number
+  export let left: number
+  // export let rect: DOMRect
+  const style = `top: ${top}px; left: ${left}px;`
 
   $: costColor = $resource[data.resource] > data.cost ? 'rgb(102, 255, 102)' : 'rgb(255, 102, 102)'
 
@@ -12,11 +15,11 @@
     Boost: 'linear-gradient(to top, var(--Gray400) 20%, white 80%)',
     Unlock: 'linear-gradient(0deg, yellow 20%, rgba(255,251,125,1) 80%',
     Mechanic: 'green',
-    Affix: 'blue',
+    Effect: 'blue',
   }
 </script>
 
-<div id="window" style="top: {rect.top}px; left: {rect.right + 8}px;">
+<div id="window" {style}>
   <span id="title">{data.title}</span>
   <hr />
   <span id="description">{@html data.description}</span>
@@ -72,7 +75,7 @@
     margin-bottom: 8px;
   }
   #tooltip {
-    opacity: 0.6;
+    opacity: var(--medium-emphasis);
     font-style: oblique;
     text-align: right;
     margin-bottom: 4px;

@@ -10,10 +10,10 @@
 
 {#if unlocked}
   <span
-    class="affix"
+    class="effect"
     transition:fade={{ duration: 1000 }}
     use:tooltip={{ data: tooltipText }}
-    class:backgroundOnHover={tooltipText !== null}
+    class:bg-on-hover={tooltipText !== null}
   >
     <slot>No Description</slot>
     [<span style="color:var(--themeColor2)">{formatNumber(factor, 2)}x</span>]
@@ -21,15 +21,11 @@
 {/if}
 
 <style>
-  .affix {
+  .effect {
     position: relative;
     padding-left: 1rem;
   }
-  .backgroundOnHover:hover {
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-  }
-  .affix::before {
+  .effect::before {
     content: '⯁ ';
     color: var(--themeColor2);
     position: absolute;

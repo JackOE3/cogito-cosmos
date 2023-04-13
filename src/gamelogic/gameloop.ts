@@ -7,6 +7,7 @@ import {
   mcHalfLifeSeconds,
   thoughtsPerSec,
   milkPowerPerSec,
+  totalTimePlayed,
 } from '@store'
 
 console.log('gameloop.ts')
@@ -111,6 +112,8 @@ function gameUpdate(deltaTimeSeconds: number): void {
 
     return $resource
   })
+
+  totalTimePlayed.update($value => $value + deltaTimeSeconds)
 
   // upgradesBought.update(value => value)
 }
