@@ -76,8 +76,7 @@ export const unlocks: Record<string, IUnlock[]> = {
       cost: 50,
       title: 'Boost your thinking',
       description: 'Instead of thinking once when you click, you gain a production multiplier temporarily.',
-      tooltipText:
-        '"i dont want to spam click a gazillion times to play ur stupid game" <br> <strong>- HentaiEnjoyer1978',
+      tooltipText: '"I dont want to spam click a gazillion times to play ur game"',
       availableAt: UnlockName.THINK_PASSIVELY,
     },
     {

@@ -9,7 +9,6 @@ export interface IUpgrade {
   costMultiplier: number
   maxBuy: number | null
   bought: number
-  title: string
 }
 
 class Upgrade implements IUpgrade {
@@ -21,8 +20,7 @@ class Upgrade implements IUpgrade {
     public cost: number,
     public costMultiplier: number,
     public maxBuy: number | null = null,
-    public bought = 0,
-    public title: string = 'No Title'
+    public bought = 0
   ) {
     this.id = Upgrade.#id++
   }

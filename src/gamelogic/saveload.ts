@@ -86,8 +86,8 @@ export function saveSaveGame(): void {
       // Use JSON.stringify to turn the object into a string, then compress with lz-string,
       // before setting it in localstorage
       localStorage.setItem(storageName, JSON.stringify(saveData))
-      console.log('saveData saved:')
-      console.log(saveData)
+      /* console.log('saveData saved:')
+      console.log(saveData) */
     } catch (error) {
       console.error(error) // log the error so at least we can see it
     }

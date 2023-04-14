@@ -24,7 +24,7 @@
   import EffectComponent from '../EffectComponent.svelte'
   import Effect from '../Effect.svelte'
 
-  let buyMaxUpgrades = false
+  const buyMaxUpgrades = false
   let thoughtBoostCurrentStacks = 0
   const thoughtBoostDecay = 2000
   let lastTime: number | null = null
@@ -86,10 +86,10 @@
 </script>
 
 <Window title="Cogito Ergo Sum" themeColor1="rgb(129, 0, 204)" themeColor2="rgb(182, 122, 255)">
-  <div style="position: absolute; right: 8px; top: 8px;">
+  <!-- <div style="position: absolute; right: 8px; top: 8px;">
     <input type="checkbox" name="buyMax" bind:checked={buyMaxUpgrades} />
     <label for="buyMax">Buy Max</label>
-  </div>
+  </div> -->
 
   <div>
     <span class="resourceDisplay">

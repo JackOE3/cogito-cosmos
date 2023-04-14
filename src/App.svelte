@@ -57,7 +57,6 @@
     returnToHome()
     background.style.backgroundPositionX = '0px'
     background.style.backgroundPositionY = '0px'
-    background.style.background = "url('assets/endless-constellation.svg')"
 
     // checks if dark mode is enabled in the browser:
     isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -308,7 +307,7 @@
     align-items: center;
     justify-content: center;
     margin-bottom: 20px;
-    /* background: url('cogito-cosmos/endless-constellation.svg'), url('/assets/endless-constellation.svg'); */
+    background: url('/cogito-cosmos/assets/endless-constellation.svg'), url('/assets/endless-constellation.svg');
     /* background-color: var(--background-color); */
   }
   /* #game {

@@ -9,6 +9,7 @@ import {
   milkPowerPerSec,
   totalTimePlayed,
 } from '@store'
+import { saveSaveGame } from './saveload'
 
 // natural log of 2
 const LN2 = 0.69314718056
@@ -30,7 +31,7 @@ const fastFowardFactor = 1
 /**
  * How often to auto save the game. 60_000 = 60 seconds.
  */
-const autoSaveTime = 60_000
+const autoSaveTime = 30_000
 
 /**
  * A reference to the interval that can be used to stop it if we need to
@@ -71,7 +72,7 @@ function gameLoop(): void {
   // if lastSaved was more than 60 seconds ago we should save the game DEACTIVATED!!!!
   if (currentTime - lastSaved > autoSaveTime) {
     lastSaved = currentTime
-    // saveSaveGame()
+    saveSaveGame()
     // sendMessage('Game auto-saved')
   }
 
