@@ -17,7 +17,10 @@
     thoughtsPerSec,
     thoughtsPerSecBase,
     UnlockName,
+    WindowId,
   } from '@store'
+
+  export let windowId: WindowId
 
   import { onMount } from 'svelte'
   import { derived, get } from 'svelte/store'
@@ -85,13 +88,36 @@
   })
 </script>
 
-<Window title="Cogito Ergo Sum" themeColor1="rgb(129, 0, 204)" themeColor2="rgb(182, 122, 255)">
-  <!-- <div style="position: absolute; right: 8px; top: 8px;">
-    <input type="checkbox" name="buyMax" bind:checked={buyMaxUpgrades} />
-    <label for="buyMax">Buy Max</label>
-  </div> -->
+<Window title="Cogito Ergo Sum" themeColor1="rgb(129, 0, 204)" themeColor2="rgb(182, 122, 255)" {windowId}>
+  <div slot="minimized" class="flexRowContainer">
+    <div style="width: 250px">
+      <span class="resourceDisplay">
+        You <span style="color:var(--themeColor2); font-weight:bold">thought</span>
+        {formatNumber($resource.thoughts, 2)} times<br />
+      </span>
+      <span>
+        {#if $unlocked.thinkPassively || LORCA_OVERRIDE}
+          <span class:green={$currentThoughtBoost > 1}>{formatNumber($thoughtsPerSec, 2)}/s</span>
+          {#if $currentThoughtBoost > 1}
+            - {formatNumber($currentThoughtBoost, 2)}x
+            {#if $currentThoughtBoostTime >= 100}
+              for {formatTime($currentThoughtBoostTime / 1000, 1)}
+              {#if $unlocked.thoughtBoostStack}
+                - {thoughtBoostCurrentStacks}/{$thoughtBoostMaxStacks} Stack{$thoughtBoostMaxStacks > 1 ? 's' : ''}
+              {/if}
+            {/if}
+          {/if}
+        {/if}
+      </span>
+    </div>
+    <UnlockDrawer --num-slots="1" unlocks={unlocks.thoughts} folderName="Swordsman_Skill_Icons_Pack" />
+  </div>
 
   <div>
+    <!-- <div style="position: absolute; right: 8px; top: 8px;">
+        <input type="checkbox" name="buyMax" bind:checked={buyMaxUpgrades} />
+        <label for="buyMax">Buy Max</label>
+      </div> -->
     <span class="resourceDisplay">
       You <span style="color:var(--themeColor2); font-weight:bold">thought</span>
       {formatNumber($resource.thoughts, 2)} times<br />

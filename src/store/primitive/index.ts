@@ -8,4 +8,6 @@ export * from './boosts'
 
 export * from './misc'
 
+export * from './window'
+
 export * from './upgradesTiered'

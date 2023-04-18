@@ -1,19 +1,47 @@
 <script lang="ts">
+  import { onMount } from 'svelte'
   import { fade } from 'svelte/transition'
+  import { WindowId, windowMinimized } from '@store'
 
   export let title = ''
+  export let windowId: WindowId
   export let themeColor1: string
   export let themeColor2: string
+  let windowBar: HTMLElement
+
+  onMount(() => {
+    windowBar.onmouseenter = (_e: MouseEvent) => {
+      windowBar.style.cursor = 'pointer'
+    }
+  })
 
   const style = `--themeColor1: ${themeColor1}; --themeColor2: ${themeColor2};`
+
+  $: minimized = $windowMinimized[windowId]
+
+  function minimizeWindow(id: WindowId): void {
+    $windowMinimized[id] = !$windowMinimized[id]
+  }
 </script>
 
-<div class="container " data-title={title} transition:fade={{ duration: 1000 }} {style}>
-  <!-- <div class="header">
-    <span class="windowTitle">{title}</span>
-  </div> -->
+<div class="window-container" transition:fade|local={{ duration: 1000 }} {style}>
+  <div class="window-bar draggable" bind:this={windowBar}>
+    {title}
+    <button class="window-bar-min-max" on:click={() => minimizeWindow(windowId)}>
+      {#if minimized}
+        <img id="maximize-img" src="assets/maximize.png" alt="maximize window" draggable="false" />
+      {:else}
+        <img id="minimize-img" src="assets/minimize.png" alt="minimize window" draggable="false" />
+      {/if}
+    </button>
+  </div>
+
   <div class="content">
-    <slot />
+    {#if minimized}
+      <slot name="minimized" />
+    {:else}
+      <slot />
+    {/if}
   </div>
 
   <div class="corner" id="corner-top-right" />
@@ -23,7 +51,7 @@
 </div>
 
 <style>
-  .container {
+  .window-container {
     position: relative;
     width: max-content;
     height: max-content;
@@ -43,7 +71,7 @@
   }
 
   .content {
-    width: var(--width, var(--window-width));
+    width: max-content; /* var(--width, var(--window-width)); */
     /*  position: relative; */
     display: flex;
     flex-direction: column;
@@ -53,13 +81,17 @@
 
     /*border-radius: 8px;*/
   }
-  .container::before {
+  /* .container::before, */
+
+  .window-bar {
+    /* cursor: pointer; */
     content: attr(data-title);
     position: absolute;
     bottom: calc(100% - 12px);
     left: 16%;
     width: 68%;
-    font-size: 16px;
+    height: 1.25rem;
+    font-size: 1rem;
     font-weight: bold;
     text-align: center;
     text-shadow: 1px 1px 4px black;
@@ -79,6 +111,40 @@
     border-top-right-radius: 12px;
     border-top-left-radius: 12px;
   }
+  .window-bar-min-max {
+    position: absolute;
+    aspect-ratio: 1 / 1;
+    height: calc(100% - 2px);
+    padding: 0;
+    right: 0px;
+    top: 0;
+    border-width: 0;
+    outline-width: 0;
+    background-color: transparent;
+    border-radius: 4px;
+    border-top-right-radius: 12px;
+    filter: opacity(0.6);
+  }
+  .window-bar-min-max:active {
+    border-width: 2px;
+    outline-width: 1px;
+  }
+  .window-bar-min-max > img {
+    width: 60%;
+  }
+  .window-bar-min-max:hover {
+    background-color: white;
+    /* filter: opacity(1); */
+    outline-width: 1px;
+  }
+  #minimize-img {
+    margin-top: 18%;
+  }
+  #maximize-img {
+    margin-top: 22%;
+    margin-right: 5%;
+  }
+
   /* .container::after {
     content: '';
     position: absolute;
@@ -91,7 +157,7 @@
   } */
   .corner {
     --size: 10px;
-    z-index: 0;
+    /* z-index: 0; */
     position: absolute;
     width: var(--size);
     height: var(--size);

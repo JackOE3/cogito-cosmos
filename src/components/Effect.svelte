@@ -11,7 +11,7 @@
 {#if unlocked}
   <span
     class="effect"
-    transition:fade={{ duration: 1000 }}
+    transition:fade|local={{ duration: 1000 }}
     use:tooltip={{ data: tooltipText }}
     class:bg-on-hover={tooltipText !== null}
   >

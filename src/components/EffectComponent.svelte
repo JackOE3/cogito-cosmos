@@ -14,7 +14,7 @@
 
 <style>
   #effectContainer {
-    width: 100%;
+    width: 300px;
     min-height: max-content;
     background-color: var(--Gray800);
     overflow: hidden;

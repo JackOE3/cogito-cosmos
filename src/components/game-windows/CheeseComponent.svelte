@@ -2,7 +2,7 @@
   import Window from './window-model/Window.svelte'
   import EffectComponent from '../EffectComponent.svelte'
   import Effect from '../Effect.svelte'
-  import { formatNumber, formatTime, formatWhole } from '@gamelogic/utils'
+  import { costColor, formatNumber, formatTime, formatWhole } from '@gamelogic/utils'
   import { fade, slide } from 'svelte/transition'
   import ProgBar from '../misc/ProgBar.svelte'
   import UpgradeButton from '../UpgradeButton.svelte'
@@ -16,8 +16,6 @@
     cheeseQueueOverclockLvl,
     cheeseFactoryMode,
     cheeseQueueTotalCycles,
-    type CheeseFactoryMode,
-    currentThoughtBoost,
     cheeseModeFactor,
     cheeseCycleDuration,
     cheeseCycleBatchSize,
@@ -37,11 +35,14 @@
     mcCycleDurationBoostFactor,
     moldyCheeseChance,
     mcByproductAmount,
+    WindowId,
   } from '@store'
   import UnlockDrawer from '../UnlockDrawer.svelte'
   import { tooltip } from '../tooltips/tooltip'
   import CheeseFactoryProtocol from '../tooltips/CheeseFactoryProtocol.svelte'
   import { onMount } from 'svelte'
+
+  export let windowId: WindowId
 
   const buyMaxUpgrades = false
   // extracting the stores from the cheeseCycleBase object
@@ -132,13 +133,16 @@
   }
 </script>
 
-<Window title="Switzerland Simulator" themeColor1="rgb(168, 143, 2)" themeColor2="rgb(244, 255, 33)">
-  <div>
-    <span class="resourceDisplay"
-      >You have {formatNumber($resource.cheese, 2)} <span class="colorText" style="font-weight:bold">cheese</span>
-      <br />
-    </span>
-    ~ {formatNumber(cheesePerSecFromQueue, 2)}/s
+<Window title="Switzerland Simulator" themeColor1="rgb(168, 143, 2)" themeColor2="rgb(244, 255, 33)" {windowId}>
+  <div slot="minimized" class="flexRowContainer">
+    <div style="width: 250px">
+      <span class="resourceDisplay"
+        >You have {formatNumber($resource.cheese, 2)} <span class="colorText" style="font-weight:bold">cheese</span>
+        <br />
+      </span>
+      ~ {formatNumber(cheesePerSecFromQueue, 2)}/s
+    </div>
+    <UnlockDrawer --num-slots="1" unlocks={unlocks.cheese} folderName="Free 50 Aeromancer Skills" />
   </div>
 
   <div style="width:max-content">
@@ -159,9 +163,9 @@
         {#if $cheeseQueueActive}
           Top up the <br />cheese queue
         {:else}
-        Make cheese <br />
+          Make cheese <br />
           <span style="color: {costColor($resource.thoughts >= $cheeseCycleCost)}">
-        {formatNumber($cheeseCycleCost, 2)} thoughts
+            {formatNumber($cheeseCycleCost, 2)} thoughts
           </span>
         {/if}
       </button>
@@ -179,7 +183,7 @@
         <div style="width:100%; margin-top:4px;">
           {#if $unlocked.cheeseQueue}
             <div
-              transition:fade={{ duration: 1000 }}
+              transition:fade|local={{ duration: 1000 }}
               style="display:grid; grid-template-columns: auto 1fr auto; gap: 8px"
             >
               <span class="flexCenter">Cheese Queue:</span>
@@ -215,7 +219,7 @@
       -->{#if $cheeseModeFactor.duration !== 1}
         <span style="color:orange;">[{$cheeseModeFactor.duration}x]</span>
       {/if}
-      <span transition:fade={{ duration: 1000 }}>
+      <span>
         while consuming {formatNumber($cheeseCycleCost, 2)}<!--
         -->{#if $cheeseModeFactor.cost !== 1}
           <span style="color:orange;">[{$cheeseModeFactor.cost}x]</span>
@@ -225,19 +229,19 @@
       </span>
     </p>
 
-    <span style="margin-top: .25rem" transition:fade={{ duration: 500 }}>
-      {#if $unlocked.cheeseCycleAccelerator}
+    {#if $unlocked.cheeseCycleAccelerator}
+      <span style="margin-top: .25rem" transition:fade|local={{ duration: 500 }}>
         Total Cheese Cycles: {formatWhole($cheeseQueueTotalCycles)}
-      {:else}
-        ...???
-      {/if}
-    </span>
+      </span>
+    {:else}
+      <span style="margin-top: .25rem"> ...??? </span>
+    {/if}
   </div>
 
   {#if $unlocked.cheeseQueueOverclocking || $LORCA_OVERRIDE}
     <div
       class="flexRowContainer"
-      transition:slide={{ duration: 1000 }}
+      transition:slide|local={{ duration: 1000 }}
       style="align-items:flex-end; margin-top: -8px; height: 71px"
     >
       <div style="display:flex; flex-direction:row; gap: 2px;">
@@ -293,7 +297,7 @@
       </div>
 
       {#if $unlocked.cheeseModes || $LORCA_OVERRIDE}
-        <div transition:slide={{ duration: 1000 }}>
+        <div transition:slide|local={{ duration: 1000 }}>
           <fieldset on:change={resetCheeseBar}>
             <legend>Cheese Factory Protocol</legend>
 
@@ -423,5 +427,8 @@
   }
   #cheeseBar {
     width: 100%;
+  }
+  .red {
+    color: red;
   }
 </style>

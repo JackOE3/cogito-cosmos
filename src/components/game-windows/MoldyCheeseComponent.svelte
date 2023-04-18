@@ -17,10 +17,13 @@
     mcConversionExponent,
     mcHalflifeBoostFactor,
     mcConversionCooldownMS,
+    WindowId,
   } from '@store'
   import UnlockDrawer from '../UnlockDrawer.svelte'
   import EffectComponent from '../EffectComponent.svelte'
   import Effect from '../Effect.svelte'
+
+  export let windowId: WindowId
 
   const buyMaxUpgrades = false
 
@@ -50,7 +53,25 @@
   }
 </script>
 
-<Window title="Moldy Cheese" themeColor1="rgb(75, 121, 0)" themeColor2="rgb(136, 255, 0)">
+<Window title="Cultured Delicacy" themeColor1="rgb(75, 121, 0)" themeColor2="rgb(136, 255, 0)" {windowId}>
+  <div slot="minimized" class="flexRowContainer">
+    <div style="width: 250px">
+      <span class="resourceDisplay">
+        You have {formatNumber($resource.moldyCheese, 2)}
+        <span style="font-weight:bold" class="colorText">moldy cheese</span>
+      </span>
+      <br />
+      <span>
+        {#if $unlocked.moldyCheeseByproduct || $LORCA_OVERRIDE}
+          ~ {formatNumber(($mcByproductAmount / ($cheeseCycleDuration / 1000)) * $moldyCheeseChance, 2)}/s
+        {:else}
+          ...???
+        {/if}
+      </span>
+    </div>
+    <UnlockDrawer --num-slots="1" unlocks={unlocks.moldyCheese} folderName="Free Alchemical Ingredient Icons Pack" />
+  </div>
+
   <div style="display: flex; flex-direction: column; gap: 8px;">
     <span class="resourceDisplay">
       You have {formatNumber($resource.moldyCheese, 2)}

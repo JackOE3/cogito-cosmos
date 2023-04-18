@@ -1,10 +1,11 @@
 import { makeStore } from '../customStore'
 
-export const ADMIN_MODE = makeStore(false)
+export const ADMIN_MODE = makeStore(true)
 export const LORCA_OVERRIDE = makeStore(false)
 export const devToolsEnabled = makeStore(false)
 
 export const isDarkMode = makeStore<boolean | 'notChecked'>('notChecked')
+
 export const lastSaved = makeStore(Date.now())
 export const totalTimePlayed = makeStore(0)
 

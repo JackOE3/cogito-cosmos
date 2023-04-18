@@ -166,7 +166,7 @@ function dataMigrate(fromStorage: SaveData): void {
       console.log(`${prop} should not be in saveData, deleting it from saveData`)
       fromStorage.data[prop] = master.data[prop]
       Reflect.deleteProperty(fromStorage.data, prop)
-    } else if (typeof master.data[prop] === 'object') {
+    } else if (typeof master.data[prop] === 'object' && prop !== 'windowStack') {
       const innerPropertiesFromStorage = Object.getOwnPropertyNames(fromStorage.data[prop] as object)
       innerPropertiesFromStorage.forEach(innerProp => {
         if (typeof master.data[prop][innerProp] === 'undefined') {

@@ -12,8 +12,11 @@
     highestMilk,
     upgrades,
     resource,
+    WindowId,
   } from '@store'
   import { tooltip } from '../tooltips/tooltip'
+
+  export let windowId: WindowId
 
   function handleMilkReset(): void {
     const milkGain = Math.floor(get(milkFromReset))
@@ -96,7 +99,7 @@
     <div class="gridColumn" />
   </div>
 </Window> -->
-<Window title="Milk" themeColor1="#bdbdbd" themeColor2="#ffffff">
+<Window title="Milk" themeColor1="#bdbdbd" themeColor2="#ffffff" {windowId}>
   <div>
     <span class="resourceDisplay"
       >You have {formatNumber($resource.milk, 2)} <strong style="color:white">milk</strong> <br />

@@ -72,7 +72,7 @@ function gameLoop(): void {
   // if lastSaved was more than 60 seconds ago we should save the game DEACTIVATED!!!!
   if (currentTime - lastSaved > autoSaveTime) {
     lastSaved = currentTime
-    saveSaveGame()
+    // saveSaveGame()
     // sendMessage('Game auto-saved')
   }
 

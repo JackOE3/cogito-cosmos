@@ -34,7 +34,7 @@
     class:disabled={!$canAfford && !$isMaxed}
     use:tooltip={{ data: tooltipText }}
     class:maxed={$isMaxed}
-    transition:fade={{ duration: 1000 }}
+    transition:fade|local={{ duration: 1000 }}
   >
     <div style="display:grid; grid-template-rows: auto 14px; height: 100%">
       <div id="text">

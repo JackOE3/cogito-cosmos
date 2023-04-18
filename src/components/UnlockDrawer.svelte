@@ -18,7 +18,7 @@
 
 <style>
   * {
-    --slots: 4;
+    --slots: var(--num-slots, 4);
     --pad: 2px;
   }
 
