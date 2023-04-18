@@ -63,14 +63,23 @@
   function resetCheeseBar(): void {
     cheeseBarProgress = 0
   }
+
+  function handleCheeseQueueButton(): void {
+    if ($resource.thoughts < $cheeseCycleCost) return
+    // top up queue:
+    $currentCheeseQueue = $maxCheeseQueue
+    handleCheeseGenerationInit()
+  }
+
   /**
    * Triggered when manually starting the cheese generation (with button or input range)
    */
   function handleCheeseGenerationInit(): void {
-    if ($resource.thoughts < $cheeseCycleCost || $cheeseQueueActive) return
+    if ($cheeseQueueActive) return
+    if ($resource.thoughts < $cheeseCycleCost) return
     $resource.thoughts -= $cheeseCycleCost
     if ($currentCheeseQueue >= 1) $currentCheeseQueue--
-    cheeseQueueActive.set(true)
+    $cheeseQueueActive = true
 
     lastTime = null
 
@@ -132,24 +141,42 @@
     ~ {formatNumber(cheesePerSecFromQueue, 2)}/s
   </div>
 
-  <div style="display:flex; flex-direction:column;">
-    <div class="flexRowContainer">
-      <button style="width:170px;" on:click={handleCheeseGenerationInit} disabled={$cheeseQueueActive}>
+  <div style="width:max-content">
+    <span class="resourceDisplay"
+      >You have {formatNumber($resource.cheese, 2)} <span class="colorText" style="font-weight:bold">cheese</span>
+      <br />
+    </span>
+    ~ {formatNumber(cheesePerSecFromQueue, 2)}/s
+  </div>
+
+  <div style="display:flex; flex-direction:column; width:516px">
+    <div class="flexRowContainer" style="height:max-content">
+      <button
+        style="width:170px; height: 2.5rem"
+        on:click={handleCheeseQueueButton}
+        class:disabled={$resource.thoughts < $cheeseCycleCost}
+      >
+        {#if $cheeseQueueActive}
+          Top up the <br />cheese queue
+        {:else}
         Make cheese <br />
+          <span style="color: {costColor($resource.thoughts >= $cheeseCycleCost)}">
         {formatNumber($cheeseCycleCost, 2)} thoughts
+          </span>
+        {/if}
       </button>
 
-      <div class="gridColumn" style="width: 100%">
+      <div class="gridColumn" style="width:100%">
         <div id="cheeseBar">
           <ProgBar
             --width="100%"
-            --height="24px"
+            --height="16px"
             --barColor="yellow"
             --progress="{(100 * cheeseBarProgress) / $cheeseCycleDuration}%"
           />
         </div>
 
-        <div style="width:100%; height: 16px; margin-top:4px;">
+        <div style="width:100%; margin-top:4px;">
           {#if $unlocked.cheeseQueue}
             <div
               transition:fade={{ duration: 1000 }}
@@ -164,7 +191,12 @@
                 onChange={handleCheeseGenerationInit}
               />
 
-              <span class="flexCenter" style="width: 40px; background: var(--Gray800);">{$currentCheeseQueue}</span>
+              <span
+                class="flexCenter"
+                style="width: 40px; height: 1rem; background: var(--Gray800); border-radius: 2px;"
+              >
+                {$currentCheeseQueue}
+              </span>
             </div>
           {:else}
             <div style="text-align: center;">???</div>
@@ -173,7 +205,7 @@
       </div>
     </div>
 
-    <p style="margin-bottom: 0px; margin-top: 8px; height: 1.625rem;">
+    <p style="margin-bottom: 0px; margin-top: 8px; height: 1.625rem; width: 486px">
       Industrious swiss workers are producing
       {formatNumber($cheeseCycleBatchSize, 2)}<!--
     -->{#if $cheeseModeFactor.yield !== 1}

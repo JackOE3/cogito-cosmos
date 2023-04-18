@@ -49,6 +49,13 @@ html {
   --btn-gap: 8px;
   --window-width: calc(500px);
   font-size: 100%; /* = 1rem (default for browsers is 16px) */
+
+  -ms-overflow-style: none; /* for Internet Explorer, Edge */
+  scrollbar-width: none; /* for Firefox */
+  overflow-y: none; 
+}
+html::-webkit-scrollbar {
+  display: none; /* for Chrome, Safari, and Opera */
 }
 
 body {

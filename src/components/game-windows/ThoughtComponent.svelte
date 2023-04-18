@@ -170,17 +170,17 @@
         upgradeName="thoughtBoostStack"
         {buyMaxUpgrades}
         btnUnlocked={$unlocked.thoughtBoostStack}
-        tooltipText="Max stacks +1"
+        tooltipText="Max stacks +1 <br> Each stack increases the time by <br>  the duration shown on the button."
       >
         Increase the maximum stack size of Thought Boosts <br />
       </UpgradeButton>
     </div>
 
-    <div class="gridColumn" style="height:332px; width: 100%">
+    <div class="gridColumn" style="height:332px;">
       <EffectComponent
         title={$upgrades.cheeseThoughtMult.bought > 0 || $unlocked.cheeseQueueLengthBoost ? 'Effects' : '???'}
       >
-        <Effect factor={$currentThoughtBoost} unlocked={$unlocked.cheeseBoost}>
+        <Effect factor={$currentThoughtBoost} unlocked={$unlocked.cheeseBoost} tooltipText="Effect is 1:1">
           {unlocks.cheese.find(v => v.name === UnlockName.CHEESE_BOOST)?.description}
         </Effect>
       </EffectComponent>

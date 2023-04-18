@@ -1,6 +1,8 @@
 const suffixes = ['K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'Dc']
 const suffixesB = ['K', 'M', 'G', 'T', 'P', 'E']
 const OOMs = [1e3, 1e6, 1e9, 1e12, 1e15, 1e18, 1e21, 1e24, 1e27, 1e30, 1e33]
+type Notation = 'scientific' | 'suffixes'
+const currentNotation: Notation = 'scientific'
 
 /**
  * Function to format a number for display on screen.
@@ -10,6 +12,8 @@ const OOMs = [1e3, 1e6, 1e9, 1e12, 1e15, 1e18, 1e21, 1e24, 1e27, 1e30, 1e33]
 export function formatNumber(input: number, decimals: number): string {
   if (typeof input !== 'number') input = 0
   if (input < 0) return '-' + formatNumber(-1 * input, decimals)
+
+  if (currentNotation === 'scientific' && input >= 1e3) return input.toExponential(decimals).replace('+', '')
   if (input >= OOMs[suffixes.length]) return input.toExponential(decimals).replace('+', '')
 
   for (let i = suffixes.length - 1; i >= 0; i--) {
@@ -88,3 +92,13 @@ export function easeInOutSine(x: number): number {
   if (x >= 1) return 1
   return -(Math.cos(Math.PI * x) - 1) / 2
 }
+
+export function getOffset(el: HTMLElement): { left: number; top: number } {
+  const rect = el.getBoundingClientRect()
+  return {
+    left: rect.left + window.scrollX,
+    top: rect.top + window.scrollY,
+  }
+}
+
+export const costColor = (canAfford: boolean): string => (canAfford ? 'rgb(102, 255, 102)' : 'rgb(255, 102, 102)')

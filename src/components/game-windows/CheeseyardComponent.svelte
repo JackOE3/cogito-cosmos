@@ -83,7 +83,7 @@
     {:else}
       <div transition:fade={{ duration: 1000 }}>
         <fieldset>
-          <legend>monster brain wave controller</legend>
+          <legend>Monster Brainwave Controller</legend>
           <label
             use:tooltip={{ data: 'peaceful', Component: MonsterBrainWaveController, anchor: 'parentElement' }}
             class="bg-on-hover"

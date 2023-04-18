@@ -32,7 +32,7 @@ export const upgradesInitial: Record<string, IUpgrade> = {
   thoughtJerk: new Upgrade('thoughts', 1e8, 1.3),
   thoughtBoostStrength: new Upgrade('thoughts', 100, 2),
   thoughtBoostDuration: new Upgrade('thoughts', 150, 4, 11),
-  thoughtBoostStack: new Upgrade('thoughts', 1e7, 5, 9),
+  thoughtBoostStack: new Upgrade('thoughts', 5e7, 5, 8),
 
   // Switzerland Simulator
   cheeseQueueLength: new Upgrade('cheese', 5, 2),

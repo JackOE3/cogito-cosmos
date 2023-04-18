@@ -1,6 +1,6 @@
 {
-  "name": "svelte-app",
-  "version": "1.0.0",
+  "name": "cogito-cosmos",
+  "description": "An incremental game about exploring the cosmos by thinking",
   "private": true,
   "scripts": {
     "build": "rollup -c",

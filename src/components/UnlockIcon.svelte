@@ -24,7 +24,7 @@
     on:click={unlockFeature}
     data-cost={formatWhole(unlock.cost)}
     data-unlockType={unlock.type}
-    class:disabled={$unlocked[unlock.name] || $resource[unlock.resource] < unlock.cost}
+    class:disabled={$resource[unlock.resource] < unlock.cost && !$unlocked[unlock.name]}
     class:unlocked={$unlocked[unlock.name]}
     use:tooltip={{ data: unlock, Component: UnlockTooltip, direction: Direction.RIGHT, anchor: 'offsetParent' }}
   >
@@ -38,7 +38,7 @@
   }
 
   button {
-    z-index: 1;
+    /* z-index: 1; */
     position: relative;
     width: 60px;
     height: 60px;

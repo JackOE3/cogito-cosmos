@@ -31,7 +31,7 @@
 {#if btnUnlocked || $LORCA_OVERRIDE}
   <button
     on:click={handleUpgradeClicked}
-    class:disabled={!$canAfford}
+    class:disabled={!$canAfford && !$isMaxed}
     use:tooltip={{ data: tooltipText }}
     class:maxed={$isMaxed}
     transition:fade={{ duration: 1000 }}

@@ -53,7 +53,8 @@
 <Window title="Moldy Cheese" themeColor1="rgb(75, 121, 0)" themeColor2="rgb(136, 255, 0)">
   <div style="display: flex; flex-direction: column; gap: 8px;">
     <span class="resourceDisplay">
-      You have {formatNumber($resource.moldyCheese, 2)} <strong class="colorText">moldy cheese</strong>
+      You have {formatNumber($resource.moldyCheese, 2)}
+      <span style="font-weight:bold" class="colorText">moldy cheese</span>
       <br />
     </span>
     <span>

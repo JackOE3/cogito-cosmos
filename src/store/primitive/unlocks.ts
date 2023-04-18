@@ -127,7 +127,8 @@ export const unlocks: Record<string, IUnlock[]> = {
       resource: 'thoughts',
       cost: 1e22,
       title: 'Prestige?',
-      description: '<span>You can reset your progress for a glass of calcium-rich <strong>Milk</strong></span>.',
+      description:
+        'You can trade your progress so far for a glass of calcium-rich <strong>Milk</strong>. Buying this will NOT reset your progress, but only unlock the next layer.',
       tooltipText: 'From cheese you get milk...I think.',
       availableAt: UnlockName.THOUGHT_JERK,
     },
@@ -253,7 +254,7 @@ export const unlocks: Record<string, IUnlock[]> = {
       cost: 4000,
       title: 'Passiveness',
       description: 'Cheese sacrifice produces 10x more moldy cheese, but its cooldown is also increased by 10x.',
-      tooltipText: 'Some scientists are still unsure whether this will increase your effective gain.',
+      tooltipText: 'Mr. Gorgonzola loves penicillium roqueforti, but proper love-making needs time.',
     },
     {
       name: UnlockName.CHEESEYARD_MOLD_UPGRADE,

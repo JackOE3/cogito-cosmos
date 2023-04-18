@@ -19,7 +19,9 @@ export const thoughtBoostMax = derived(
   $upgrades => 1.5 + 0.2 * Math.pow($upgrades.thoughtBoostStrength.bought, 1.5)
 )
 export const thoughtBoostDuration = derived(upgrades, $upgrades => 5000 + 5000 * $upgrades.thoughtBoostDuration.bought)
-export const thoughtBoostMaxStacks = derived(upgrades, $upgrades => 1 + $upgrades.thoughtBoostStack.bought)
+export const thoughtBoostMaxStacks = derived([upgrades, unlocked], ([$upgrades, $unlocked]) =>
+  checkBoolForNum($unlocked.thoughtBoost, 2 + $upgrades.thoughtBoostStack.bought)
+)
 
 export const thoughtsPerSecBase = derived([unlocked, upgrades], ([$unlocked, $upgrades]) => {
   const fromBasicUpgrades = $upgrades.thoughtAcceleration.bought * (1 * $upgrades.thoughtJerk.bought + 1)
@@ -46,7 +48,7 @@ export const cheeseSpeedFactor = { duration: 0.95, cost: 1.4 }
 export const cheeseYieldDeltaDuration = 500 // ms
 
 export const cheeseModeStats: Record<CheeseFactoryMode, { yield: number; duration: number; cost: number }> = {
-  meticulous: { yield: 1, duration: 10, cost: 1 },
+  meticulous: { yield: 5, duration: 10, cost: 1 },
   nominal: { yield: 1, duration: 1, cost: 1 },
   warpSpeed: { yield: 1 / 100, duration: 1 / 10, cost: 1 / 10 },
 }

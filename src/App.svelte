@@ -59,9 +59,10 @@
     background.style.backgroundPositionY = '0px'
 
     // checks if dark mode is enabled in the browser:
-    isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
-    // sets the correct theme on the root (html) tag:
-    window.document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light')
+    if ($isDarkMode === 'notChecked') {
+      $isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+    }
+    applyTheme()
 
     // return false if key is 'Enter'
     // window.document.onkeydown = (e: KeyboardEvent) => e.key !== 'Enter'
@@ -112,9 +113,15 @@
       clickedAtSecretImagePosY = parseInt(secretImage.style.top)
     }
     window.document.onmousemove = (e: MouseEvent): void => {
+      if (windowContainer !== null) {
+        windowContainer.style.left = windowContainer.offsetLeft + e.movementX + 'px'
+        windowContainer.style.top = windowContainer.offsetTop + e.movementY + 'px'
+        return
+      }
       if (dragWindow === null) return
-      dragWindow.style.left = e.pageX - offsetX + 'px'
-      dragWindow.style.top = e.pageY - offsetY + 'px'
+
+      dragWindow.style.left = getOffset(dragWindow).left + e.movementX + 'px'
+      dragWindow.style.top = getOffset(dragWindow).top + e.movementY + 'px'
 
       background.style.backgroundPositionX =
         clickedAtBackgroundPosX + (e.pageX - clickedAtX) * backgroundParallaxRatio + 'px'
@@ -225,8 +232,12 @@
   }
 
   function switchTheme(): void {
-    isDarkMode = !isDarkMode
-    window.document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light')
+    $isDarkMode = !$isDarkMode
+    applyTheme()
+  }
+  /**  Sets the correct theme on the root (html) tag. */
+  function applyTheme(): void {
+    window.document.documentElement.setAttribute('data-theme', $isDarkMode ? 'dark' : 'light')
   }
 
   let saveDataString: string
@@ -252,7 +263,7 @@
   <Notifications />
 
   <div id="saveload">
-    <button on:click={switchTheme}>Theme: {isDarkMode ? 'Dark' : 'Light'}</button>
+    <button on:click={switchTheme}>Theme: {$isDarkMode ? 'Dark' : 'Light'}</button>
     <button on:click={returnToHome}>Home</button>
     <!-- <input type="string" bind:value={saveDataString} />
     <button on:click={handleExport}>Export</button>

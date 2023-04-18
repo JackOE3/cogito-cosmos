@@ -31,7 +31,7 @@
     height: var(--height);
     overflow: hidden;
     position: relative;
-    border-radius: 0.2rem;
+    border-radius: 2px;
   }
   #innerBar {
     background-color: var(--barColor, var(--secondary));
