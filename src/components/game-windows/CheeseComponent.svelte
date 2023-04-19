@@ -40,7 +40,7 @@
   import UnlockDrawer from '../UnlockDrawer.svelte'
   import { tooltip } from '../tooltips/tooltip'
   import CheeseFactoryProtocol from '../tooltips/CheeseFactoryProtocol.svelte'
-  import { onMount } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
 
   export let windowId: WindowId
 
@@ -56,9 +56,13 @@
 
   let cheeseBarProgress = 0
   let lastTime: number | null = null
+  let myReq: number
 
   onMount(() => {
-    if ($cheeseQueueActive) requestAnimationFrame(animateCheeseBar)
+    if ($cheeseQueueActive) myReq = requestAnimationFrame(animateCheeseBar)
+  })
+  onDestroy(() => {
+    cancelAnimationFrame(myReq)
   })
 
   function resetCheeseBar(): void {
@@ -86,7 +90,7 @@
 
     /* TODO: insert here logic for if cheeseCycleBaseDuration exceeds a certain speed, then no animation, just a static bar with
     statistical averages for calculations */
-    requestAnimationFrame(animateCheeseBar)
+    myReq = requestAnimationFrame(animateCheeseBar)
   }
 
   function animateCheeseBar(currentTime: number): void {
@@ -101,7 +105,7 @@
       cheeseBarProgress -= $cheeseCycleDuration
       if (cheeseBarProgress < $cheeseCycleDuration) cheeseBarProgress = 0
     }
-    if ($cheeseQueueActive) requestAnimationFrame(animateCheeseBar)
+    if ($cheeseQueueActive) myReq = requestAnimationFrame(animateCheeseBar)
   }
 
   /**
@@ -427,8 +431,5 @@
   }
   #cheeseBar {
     width: 100%;
-  }
-  .red {
-    color: red;
   }
 </style>

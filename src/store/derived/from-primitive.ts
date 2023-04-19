@@ -44,7 +44,6 @@ export const cheeseCyclesThoughtMult = derived(
     checkBoolForNum($unlocked.cheeseCyclesBoostThoughts, 1 + 0.001 * Math.pow($cheeseQueueTotalCycles, 1.5))
 )
 
-export const cheeseSpeedFactor = { duration: 0.95, cost: 1.4 }
 export const cheeseYieldDeltaDuration = 500 // ms
 
 export const cheeseModeStats: Record<CheeseFactoryMode, { yield: number; duration: number; cost: number }> = {

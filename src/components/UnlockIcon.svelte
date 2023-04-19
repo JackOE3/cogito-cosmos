@@ -3,10 +3,14 @@
   import { unlocked, resource, type IUnlock } from '@store'
   import { Direction, tooltip } from './tooltips/tooltip'
   import UnlockTooltip from './tooltips/UnlockTooltip.svelte'
+  import { derived } from 'svelte/store'
 
   export let unlock: IUnlock
   export let tempCount: number
   export let folderName: string
+
+  const canAfford = derived(resource, $resource => $resource[unlock.resource] >= unlock.cost)
+  const isUnlocked = derived(unlocked, $unlocked => $unlocked[unlock.name])
 
   function unlockFeature(): void {
     const cost: number = unlock.cost
@@ -24,8 +28,8 @@
     on:click={unlockFeature}
     data-cost={formatWhole(unlock.cost)}
     data-unlockType={unlock.type}
-    class:disabled={$resource[unlock.resource] < unlock.cost && !$unlocked[unlock.name]}
-    class:unlocked={$unlocked[unlock.name]}
+    class:disabled={!$canAfford && !$isUnlocked}
+    class:unlocked={$isUnlocked}
     use:tooltip={{ data: unlock, Component: UnlockTooltip, direction: Direction.RIGHT, anchor: 'offsetParent' }}
   >
     <img alt="upgrade icon" src={`assets/${folderName}/PNG/${tempCount + 1}.png`} draggable="false" />

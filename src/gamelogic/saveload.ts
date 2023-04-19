@@ -121,8 +121,6 @@ function dataMigrate(fromStorage: SaveData): void {
   // create a new saveData to use as a reference
   const master = new SaveData()
 
-  console.log('fromStorage', fromStorage.version)
-
   if (typeof fromStorage.version !== 'string') {
     // TODO: define more rigorous type
     console.log('Corrupted save file found: Invalid version number: ' + typeof fromStorage.version)
@@ -133,6 +131,7 @@ function dataMigrate(fromStorage: SaveData): void {
     console.log(
       'Outdated version save file found:' + fromStorage.version + ' (Current version: ' + master.version + ')'
     )
+    upgradeVersion(fromStorage)
     // Logic for upgrading to newer versions goes here.
   }
 
@@ -180,6 +179,10 @@ function dataMigrate(fromStorage: SaveData): void {
   console.log('Migration complete.')
 }
 
+function upgradeVersion(save: SaveData): void {
+  if (save.version === '0.0.1') save.version = '0.1.1'
+}
+
 /**
  * Resets saveGame in localstorage, resets all the stores and updates the savaData accordingly.
  */
@@ -216,6 +219,7 @@ export function recalculateStores(): void {
     value.cost = upgradesInitial[key].cost * Math.pow(upgradesInitial[key].costMultiplier, value.bought)
   }
   store.upgrades.refresh()
+  store.windowLocations.reset()
   unsubscribe()
 }
 

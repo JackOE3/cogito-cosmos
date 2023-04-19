@@ -1,7 +1,7 @@
 import { get } from 'svelte/store'
 import { handleCheeseMonster } from './cheeseMonster'
 import {
-  lastSaved as lastSavedStore,
+  lastSaved,
   resource,
   highestMilk,
   mcHalfLifeSeconds,
@@ -13,13 +13,6 @@ import { saveSaveGame } from './saveload'
 
 // natural log of 2
 const LN2 = 0.69314718056
-
-/**
- * Reference to some stores.
- * We use the subscribe function so if the store is updated our local instance will also update.
- */
-let lastSaved: number
-lastSavedStore.subscribe(m => (lastSaved = m))
 
 /**
  * how often to run the loop. 200ms = 5 times per second
@@ -46,7 +39,7 @@ export function startGameLoop(): void {
   repopulateValues() */
 
   // calculateOfflineProgress()
-  lastSaved = Date.now()
+  lastSaved.set(Date.now())
 
   console.log('Starting the game loop...')
   interval = setInterval(gameLoop, GAME_INTERVAL)
@@ -70,8 +63,8 @@ function gameLoop(): void {
   const currentTime = Date.now()
 
   // if lastSaved was more than 60 seconds ago we should save the game DEACTIVATED!!!!
-  if (currentTime - lastSaved > autoSaveTime) {
-    lastSaved = currentTime
+  if (currentTime - get(lastSaved) > autoSaveTime) {
+    lastSaved.set(currentTime)
     // saveSaveGame()
     // sendMessage('Game auto-saved')
   }
@@ -123,7 +116,7 @@ function calculateOfflineProgress(): void {
   // calculate time in seconds since last saved
   const currentTime = Date.now()
 
-  const offlineDeltaTimeSeconds = Math.max((currentTime - lastSaved) / 1000, 0)
+  const offlineDeltaTimeSeconds = Math.max((currentTime - get(lastSaved)) / 1000, 0)
 
   console.log(`Offline for ${offlineDeltaTimeSeconds} seconds`)
 

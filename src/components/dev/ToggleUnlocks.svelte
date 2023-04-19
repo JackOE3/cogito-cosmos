@@ -3,8 +3,6 @@
 
   function toggleUnlock(name: string): void {
     $unlocked[name] = !$unlocked[name]
-
-    console.log($unlocked[name])
   }
 </script>
 

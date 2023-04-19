@@ -1,4 +1,5 @@
 import { derived } from 'svelte/store'
+import { cheeseFactoryMode, currentThoughtBoost, resource, unlocked, upgrades } from '../primitive'
 import {
   cheeseBoostFactorYield,
   cheeseCycleAcceleratorFactor,
@@ -24,7 +25,6 @@ import {
   totalMonsterDeathsLootBoost,
   moldyCheeseChance,
 } from './from-primitive'
-import { cheeseFactoryMode, currentThoughtBoost, resource, unlocked, upgrades } from '../primitive'
 import { checkBoolForNum } from '@gamelogic/utils'
 
 const baseCost = 10

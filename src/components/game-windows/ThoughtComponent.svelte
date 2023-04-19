@@ -22,7 +22,7 @@
 
   export let windowId: WindowId
 
-  import { onMount } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import { derived, get } from 'svelte/store'
   import EffectComponent from '../EffectComponent.svelte'
   import Effect from '../Effect.svelte'
@@ -85,6 +85,9 @@
 
   onMount(() => {
     myReq = requestAnimationFrame(animateThoughtBoost)
+  })
+  onDestroy(() => {
+    cancelAnimationFrame(myReq)
   })
 </script>
 

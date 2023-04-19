@@ -1,6 +1,11 @@
 <script lang="ts">
   import { formatNumber } from '@gamelogic/utils'
-  import { type BrainMode, cheeseMonsterDeathRateStats, cheeseMonsterBrainModeResourceFactors } from '@store'
+  import {
+    type BrainMode,
+    cheeseMonsterDeathRateStats,
+    cheeseMonsterBrainModeResourceFactors,
+    currentNotation,
+  } from '@store'
 
   export let data: BrainMode
   export let top = 0
@@ -23,7 +28,7 @@
     <span>{brainModeDescription[data]}</span>
     <span class="effect">
       Death toll: {cheeseMonsterDeathRateStats[data] > 0
-        ? `${formatNumber(cheeseMonsterDeathRateStats[data], 2)}/s/monster`
+        ? `${formatNumber(cheeseMonsterDeathRateStats[data], 2, $currentNotation)}/s/monster`
         : 'None'}
     </span>
     <span class="effect">Relative resource generation: {cheeseMonsterBrainModeResourceFactors[data]}x</span>

@@ -1,7 +1,6 @@
 import { get } from 'svelte/store'
-import type { baseStore } from '@store'
-import type { IUpgrade } from '@store'
-import { resource } from '@store'
+import { resource, type IUpgrade } from '@store'
+import type { baseStore } from '@store/customStore'
 
 type returnSignature = (upgradeName: string, buyMaxUpgrades: boolean) => void
 

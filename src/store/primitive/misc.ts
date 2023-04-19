@@ -4,10 +4,13 @@ export const ADMIN_MODE = makeStore(true)
 export const LORCA_OVERRIDE = makeStore(false)
 export const devToolsEnabled = makeStore(false)
 
+// SETTINGS (should not be reset when resetting the game)
 export const isDarkMode = makeStore<boolean | 'notChecked'>('notChecked')
+export type Notation = 'scientific' | 'default' | 'letters'
+export const currentNotation = makeStore<Notation>('default')
+export const totalTimePlayed = makeStore(0)
 
 export const lastSaved = makeStore(Date.now())
-export const totalTimePlayed = makeStore(0)
 
 export const currentThoughtBoost = makeStore(1)
 export const currentThoughtBoostTime = makeStore(0)

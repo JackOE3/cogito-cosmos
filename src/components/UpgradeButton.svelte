@@ -1,7 +1,7 @@
 <script lang="ts">
   import { formatWhole, formatResourceName } from '@gamelogic/utils'
   import { buyUpgrade } from '@gamelogic/buy-upgrade'
-  import { upgrades, resource, LORCA_OVERRIDE } from '@store'
+  import { upgrades, resource, LORCA_OVERRIDE, currentNotation } from '@store'
   import { tooltip } from './tooltips/tooltip'
   import { derived, get } from 'svelte/store'
   import { fade } from 'svelte/transition'
@@ -42,7 +42,7 @@
       </div>
       <div id="cost">
         {#if !$isMaxed}
-          {formatWhole($cost)}
+          {formatWhole($cost, $currentNotation)}
           {formatResourceName(resourceName)}
         {/if}
       </div>

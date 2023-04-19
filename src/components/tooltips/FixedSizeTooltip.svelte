@@ -1,9 +1,12 @@
 <script lang="ts">
-  export let data: string
-  export let rect: DOMRect
+  export let top = 0
+  export let left = 0
+  export let data: unknown = 'No Tooltip'
+
+  const style = `top: ${top}px; left: ${left - 300 / 2 + 100 / 2 - 12 / 2}px;`
 </script>
 
-<div style="top: {rect.bottom + 10}px; left: calc({rect.left + rect.width / 2}px - var(--width)/2 - var(--padding));">
+<div {style}>
   {@html data}
 </div>
 

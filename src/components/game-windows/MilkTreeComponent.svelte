@@ -1,10 +1,12 @@
 <script lang="ts">
-  import Window from './window-model/WindowOLD.svelte'
+  import Window from './window-model/Window.svelte'
   import { formatNumber } from '@gamelogic/utils'
   import { tooltip } from '../tooltips/tooltip'
   import FixedSizeTooltip from '../tooltips/FixedSizeTooltip.svelte'
-  import { resource, skillTree, allowedSkillTreeConnections } from '@store'
+  import { resource, skillTree, allowedSkillTreeConnections, WindowId } from '@store'
   import { onMount } from 'svelte'
+
+  export let windowId: WindowId
 
   const rows: HTMLElement[] = []
 
@@ -79,7 +81,7 @@
   }
 </script>
 
-<Window title="The Milk Tree" --bg="linear-gradient(90deg, #bdbdbd 0%, #ffffff 100%)">
+<Window title="The Milk Tree" themeColor1="#bdbdbd" themeColor2="#ffffff" {windowId}>
   <div>
     <span class="resourceDisplay"
       >You have {formatNumber($resource.milkPoints, 2)} unspent <strong style="color:white"> milk points</strong> <br />

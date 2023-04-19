@@ -1,5 +1,4 @@
 import { writable, type Writable } from 'svelte/store'
-import { noRef } from '../gamelogic/utils'
 
 export interface baseStore<T> extends Writable<T> {
   refresh: () => void
@@ -18,17 +17,11 @@ export function makeStore<T>(initialState: T): baseStore<T> {
   return { ...store, reset, refresh }
 }
 
-/* export function makeStore2(initialState: unknown) {
-  // important to wrap it in noRef() !!
-  const store = writable(noRef(initialState))
-  const reset = (): void => {
-    store.set(noRef(initialState))
-  }
-  const add = (resource: string, n: number): void => {
-    store.update($store => {
-      if (typeof $store[resource] === 'number') ($store[resource] as number) += n
-    })
-    return store
-  }
-  return { ...store, reset, add }
-} */
+/**
+ * Removes all references to an object or variable.
+ * @param obj
+ * @returns real copy of obj
+ */
+export function noRef<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj)) as T
+}

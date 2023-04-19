@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
+  import { onDestroy, onMount } from 'svelte'
   import { fade } from 'svelte/transition'
-  import { WindowId, windowMinimized } from '@store'
+  import { WindowId, windowMinimized, windowStack } from '@store'
 
   export let title = ''
   export let windowId: WindowId
@@ -10,9 +10,14 @@
   let windowBar: HTMLElement
 
   onMount(() => {
-    windowBar.onmouseenter = (_e: MouseEvent) => {
+    windowBar.onmouseenter = (): void => {
       windowBar.style.cursor = 'pointer'
     }
+  })
+  onDestroy(() => {
+    console.log(windowId)
+    // remove windowId from windowStack:
+    $windowStack.splice($windowStack.indexOf(windowId), 1)
   })
 
   const style = `--themeColor1: ${themeColor1}; --themeColor2: ${themeColor2};`

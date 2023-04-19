@@ -1,34 +1,44 @@
-const suffixes = ['K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'Dc']
-const suffixesB = ['K', 'M', 'G', 'T', 'P', 'E']
-const OOMs = [1e3, 1e6, 1e9, 1e12, 1e15, 1e18, 1e21, 1e24, 1e27, 1e30, 1e33]
-type Notation = 'scientific' | 'suffixes'
-const currentNotation: Notation = 'scientific'
+import { currentNotation, type Notation } from '@store/primitive/misc'
 
+// prettier-ignore
+const suffixesDefault = [ 
+  'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc', 'Ud', 'Dd', 'Td', 'Qad', 'Qid', 'Sxd', 'Spd', 'Od',
+  'Nd','V', 'Uv', 'Dv','Tv', 'Qav', 'Qiv', 'Sxv', 'Spv', 'Ov', 'Nv', 'Tt' 
+]
+// prettier-ignore
+const suffixesLetters = [
+  'K', 'M', 'B', 'T', 'aa', 'ab', 'ac', 'ad', 'ae', 'af', 'ag', 'ah', 'ai', 'aj', 'ak', 'al', 'am', 'an', 'ao', 'ap',
+  'aq', 'ar', 'as', 'at', 'au', 'av', 'aw', 'ax', 'ay', 'az', 'ba', 'bb', 'bc', 'bd', 'be', 'bf', 'bg', 'bh', 'bi'
+]
+// prettier-ignore
+const suffixesEngineering = ['K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y', 'R', 'Q']
+
+let currNotation: Notation
+currentNotation.subscribe($currentNotation => {
+  currNotation = $currentNotation
+})
 /**
  * Function to format a number for display on screen.
  * @param input Number to format
  * @param decimals How many decimals do you want
  */
-export function formatNumber(input: number, decimals: number): string {
+export function formatNumber(input: number, decimals: number, notation = currNotation): string {
   if (typeof input !== 'number') input = 0
+  if (input === 0) return input.toFixed(decimals)
   if (input < 0) return '-' + formatNumber(-1 * input, decimals)
 
-  if (currentNotation === 'scientific' && input >= 1e3) return input.toExponential(decimals).replace('+', '')
-  if (input >= OOMs[suffixes.length]) return input.toExponential(decimals).replace('+', '')
-
-  for (let i = suffixes.length - 1; i >= 0; i--) {
-    if (input >= OOMs[i]) return (input / OOMs[i]).toFixed(decimals) + suffixes[i]
+  if (notation === 'scientific' && input >= 10) {
+    return input.toExponential(decimals).replace('+', '')
   }
 
-  return input.toFixed(decimals)
-}
-export function formatNumber2(input: number, decimals: number): string {
-  if (typeof input !== 'number') input = 0
-  if (input < 0) return '-' + formatNumber(-1 * input, decimals)
-  if (input >= OOMs[suffixesB.length]) return input.toExponential(decimals).replace('+', '')
-
-  for (let i = suffixesB.length - 1; i >= 0; i--) {
-    if (input >= OOMs[i]) return (input / OOMs[i]).toFixed(decimals) + suffixesB[i]
+  const base = Math.floor(baseLog(1e3, input))
+  if (notation === 'default' && base > 0) {
+    if (base > suffixesDefault.length) return input.toExponential(decimals).replace('+', '')
+    return (input / Math.pow(1e3, base)).toFixed(decimals) + (base > 0 ? suffixesDefault[base - 1] : '')
+  }
+  if (notation === 'letters' && base > 0) {
+    if (base > suffixesLetters.length) return input.toExponential(decimals).replace('+', '')
+    return (input / Math.pow(1e3, base)).toFixed(decimals) + (base > 0 ? suffixesLetters[base - 1] : '')
   }
 
   return input.toFixed(decimals)
@@ -39,11 +49,11 @@ export function formatNumber2(input: number, decimals: number): string {
  * Will only show decimal places when the number is abbreviated.
  * @param input Number to format
  */
-export function formatWhole(input: number): string {
+export function formatWhole(input: number, notation = currNotation): string {
   if (typeof input !== 'number') input = 0
   if (input < 0) return '-' + formatWhole(-1 * input)
-  if (input < 1e3) return formatNumber(input, 0)
-  return formatNumber(input, 2)
+  if (input < 1e3) return formatNumber(input, 0, notation)
+  return formatNumber(input, 2, notation)
 }
 
 export function formatResourceName(name: string): string {
@@ -63,34 +73,12 @@ export function formatTime(sec: number, digits = 2): string {
   return `${formatNumber(sec * 1000, digits)}µs`
 }
 
-/**
- * Removes all references to an object or variable.
- * @param obj
- * @returns real copy of obj
- */
-export function noRef<T>(obj: T): T {
-  return JSON.parse(JSON.stringify(obj)) as T
-}
-
 export const baseLog = (base: number, x: number): number => {
   return Math.log(x) / Math.log(base)
 }
 
 export function checkBoolForNum(bool: boolean, num: number, or = 1): number {
   return bool ? num : or
-}
-
-export function easeInQuad(x: number): number {
-  if (x >= 1) return 1
-  return x * x
-}
-export function easeInOutQuad(x: number): number {
-  if (x >= 1) return 1
-  return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2
-}
-export function easeInOutSine(x: number): number {
-  if (x >= 1) return 1
-  return -(Math.cos(Math.PI * x) - 1) / 2
 }
 
 export function getOffset(el: HTMLElement): { left: number; top: number } {

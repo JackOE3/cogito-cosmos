@@ -11,6 +11,7 @@ export enum UnlockName {
   THOUGHT_BOOST_STACK = 'thoughtBoostStack',
   MOLDY_CHEESE = 'moldyCheese',
   MILK = 'milk',
+  MILK_TREE = 'milkTree',
   // Cheese
   CHEESE_QUEUE = 'cheeseQueue',
   CHEESE_QUEUE_OVERCLOCKING = 'cheeseQueueOverclocking',

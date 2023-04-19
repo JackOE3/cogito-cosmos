@@ -6,15 +6,21 @@ export enum WindowId {
   moldyCheeseComponent = 'moldyCheeseComponent',
   cheeseyardComponent = 'cheeseyardComponent',
   milkComponent = 'milkComponent',
+  milkTreeComponent = 'milkTreeComponent',
 }
 
+interface Coordinate {
+  x: number
+  y: number
+}
 export const windowStack = makeStore<WindowId[]>([WindowId.thoughtComponent])
-export const windowLocations = makeStore<Record<WindowId, [number, number]>>({
-  thoughtComponent: [0, 0],
-  cheeseComponent: [580, 0],
-  moldyCheeseComponent: [580, 670],
-  cheeseyardComponent: [0, 600],
-  milkComponent: [0, -300],
+export const windowLocations = makeStore<Record<WindowId, Coordinate>>({
+  thoughtComponent: { x: 0, y: 0 },
+  cheeseComponent: { x: 580, y: 0 },
+  moldyCheeseComponent: { x: 580, y: 670 },
+  cheeseyardComponent: { x: 0, y: 600 },
+  milkComponent: { x: 0, y: -300 },
+  milkTreeComponent: { x: 400, y: -300 },
 })
 export const windowMinimized = makeStore<Record<WindowId, boolean>>({
   thoughtComponent: false,
@@ -22,4 +28,5 @@ export const windowMinimized = makeStore<Record<WindowId, boolean>>({
   moldyCheeseComponent: false,
   cheeseyardComponent: false,
   milkComponent: false,
+  milkTreeComponent: false,
 })
