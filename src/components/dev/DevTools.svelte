@@ -12,31 +12,31 @@
       <span>thoughts</span>
       <input type="number" bind:value={$resource.thoughts} />
       <div style="display:flex;">
-        <button on:click={() => ($resource.thoughts += 100)}>+100</button>
         <button on:click={() => ($resource.thoughts += 1000)}>+1K</button>
-        <button on:click={() => ($resource.thoughts += 10000)}>+10K</button>
         <button on:click={() => ($resource.thoughts += 100000)}>+100K</button>
         <button on:click={() => ($resource.thoughts += 1000000)}>+1M</button>
+        <button on:click={() => ($resource.thoughts *= 10)}>*10</button>
+        <button on:click={() => ($resource.thoughts /= 10)}>/10</button>
       </div>
 
       <span>cheese</span>
       <input type="number" bind:value={$resource.cheese} />
       <div style="display:flex;">
-        <button on:click={() => ($resource.cheese += 100)}>+100</button>
         <button on:click={() => ($resource.cheese += 1000)}>+1K</button>
-        <button on:click={() => ($resource.cheese += 10000)}>+10K</button>
         <button on:click={() => ($resource.cheese += 100000)}>+100K</button>
         <button on:click={() => ($resource.cheese += 1000000)}>+1M</button>
+        <button on:click={() => ($resource.cheese *= 10)}>*10</button>
+        <button on:click={() => ($resource.cheese /= 10)}>/10</button>
       </div>
 
       <span>moldy cheese</span>
       <input type="number" bind:value={$resource.moldyCheese} />
       <div style="display:flex;">
-        <button on:click={() => ($resource.moldyCheese += 100)}>+100</button>
         <button on:click={() => ($resource.moldyCheese += 1000)}>+1K</button>
-        <button on:click={() => ($resource.moldyCheese += 10000)}>+10K</button>
         <button on:click={() => ($resource.moldyCheese += 100000)}>+100K</button>
         <button on:click={() => ($resource.moldyCheese += 1000000)}>+1M</button>
+        <button on:click={() => ($resource.moldyCheese *= 10)}>*10</button>
+        <button on:click={() => ($resource.moldyCheese /= 10)}>/10</button>
       </div>
 
       <span>cheese monsters</span>
