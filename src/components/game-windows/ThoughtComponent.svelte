@@ -91,7 +91,7 @@
   })
 </script>
 
-<Window title="Cogito Ergo Sum" themeColor1="rgb(129, 0, 204)" themeColor2="rgb(182, 122, 255)" {windowId}>
+<Window title="Cogito Ergo Sum" themeId="thoughts" {windowId}>
   <div slot="minimized" class="flexRowContainer">
     <div style="width: 250px">
       <span class="resourceDisplay">

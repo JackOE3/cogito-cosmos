@@ -7,7 +7,7 @@
 </script>
 
 <div style="position:relative; width: max-content; height: max-content">
-  <div class="unlockDrawer grid theme-border">
+  <div class="unlock-drawer theme-border">
     {#each unlocks as unlock, tempCount}
       {#if !$unlocked[unlock.name] && $unlocked[unlock.availableAt ?? 'start']}
         <UnlockIcon {unlock} {tempCount} {folderName} />
@@ -18,31 +18,27 @@
 
 <style>
   * {
-    --slots: var(--num-slots, 4);
+    --slots: var(--num-slots, 3);
     --pad: 2px;
+    --dim: 62.7px;
   }
 
-  .grid {
+  .unlock-drawer {
+    position: relative;
+    background-color: var(--Gray800);
     padding: var(--pad);
-    height: 60px;
-    width: calc(var(--slots) * 60px + (var(--slots) - 1) * 2px);
+    height: var(--dim);
+    width: calc(var(--slots) * var(--dim) + (var(--slots) - 1) * 2px);
     display: grid;
-    grid-template-columns: repeat(var(--slots), 60px);
+    grid-template-columns: repeat(var(--slots), var(--dim));
     grid-template-rows: 100px; /* -> so overflow is hidden far beneath */
     gap: 2px;
     overflow: hidden;
     justify-items: center;
   }
-  .unlockDrawer {
-    position: relative;
-    background-color: var(--Gray800);
-
-    /* outline: 1px solid rgba(0, 0, 0, 0.6);
-    border-left: var(--themeColor2);
-    border-right: var(--themeColor1);
-    border-top: var(--themeColor2);
-    border-bottom: var(--themeColor1);
-    border-width: 2px;
-    border-style: solid; */
-  }
+  /* .unlock-drawer:hover {
+    --hover-slots: 5;
+    width: calc(var(--hover-slots) * var(--dim) + (var(--hover-slots) - 1) * 2px);
+    grid-template-columns: repeat(var(--hover-slots), var(--dim));
+  } */
 </style>

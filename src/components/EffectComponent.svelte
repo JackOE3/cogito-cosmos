@@ -14,10 +14,12 @@
 
 <style>
   #effectContainer {
-    width: 300px;
+    width: var(--width, 300px);
     min-height: max-content;
+    height: var(--height, 100%);
     background-color: var(--Gray800);
     overflow: hidden;
+    box-sizing: border-box;
   }
   #effectHeader {
     width: 100%;

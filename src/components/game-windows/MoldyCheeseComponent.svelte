@@ -53,7 +53,7 @@
   }
 </script>
 
-<Window title="Cultured Delicacy" themeColor1="rgb(75, 121, 0)" themeColor2="rgb(136, 255, 0)" {windowId}>
+<Window title="Cultured Delicacy" themeId="moldyCheese" {windowId}>
   <div slot="minimized" class="flexRowContainer">
     <div style="width: 250px">
       <span class="resourceDisplay">
@@ -72,7 +72,7 @@
     <UnlockDrawer --num-slots="1" unlocks={unlocks.moldyCheese} folderName="Free Alchemical Ingredient Icons Pack" />
   </div>
 
-  <div style="display: flex; flex-direction: column; gap: 8px;">
+  <div style="display: flex; flex-direction: column; gap: 0.25rem;">
     <span class="resourceDisplay">
       You have {formatNumber($resource.moldyCheese, 2)}
       <span style="font-weight:bold" class="colorText">moldy cheese</span>

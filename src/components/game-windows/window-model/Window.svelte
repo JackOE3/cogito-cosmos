@@ -5,8 +5,7 @@
 
   export let title = ''
   export let windowId: WindowId
-  export let themeColor1: string
-  export let themeColor2: string
+  export let themeId: string
   let windowBar: HTMLElement
 
   onMount(() => {
@@ -20,8 +19,6 @@
     $windowStack.splice($windowStack.indexOf(windowId), 1)
   })
 
-  const style = `--themeColor1: ${themeColor1}; --themeColor2: ${themeColor2};`
-
   $: minimized = $windowMinimized[windowId]
 
   function minimizeWindow(id: WindowId): void {
@@ -29,7 +26,7 @@
   }
 </script>
 
-<div class="window-container" transition:fade|local={{ duration: 1000 }} {style}>
+<div class="window-container" transition:fade|local={{ duration: 1000 }} data-theme-colors={themeId}>
   <div class="window-bar draggable" bind:this={windowBar}>
     {title}
     <button class="window-bar-min-max" on:click={() => minimizeWindow(windowId)}>

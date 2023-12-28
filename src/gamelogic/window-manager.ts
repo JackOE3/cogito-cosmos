@@ -40,7 +40,7 @@ export function setWindowLocation(window: HTMLElement): void {
   window.style.top = `${y as number}px`
 }
 export function initWindow(window: HTMLElement): void {
-  console.log('init', window.id)
+  /* console.log('init', window.id) */
   setWindowLocation(window)
   // if new window, it gets pushed to the top of the stack:
   if (!get(windowStack).includes(window.id as WindowId)) {

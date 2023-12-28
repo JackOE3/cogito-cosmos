@@ -1,6 +1,5 @@
 import { get } from 'svelte/store'
 import {
-  type Resource,
   totalMonsterDeathsLootBoost,
   cheeseMonsterSpawnrate,
   cheeseMonsterDeathrate,
@@ -10,11 +9,12 @@ import {
   totalCheeseMonsterDeaths,
   cheeseMonsterDeathsPerSec,
   approxCheeseBrainsPerSec,
+  type Resources,
 } from '@store'
 
 let accumulateSecond = 0
 
-export function handleCheeseMonster(resource: Resource, deltaTimeSeconds: number): void {
+export function handleCheeseMonster(resource: Resources, deltaTimeSeconds: number): void {
   const cap = get(cheeseMonsterCapacity)
   if (resource.cheeseMonster < cap) {
     const births = get(cheeseMonsterSpawnrate) * deltaTimeSeconds

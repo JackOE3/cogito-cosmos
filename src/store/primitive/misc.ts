@@ -1,9 +1,5 @@
 import { makeStore } from '../customStore'
 
-export const ADMIN_MODE = makeStore(true)
-export const LORCA_OVERRIDE = makeStore(false)
-export const devToolsEnabled = makeStore(false)
-
 // SETTINGS (should not be reset when resetting the game)
 export const isDarkMode = makeStore<boolean | 'notChecked'>('notChecked')
 export type Notation = 'scientific' | 'default' | 'letters'
@@ -27,3 +23,4 @@ export type BrainMode = 'peaceful' | 'neutral' | 'destructive'
 export const brainMode = makeStore<BrainMode>('peaceful')
 
 export const highestMilk = makeStore(0)
+export const totalMilkResets = makeStore(0)

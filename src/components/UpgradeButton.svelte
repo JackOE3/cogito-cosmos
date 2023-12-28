@@ -1,10 +1,11 @@
 <script lang="ts">
-  import { formatWhole, formatResourceName } from '@gamelogic/utils'
+  import { formatResourceName, formatNumber } from '@gamelogic/utils'
   import { buyUpgrade } from '@gamelogic/buy-upgrade'
-  import { upgrades, resource, LORCA_OVERRIDE, currentNotation } from '@store'
+  import { upgrades, resource, LORCA_OVERRIDE, currentNotation, milkUpgradeEffects, unlocked } from '@store'
   import { tooltip } from './tooltips/tooltip'
   import { derived, get } from 'svelte/store'
   import { fade } from 'svelte/transition'
+  /* import { buyUpgradeMilk } from '@gamelogic/buy-upgrade-milk' */
 
   export let upgradeName: string
   export let tooltipText: string | null = null
@@ -31,6 +32,7 @@
 {#if btnUnlocked || $LORCA_OVERRIDE}
   <button
     on:click={handleUpgradeClicked}
+    on:click
     class:disabled={!$canAfford && !$isMaxed}
     use:tooltip={{ data: tooltipText }}
     class:maxed={$isMaxed}
@@ -42,7 +44,7 @@
       </div>
       <div id="cost">
         {#if !$isMaxed}
-          {formatWhole($cost, $currentNotation)}
+          {formatNumber($cost, 2, $currentNotation)}
           {formatResourceName(resourceName)}
         {/if}
       </div>
@@ -70,6 +72,7 @@
     padding-left: 4px;
     padding-right: 4px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
   }

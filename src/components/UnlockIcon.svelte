@@ -44,8 +44,8 @@
   button {
     /* z-index: 1; */
     position: relative;
-    width: 60px;
-    height: 60px;
+    width: 62.7px;
+    height: 62.7px;
     background-color: var(--Gray800);
     border: 1px var(--Gray500) solid;
     border-radius: 0px;
@@ -65,7 +65,7 @@
   }
   button.unlocked {
     opacity: 1;
-    filter: contrast(150%);
+    filter: contrast(100%);
     border: 2px rgba(255, 255, 255, 0.6) solid;
     outline: 1px solid rgba(0, 0, 0, 0.6);
     /* box-shadow: 0 0 2px 1px var(--themeColor1); */

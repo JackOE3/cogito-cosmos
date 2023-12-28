@@ -36,6 +36,8 @@ export const cheeseThoughtMult = derived(
     1 + Math.log($resource.cheese + 1) * $upgrades.cheeseThoughtMult.bought * $upgrades.cheeseThoughtMult.bought
 )
 
+export const cheeseCyclesPerBarFill = derived(upgrades, $upgrades => 1 + $upgrades.multipleCheeseCycles.bought)
+
 export const maxCheeseQueue = derived(upgrades, $upgrades => 5 + 5 * $upgrades.cheeseQueueLength.bought)
 
 export const cheeseCyclesThoughtMult = derived(
@@ -113,6 +115,10 @@ export const cheeseMonsterCapacityPerUpgrade = derived(upgrades, $upgrades =>
     : 10
 )
 
+export const cheeseMonsterDeathsMultiplicity = derived(
+  upgrades,
+  $upgrades => 1 + Math.pow($upgrades.multipleMonsterDeaths.bought, 2)
+)
 /** per second */
 export const cheeseMonsterSpawnrate = derived(
   [unlocked, upgrades],

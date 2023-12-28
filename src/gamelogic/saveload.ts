@@ -217,6 +217,7 @@ export function recalculateStores(): void {
     if (typeof value.maxBuy === 'number' && value.bought > value.maxBuy) value.bought = value.maxBuy
     value.costMultiplier = upgradesInitial[key].costMultiplier
     value.cost = upgradesInitial[key].cost * Math.pow(upgradesInitial[key].costMultiplier, value.bought)
+    value.resource = upgradesInitial[key].resource
   }
   store.upgrades.refresh()
   store.windowLocations.reset()

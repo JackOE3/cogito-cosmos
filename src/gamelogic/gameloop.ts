@@ -6,8 +6,8 @@ import {
   highestMilk,
   mcHalfLifeSeconds,
   thoughtsPerSec,
-  milkPowerPerSec,
   totalTimePlayed,
+  bacteriaPerSec,
 } from '@store'
 import { saveSaveGame } from './saveload'
 
@@ -99,7 +99,7 @@ function gameUpdate(deltaTimeSeconds: number): void {
     handleCheeseMonster($resource, deltaTimeSeconds)
 
     if ($resource.milk > get(highestMilk)) highestMilk.set($resource.milk)
-    $resource.milkPower += get(milkPowerPerSec) * deltaTimeSeconds
+    $resource.bacteria += get(bacteriaPerSec) * deltaTimeSeconds
 
     return $resource
   })

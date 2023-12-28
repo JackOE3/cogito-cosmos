@@ -23,7 +23,7 @@
   import MilkComponent from './components/game-windows/MilkComponent.svelte'
   import MilkTreeComponent from './components/game-windows/MilkTreeComponent.svelte'
   import { getOffset } from '@gamelogic/utils'
-  import MilkTreeComponentCopy from './components/game-windows/MilkTreeComponentCopy.svelte'
+  import BacteriaComponent from './components/game-windows/BacteriaComponent.svelte'
 
   let unlockTogglesShown = false
 
@@ -60,6 +60,17 @@
     xRight: null,
     yUp: null,
     yDown: null,
+  }
+
+  function translateFromCSSToArray(el: HTMLElement): [number, number] | null {
+    const str = window.getComputedStyle(el).getPropertyValue('transform')
+    const transformArray = str.match(/(-?[0-9\.]+)/g)
+
+    if (transformArray === null) {
+      console.error('Could not get the proper transform coordinates.')
+      return null
+    }
+    return [parseInt(transformArray[4]), parseInt(transformArray[5])]
   }
 
   function onKeyPress(e: KeyboardEvent): void {
@@ -111,8 +122,18 @@
 
     clickedAtX = e.pageX
     clickedAtY = e.pageY
-    clickedAtWindowPosX = getOffset(dragWindow).left
-    clickedAtWindowPosY = getOffset(dragWindow).top
+
+    const arr = translateFromCSSToArray(dragWindow)
+    if (arr === null) {
+      dragWindow = null
+      return
+    }
+    clickedAtWindowPosX = arr[0]
+    clickedAtWindowPosY = arr[1]
+    // console.log(clickedAtWindowPosX, clickedAtWindowPosY)
+
+    /* clickedAtWindowPosX = getOffset(dragWindow).left
+    clickedAtWindowPosY = getOffset(dragWindow).top */
     clickedAtBackgroundPosX = parseInt(background.style.backgroundPositionX)
     clickedAtBackgroundPosY = parseInt(background.style.backgroundPositionY)
     clickedAtSecretImagePosX = parseInt(secretImage.style.left)
@@ -126,8 +147,11 @@
     }
     if (dragWindow === null) return
 
-    dragWindow.style.left = clickedAtWindowPosX + (e.pageX - clickedAtX) + 'px'
-    dragWindow.style.top = clickedAtWindowPosY + (e.pageY - clickedAtY) + 'px'
+    /* dragWindow.style.left = clickedAtWindowPosX + (e.pageX - clickedAtX) + 'px'
+    dragWindow.style.top = clickedAtWindowPosY + (e.pageY - clickedAtY) + 'px' */
+    dragWindow.style.transform = `translate(${clickedAtWindowPosX + e.pageX - clickedAtX}px, ${
+      clickedAtWindowPosY + e.pageY - clickedAtY
+    }px)`
 
     background.style.backgroundPositionX =
       clickedAtBackgroundPosX + (e.pageX - clickedAtX) * backgroundParallaxRatio + 'px'
@@ -144,6 +168,9 @@
       updateWindowLocation(windowContainer)
       windowContainer = null
     }
+    /* if (dragWindow === null) return
+    dragWindow.style.left = clickedAtWindowPosX + (e.pageX - clickedAtX) + 'px'
+    dragWindow.style.top = clickedAtWindowPosY + (e.pageY - clickedAtY) + 'px' */
     movingWithMouse = false
     dragWindow = null
   }
@@ -154,6 +181,7 @@
     panToWindow(WindowId.thoughtComponent)
     background.style.backgroundPositionX = '0px'
     background.style.backgroundPositionY = '0px'
+    background.style.background = "url('assets/endless-constellation.svg')"
 
     // checks if dark mode is enabled in the browser:
     if ($isDarkMode === 'notChecked') {
@@ -250,6 +278,14 @@
       startTime.yDown = null
     }
 
+    /* let transformX = gameWindowLeftInitial
+    let transformY = gameWindowTopInitial
+    if (startTime.xRight !== null) transformX -= 1 * currentTime - startTime.xRight
+    if (startTime.xLeft !== null) transformX += 1 * currentTime - startTime.xLeft
+    if (startTime.yUp !== null) transformY += 1 * currentTime - startTime.yUp
+    if (startTime.yDown !== null) transformY += 1 * currentTime - startTime.yDown
+    gameWindow.style.transform = `transform(${transformX}px, ${transformY}px)` */
+
     if (isMoving) requestAnimationFrame(moveWindow)
   }
 
@@ -316,6 +352,7 @@
     <div id="game" bind:this={gameWindow}>
       <div
         id={WindowId.thoughtComponent}
+        class="window"
         on:mousedown={() => selectWindow(WindowId.thoughtComponent, gameWindow)}
         use:initWindow
       >
@@ -324,6 +361,7 @@
       {#if $unlocked.switzerland || $LORCA_OVERRIDE}
         <div
           id={WindowId.cheeseComponent}
+          class="window"
           on:mousedown={() => selectWindow(WindowId.cheeseComponent, gameWindow)}
           use:initWindow
         >
@@ -333,6 +371,7 @@
       {#if $unlocked.moldyCheese || $LORCA_OVERRIDE}
         <div
           id={WindowId.moldyCheeseComponent}
+          class="window"
           on:mousedown={() => selectWindow(WindowId.moldyCheeseComponent, gameWindow)}
           use:initWindow
         >
@@ -342,6 +381,7 @@
       {#if $unlocked.cheeseyard || $LORCA_OVERRIDE}
         <div
           id={WindowId.cheeseyardComponent}
+          class="window"
           on:mousedown={() => selectWindow(WindowId.cheeseyardComponent, gameWindow)}
           use:initWindow
         >
@@ -351,6 +391,7 @@
       {#if $unlocked.milk || $LORCA_OVERRIDE}
         <div
           id={WindowId.milkComponent}
+          class="window"
           on:mousedown={() => selectWindow(WindowId.milkComponent, gameWindow)}
           use:initWindow
         >
@@ -360,10 +401,21 @@
       {#if $unlocked.milkTree || $LORCA_OVERRIDE}
         <div
           id={WindowId.milkTreeComponent}
+          class="window"
           on:mousedown={() => selectWindow(WindowId.milkTreeComponent, gameWindow)}
           use:initWindow
         >
           <MilkTreeComponent windowId={WindowId.milkTreeComponent} />
+        </div>
+      {/if}
+      {#if $unlocked.bacteria || $LORCA_OVERRIDE}
+        <div
+          id={WindowId.bacteriaComponent}
+          class="window"
+          on:mousedown={() => selectWindow(WindowId.bacteriaComponent, gameWindow)}
+          use:initWindow
+        >
+          <BacteriaComponent windowId={WindowId.bacteriaComponent} />
         </div>
       {/if}
     </div>
@@ -386,53 +438,17 @@
     align-items: center;
     justify-content: center;
     margin-bottom: 20px;
-    background: url('/cogito-cosmos/assets/endless-constellation.svg'), url('/assets/endless-constellation.svg');
+    /* background: url('/cogito-cosmos/assets/endless-constellation.svg'), url('/assets/endless-constellation.svg'); */
     /* background-color: var(--background-color); */
   }
   #game {
     position: absolute; /** also resets positioning of child elements just like relative! */
+    transform: translateZ(0);
     /* display: grid;
     gap: var(--window-gap); */
   }
-  #thoughtComponent {
+  .window {
     position: absolute;
-    /* top: 0px;
-    left: 0px; */
-    /* grid-row-start: var(--y0);
-    grid-column-start: var(--x0); */
-  }
-  #cheeseComponent {
-    position: absolute;
-    /* top: 0px;
-    left: 600px; */
-    /* grid-row-start: var(--y0);
-    grid-column-start: calc(var(--x0) + 1); */
-  }
-  #moldyCheeseComponent {
-    position: absolute;
-    /* top: 600px;
-    left: 600px; */
-    /* grid-row-start: var(--y0);
-    grid-column-start: calc(var(--x0) + 2); */
-  }
-  #cheeseyardComponent {
-    position: absolute;
-    /* top: 600px;
-    left: 0px; */
-    /* grid-row-start: var(--y0);
-    grid-column-start: calc(var(--x0) + 3); */
-  }
-  #milkComponent {
-    position: absolute;
-    /* top: -300px;
-    left: 0px; */
-    /* grid-row-start: calc(var(--y0) - 1);
-    grid-column-start: calc(var(--x0)); */
-  }
-  #milkTreeComponent {
-    position: absolute;
-    /* grid-row-start: calc(var(--y0) - 1);
-    grid-column-start: calc(var(--x0) - 1); */
   }
 
   #saveload {

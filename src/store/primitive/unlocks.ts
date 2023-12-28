@@ -34,6 +34,25 @@ export enum UnlockName {
   CHEESE_MONSTER_MASSACRE = 'cheeseMonsterMassacre',
   CHEESE_MONSTER_COLLECTIVE_SENTIENCE = 'cheeseMonsterCollectiveSentience',
   CHEESE_MONSTER_TOTAL_DEATHS_BOOST = 'cheeseMonsterTotalDeathsBoost',
+  // Milk
+  BACTERIA = 'bacteria',
+
+  // Milk upgrade effects
+  STACKS_INCREASE_THOUGHT_BOOST_STRENGTH = 'stacksIncreaseThoughtBoostStrength',
+
+  // Milk reset milestones
+  BUY_MAX_UPGRADES = 'buyMaxUpgrades',
+  AUTO_BUY_UPGRADES = 'autoBuyUpgrades',
+  AUTO_OVERCLOCKING = 'autoOverclocking',
+  PERSISTENT_DEATHS_AND_CYCLES = 'persistentDeathsAndCycles',
+  AUTO_BUY_ADVANCEMENTS = 'autoBuyAdvancements',
+  ADVANCEMENTS_ALREADY_UNLOCKED = 'advancementsAlreadyUnlocked',
+  INFINITE_CHEESE_QUEUE = 'infiniteCheeseQueue',
+  FREE_CHEESE_SACRIFICES = 'freeCheeseSacrifices',
+  AUTO_CHEESE_SACRIFICES = 'autoCheeseSacrifices',
+  AUTO_MONSTER_BRAIN_WAVE_CONTROLLER = 'autoMonsterBrainWaveController',
+  AUTO_CHEESE_MODES = 'autoCheeseModes',
+  FREE_PRE_MILK_UPGRADES = 'freePreMilkUpgrades',
 }
 
 export type unlockType = 'Unlock' | 'Mechanic' | 'Boost' | 'Effect'
@@ -318,6 +337,27 @@ export const unlocks: Record<string, IUnlock[]> = {
       title: 'Mass Murder',
       description: 'Total cheese monster deaths boost dropped monster loot.',
       tooltipText: 'You have to perfect to art of killing to extract the most out of corpses.',
+    },
+  ],
+
+  milk: [
+    {
+      name: UnlockName.BACTERIA,
+      type: 'Unlock',
+      resource: 'milk',
+      cost: 1e6,
+      title: 'Escherichia coli',
+      description: 'You can infest your milk reserves with bacteria.',
+      tooltipText: 'No Description yet.',
+    },
+    {
+      name: UnlockName.BACTERIA,
+      type: 'Unlock',
+      resource: 'milk',
+      cost: 1e6,
+      title: 'Escherichia coli',
+      description: 'You can infest your milk reserves with bacteria.',
+      tooltipText: 'No Description yet.',
     },
   ],
 }

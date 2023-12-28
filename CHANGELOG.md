@@ -10,12 +10,17 @@ This project adheres to the example provided in: https://gamedev.stackexchange.c
 drag/drop functionality for individual windows (with keeping track of stack order)
 minimize/maximize functionality for individual windows: show only resource amounts and next unlock if minimized (tentative)
 a reset layout button (also maximizes all minimized windows)
+unlocking a new window automatically moves the camera to it (animated)
+
+### Changed
+
+notations now include scientific, letters (after T: aa, ab, ac, ...) and default (K, M, B, T, Qa, ...)
 
 ## [0.1.1] - 2022-18-04
 
 ### Added
 
-different forms of notations (scientific, ... )
+different forms of notations
 
 ### Changed
 

@@ -90,3 +90,14 @@ export function getOffset(el: HTMLElement): { left: number; top: number } {
 }
 
 export const costColor = (canAfford: boolean): string => (canAfford ? 'rgb(102, 255, 102)' : 'rgb(255, 102, 102)')
+
+export function nameof<T extends object>(
+  obj: T,
+  expression: (x: { [Property in keyof T]: () => string }) => () => string
+): string {
+  const res: { [Property in keyof T]: () => string } = {} as { [Property in keyof T]: () => string }
+
+  Object.keys(obj).map(k => (res[k as keyof T] = () => k))
+
+  return expression(res)()
+}

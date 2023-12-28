@@ -36,6 +36,7 @@
     moldyCheeseChance,
     mcByproductAmount,
     WindowId,
+    cheeseCyclesPerBarFill,
   } from '@store'
   import UnlockDrawer from '../UnlockDrawer.svelte'
   import { tooltip } from '../tooltips/tooltip'
@@ -126,7 +127,7 @@
 
     $resource.thoughts -= $cheeseCycleCost
     if ($currentCheeseQueue >= 1) $currentCheeseQueue--
-    $cheeseQueueTotalCycles++
+    $cheeseQueueTotalCycles += $cheeseCyclesPerBarFill
 
     // HANDLEMOLDY CHEESE
     if ($unlocked.moldyCheeseByproduct) {
@@ -137,7 +138,7 @@
   }
 </script>
 
-<Window title="Switzerland Simulator" themeColor1="rgb(168, 143, 2)" themeColor2="rgb(244, 255, 33)" {windowId}>
+<Window title="Switzerland Simulator" themeId="cheese" {windowId}>
   <div slot="minimized" class="flexRowContainer">
     <div style="width: 250px">
       <span class="resourceDisplay"
@@ -184,7 +185,7 @@
           />
         </div>
 
-        <div style="width:100%; margin-top:4px;">
+        <div style="width:100%; margin-top:0px;">
           {#if $unlocked.cheeseQueue}
             <div
               transition:fade|local={{ duration: 1000 }}
@@ -207,7 +208,7 @@
               </span>
             </div>
           {:else}
-            <div style="text-align: center;">???</div>
+            <div style="text-align: center; ">???</div>
           {/if}
         </div>
       </div>

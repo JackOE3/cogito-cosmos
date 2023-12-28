@@ -81,7 +81,7 @@
   }
 </script>
 
-<Window title="The Milk Tree" themeColor1="#bdbdbd" themeColor2="#ffffff" {windowId}>
+<Window title="The Milk Tree" themeId="milk" {windowId}>
   <div>
     <span class="resourceDisplay"
       >You have {formatNumber($resource.milkPoints, 2)} unspent <strong style="color:white"> milk points</strong> <br />
@@ -91,7 +91,7 @@
 
   <div class="btnContainer">
     <button> Gain 1 milk point <br /> Cost: {1} thoughts</button>
-    <button> Gain 1 milk point <br /> Cost: {1} cheese </button>
+    <button> Gain 1 milk point <br /> Cost: {1} cheese brains </button>
     <button> Gain 1 milk point <br /> Cost: {1} milk </button>
   </div>
 
@@ -114,27 +114,27 @@
         {/each}
       </div>
     {/each}
-  </div>
 
-  <svg>
-    {#if connections}
-      {#each connections as connectionLayer}
-        {#each connectionLayer as connection}
-          {#if connection.allowed}
-            <line
-              x1={connection.start.x}
-              y1={connection.start.y}
-              x2={connection.end.x}
-              y2={connection.end.y}
-              stroke={connection.active ? 'var(--activatedColor)' : 'var(--Gray800)'}
-              stroke-width="5"
-              shape-rendering="geometricPrecision"
-            />
-          {/if}
+    <svg>
+      {#if connections}
+        {#each connections as connectionLayer}
+          {#each connectionLayer as connection}
+            {#if connection.allowed}
+              <line
+                x1={connection.start.x}
+                y1={connection.start.y}
+                x2={connection.end.x}
+                y2={connection.end.y}
+                stroke={connection.active ? 'var(--activatedColor)' : 'var(--Gray800)'}
+                stroke-width="5"
+                shape-rendering="geometricPrecision"
+              />
+            {/if}
+          {/each}
         {/each}
-      {/each}
-    {/if}
-  </svg>
+      {/if}
+    </svg>
+  </div>
 </Window>
 
 <style>
@@ -157,6 +157,7 @@
     display: flex;
     flex-direction: column;
     gap: 40px;
+    position: relative;
   }
   .skillTreeRow {
     display: flex;

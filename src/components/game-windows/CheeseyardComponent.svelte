@@ -45,8 +45,8 @@
   }
 </script>
 
-<Window title="The Cheeseyard" themeColor1="rgb(82, 0, 18)" themeColor2="rgb(255, 0, 98)" {windowId}>
-  <div style="display: flex; flex-direction: column; gap: 8px; width: var(--window-width);">
+<Window title="The Cheeseyard" themeId="cheeseyard" {windowId}>
+  <div style="display: flex; flex-direction: column; gap: 0.25rem; width: var(--window-width);">
     <span class="resourceDisplay">
       Current population: {formatWhole($resource.cheeseMonster)}/{formatWhole($cheeseMonsterCapacity)}
       <span style="font-weight: bold" class="colorText">cheese monsters</span> <br />
