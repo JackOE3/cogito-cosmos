@@ -20,13 +20,13 @@ let idNumber = 0
  * This could be expanded to include icons, sound effects, css classes for animations etc.
  */
 class LogEntry {
-  public entry: string
-  public id: number
+    public entry: string
+    public id: number
 
-  constructor(entry: string) {
-    this.entry = entry
-    this.id = idNumber++
-  }
+    constructor(entry: string) {
+        this.entry = entry
+        this.id = idNumber++
+    }
 }
 // functional approach:
 /*function LogEntry(entry: string){
@@ -35,17 +35,17 @@ class LogEntry {
 }*/
 
 export function addLogEntry(entry: string) {
-  // create a message object
-  const log = new LogEntry(entry)
+    // create a message object
+    const log = new LogEntry(entry)
 
-  // add the message to the message queue
-  logQueue.update(m => (m = [...m, log]))
+    // add the message to the message queue
+    logQueue.update(m => (m = [...m, log]))
 
-  // create a timeout to automatically remove the message after messageTime elapsed
-  if (get(logQueue).length > MAX_LOG_LENGTH) {
-    logQueue.update(m => {
-      m.shift()
-      return m
-    })
-  }
+    // create a timeout to automatically remove the message after messageTime elapsed
+    if (get(logQueue).length > MAX_LOG_LENGTH) {
+        logQueue.update(m => {
+            m.shift()
+            return m
+        })
+    }
 }

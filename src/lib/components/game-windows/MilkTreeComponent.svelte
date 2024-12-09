@@ -49,9 +49,7 @@
     }
     function isBtnEnabled(i: number, j: number): boolean {
         if (i < 1) return true
-        const neccessaryConnectionIds = allowedSkillTreeConnections.filter(
-            ac => ac[0] === (i - 1).toString() && ac[2] === j.toString()
-        )
+        const neccessaryConnectionIds = allowedSkillTreeConnections.filter(ac => ac[0] === (i - 1).toString() && ac[2] === j.toString())
         const neccessaryConnections = connections[i - 1].filter(c => neccessaryConnectionIds.find(v => v === c.id))
         const allConnectionsActive = neccessaryConnections.every(c => c.active)
         // console.log(neccessaryConnections, allConnectionsActive)
@@ -63,8 +61,7 @@
      * @param connectionToActivate
      */
     function toggleConnection(connectionToToggle: string, setActive: boolean): void {
-        if (!allowedSkillTreeConnections.includes(connectionToToggle))
-            throw new Error(connectionToToggle + ' is not an allowed connection between MP boosts!')
+        if (!allowedSkillTreeConnections.includes(connectionToToggle)) throw new Error(connectionToToggle + ' is not an allowed connection between MP boosts!')
         const index1 = connectionToToggle[0]
         const index2 = connections[index1].findIndex((c: connection) => c.id === connectionToToggle)
         connections[index1][index2].active = setActive
@@ -73,9 +70,7 @@
     function handleButton(row: number, nth: number): void {
         if (!skillTree[row][nth].available) return
         if (!skillTree[row][nth].activated) {
-            const connectionsToActivate = allowedSkillTreeConnections.filter(
-                c => c[0] === row.toString() && c[1] === nth.toString()
-            )
+            const connectionsToActivate = allowedSkillTreeConnections.filter(c => c[0] === row.toString() && c[1] === nth.toString())
             for (const connection of connectionsToActivate) toggleConnection(connection, true)
             skillTree[row][nth].activated = true
         }

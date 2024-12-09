@@ -1,5 +1,5 @@
 {
-    "printWidth": 120,
+    "printWidth": 160,
     "singleQuote": true,
     "semi": false,
     "svelteSortOrder": "options-scripts-markup-styles",
@@ -11,11 +11,11 @@
     "bracketSameLine": true,
     "plugins": ["prettier-plugin-svelte"],
     "overrides": [
-      {
-        "files": "*.svelte",
-        "options": {
-          "parser": "svelte"
+        {
+            "files": "*.svelte",
+            "options": {
+                "parser": "svelte"
+            }
         }
-      }
     ]
-  }
+}

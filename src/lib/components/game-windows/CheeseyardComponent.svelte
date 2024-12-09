@@ -52,15 +52,11 @@
             <span style="font-weight: bold" class="colorText">cheese monsters</span> <br />
         </span>
         <span>
-            Spawn rate: {$cheeseMonsterSpawnrate < 1
-                ? `${formatWhole($cheeseMonsterSpawnrate * 60)}/min`
-                : `${formatNumber($cheeseMonsterSpawnrate, 2)}/s`}
+            Spawn rate: {$cheeseMonsterSpawnrate < 1 ? `${formatWhole($cheeseMonsterSpawnrate * 60)}/min` : `${formatNumber($cheeseMonsterSpawnrate, 2)}/s`}
             <br />
             {#if $totalCheeseMonsterDeaths > 0}
                 <span transition:fade={{ duration: 1000 }}>
-                    Approx. deaths: {$cheeseMonsterDeathrate > 0
-                        ? `${formatNumber($cheeseMonsterDeathsPerSec, 2)}/s`
-                        : 'None'}
+                    Approx. deaths: {$cheeseMonsterDeathrate > 0 ? `${formatNumber($cheeseMonsterDeathsPerSec, 2)}/s` : 'None'}
                     <br />
                     Total deaths: {formatWhole($totalCheeseMonsterDeaths)}
                 </span>
@@ -169,10 +165,7 @@
                 <UpgradeButton
                     upgradeName="cheeseMonsterSentience"
                     {buyMaxUpgrades}
-                    tooltipText={`+1x thoughts/s/monster <br> Currently: +${formatNumber(
-                        $monsterThoughtFactor,
-                        2
-                    )}x thoughts/s/monster`}>
+                    tooltipText={`+1x thoughts/s/monster <br> Currently: +${formatNumber($monsterThoughtFactor, 2)}x thoughts/s/monster`}>
                     Nurture the sentience of monsters
                 </UpgradeButton>
 
@@ -200,15 +193,13 @@
                         factor={$cheeseMonsterCollectiveSentienceMultiplier}
                         unlocked={$unlocked.cheeseMonsterCollectiveSentience}
                         tooltipText={`In bigger populations, a sort of global thinking <br/> emerges, giving an additional multiplier. <br/> Scales ^3 with current population.`}>
-                        {unlocks.cheeseBrains.find(v => v.name === UnlockName.CHEESE_MONSTER_COLLECTIVE_SENTIENCE)
-                            ?.description}
+                        {unlocks.cheeseBrains.find(v => v.name === UnlockName.CHEESE_MONSTER_COLLECTIVE_SENTIENCE)?.description}
                     </Effect>
                     <Effect
                         factor={$totalMonsterDeathsLootBoost}
                         unlocked={$unlocked.cheeseMonsterTotalDeathsBoost}
                         tooltipText={`Scales ^2 with total deaths`}>
-                        {unlocks.cheeseBrains.find(v => v.name === UnlockName.CHEESE_MONSTER_TOTAL_DEATHS_BOOST)
-                            ?.description}
+                        {unlocks.cheeseBrains.find(v => v.name === UnlockName.CHEESE_MONSTER_TOTAL_DEATHS_BOOST)?.description}
                     </Effect>
                 </EffectComponent>
             </div>

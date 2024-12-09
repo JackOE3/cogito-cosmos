@@ -132,20 +132,14 @@
 
             <UnlockDrawer unlocks={unlocks.milk} folderName="50 Free Mushroom Icons" />
         </div>
-        <div
-            class="upgrade-milestones theme-border"
-            style="height: 100%"
-            data-theme-colors="milk"
-            use:scrollToBottom={$totalMilkResets}>
+        <div class="upgrade-milestones theme-border" style="height: 100%" data-theme-colors="milk" use:scrollToBottom={$totalMilkResets}>
             {#each milkResetMilestones as milestone}
                 <div class="milk-milestone flexRowContainer" style="gap:0.5rem">
                     <div class="milestone-number" class:unlocked={milestone.resetsNeeded <= $totalMilkResets}>
                         {milestone.resetsNeeded}
                     </div>
                     <div
-                        style="width:100%; {milestone.resetsNeeded > $totalMilkResets
-                            ? 'opacity: var(--medium-emphasis)'
-                            : ''}"
+                        style="width:100%; {milestone.resetsNeeded > $totalMilkResets ? 'opacity: var(--medium-emphasis)' : ''}"
                         class:bg-on-hover={milestone.tooltipText !== null}
                         use:tooltip={{ data: milestone.tooltipText }}>
                         {milestone.description}
@@ -190,9 +184,7 @@
             <EffectComponent --width="500px" title="Bonus Effects">
                 {#if currentUpgradeName in milkUpgradeEffects}
                     {#each milkUpgradeEffects[currentUpgradeName] as effect}
-                        <span
-                            use:tooltip={{ data: effect.tooltipText }}
-                            class:bg-on-hover={effect.tooltipText !== null}>
+                        <span use:tooltip={{ data: effect.tooltipText }} class:bg-on-hover={effect.tooltipText !== null}>
                             {effect.upgradesNeeded}: {effect.description}
                         </span>
                     {/each}

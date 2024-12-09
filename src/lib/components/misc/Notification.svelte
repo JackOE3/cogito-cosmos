@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { fly } from 'svelte/transition'
-  import { sineInOut } from 'svelte/easing'
-  import type { Message } from '$lib/gamelogic/notifications'
-  export let message: Message
+    import { fly } from 'svelte/transition'
+    import { sineInOut } from 'svelte/easing'
+    import type { Message } from '$lib/gamelogic/notifications'
+    export let message: Message
 </script>
 
 <!--
@@ -12,11 +12,11 @@
 <span transition:fly|local={{ x: 200, duration: 500, easing: sineInOut }}>{message.message}</span>
 
 <style>
-  span {
-    display: inline-block;
-    padding: 1rem 2rem;
-    border: 1px solid rgb(0, 0, 0);
-    margin-bottom: 1rem;
-    background-color: rgb(49, 49, 49);
-  }
+    span {
+        display: inline-block;
+        padding: 1rem 2rem;
+        border: 1px solid rgb(0, 0, 0);
+        margin-bottom: 1rem;
+        background-color: rgb(49, 49, 49);
+    }
 </style>

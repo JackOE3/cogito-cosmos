@@ -4,10 +4,7 @@ import { upgrades } from '../primitive/upgrades'
 import { resource } from '../primitive/resources'
 
 const moldyCheeseHalfLifeStartingValue = 10
-export const moldyCheeseHalfLifeSeconds = derived(
-  upgrades,
-  $upgrades => moldyCheeseHalfLifeStartingValue + 10 * $upgrades.moldyCheeseHalfLife.bought
-)
+export const moldyCheeseHalfLifeSeconds = derived(upgrades, $upgrades => moldyCheeseHalfLifeStartingValue + 10 * $upgrades.moldyCheeseHalfLife.bought)
 export const moldyCheeseChance = derived(upgrades, $upgrades => 0.1 + 0.1 * $upgrades.moldyCheeseChance.bought)
 
 /* // softcap upgrade when exponent > 1? (currently at >323 bought)

@@ -15,16 +15,16 @@ const storageName = 'cogitoErgoSum'
  * It should only be used for values that must be saved. Anything transient should go directly on the GameModel.
  */
 export class SaveData {
-  public version: string = CURRENT_SAVE_VERSION
-  public data: object = {} // ALL STORE-RELATED DATA
+    public version: string = CURRENT_SAVE_VERSION
+    public data: object = {} // ALL STORE-RELATED DATA
 
-  public updateFromStores(): void {
-    for (const key in store) this.data[key] = get(store[key])
-  }
+    public updateFromStores(): void {
+        for (const key in store) this.data[key] = get(store[key])
+    }
 
-  constructor() {
-    this.updateFromStores()
-  }
+    constructor() {
+        this.updateFromStores()
+    }
 }
 
 /**
@@ -32,43 +32,43 @@ export class SaveData {
  * If no data is found just return a new SaveData with default values.
  */
 export function loadSaveGame(): void {
-  // using a try/catch in case this fails for some reason
-  try {
-    // see if data exists first
-    if (localStorage.getItem(storageName) !== null) {
-      // get data from localstorage, decompress it using lz-string, then parse it back into a javascript object
-      const saveDataFromLocalStorage: SaveData = JSON.parse(localStorage.getItem(storageName) as string)
+    // using a try/catch in case this fails for some reason
+    try {
+        // see if data exists first
+        if (localStorage.getItem(storageName) !== null) {
+            // get data from localstorage, decompress it using lz-string, then parse it back into a javascript object
+            const saveDataFromLocalStorage: SaveData = JSON.parse(localStorage.getItem(storageName) as string)
 
-      // sendMessage("Savefile loaded.")
-      console.log('saveData loaded:')
-      console.log(saveDataFromLocalStorage)
+            // sendMessage("Savefile loaded.")
+            console.log('saveData loaded:')
+            console.log(saveDataFromLocalStorage)
 
-      // migrate the data so we know it is good to use
-      dataMigrate(saveDataFromLocalStorage)
+            // migrate the data so we know it is good to use
+            dataMigrate(saveDataFromLocalStorage)
 
-      hydrateStores(saveDataFromLocalStorage)
+            hydrateStores(saveDataFromLocalStorage)
 
-      // update the saveData object with the freshly hydrated stores
-      // saveData.updateFromStores()
+            // update the saveData object with the freshly hydrated stores
+            // saveData.updateFromStores()
 
-      // update all the other data that is not from stores
-      // saveData.updateFromLocalStorage(saveDataFromLocalStorage)
-    } else {
-      console.log('No save found, created new one.')
+            // update all the other data that is not from stores
+            // saveData.updateFromLocalStorage(saveDataFromLocalStorage)
+        } else {
+            console.log('No save found, created new one.')
+        }
+    } catch (error) {
+        console.error(error) // log the error so at least we can see it
     }
-  } catch (error) {
-    console.error(error) // log the error so at least we can see it
-  }
 }
 
 /**
  * Loads the data from localStorage into the stores.
  */
 function hydrateStores(fromStorage: SaveData): void {
-  for (const key in store) {
-    if (fromStorage.data[key] !== undefined) store[key].set(fromStorage.data[key])
-  }
-  console.log('Stores hydrated.')
+    for (const key in store) {
+        if (fromStorage.data[key] !== undefined) store[key].set(fromStorage.data[key])
+    }
+    console.log('Stores hydrated.')
 }
 
 /**
@@ -76,39 +76,39 @@ function hydrateStores(fromStorage: SaveData): void {
  * @param saveData SaveData
  */
 export function saveSaveGame(): void {
-  if (saveData !== null) {
-    store.lastSaved.set(Date.now())
+    if (saveData !== null) {
+        store.lastSaved.set(Date.now())
 
-    // update the saveData object with all the current values of all the necessary stores
-    saveData.updateFromStores()
+        // update the saveData object with all the current values of all the necessary stores
+        saveData.updateFromStores()
 
-    try {
-      // Use JSON.stringify to turn the object into a string, then compress with lz-string,
-      // before setting it in localstorage
-      localStorage.setItem(storageName, JSON.stringify(saveData))
-      /* console.log('saveData saved:')
+        try {
+            // Use JSON.stringify to turn the object into a string, then compress with lz-string,
+            // before setting it in localstorage
+            localStorage.setItem(storageName, JSON.stringify(saveData))
+            /* console.log('saveData saved:')
       console.log(saveData) */
-    } catch (error) {
-      console.error(error) // log the error so at least we can see it
+        } catch (error) {
+            console.error(error) // log the error so at least we can see it
+        }
     }
-  }
 }
 
 export function exportSaveGame(): string {
-  if (saveData !== null) {
-    saveData.updateFromStores()
-    return JSON.stringify(saveData)
-  }
-  return 'Error: saveData is null.'
+    if (saveData !== null) {
+        saveData.updateFromStores()
+        return JSON.stringify(saveData)
+    }
+    return 'Error: saveData is null.'
 }
 export function importSaveGame(data: string): void {
-  try {
-    const importedSaveData: SaveData = JSON.parse(data) as SaveData
-    dataMigrate(importedSaveData)
-    hydrateStores(importedSaveData)
-  } catch (error) {
-    console.error(error)
-  }
+    try {
+        const importedSaveData: SaveData = JSON.parse(data) as SaveData
+        dataMigrate(importedSaveData)
+        hydrateStores(importedSaveData)
+    } catch (error) {
+        console.error(error)
+    }
 }
 
 /**
@@ -116,88 +116,86 @@ export function importSaveGame(data: string): void {
  * Otherwise this can cause errors when something you expected to be there is not there.
  */
 function dataMigrate(fromStorage: SaveData): void {
-  console.log('Migrating saveData...')
+    console.log('Migrating saveData...')
 
-  // create a new saveData to use as a reference
-  const master = new SaveData()
+    // create a new saveData to use as a reference
+    const master = new SaveData()
 
-  if (typeof fromStorage.version !== 'string') {
-    // TODO: define more rigorous type
-    console.log('Corrupted save file found: Invalid version number: ' + typeof fromStorage.version)
-    return
-  }
-
-  if (fromStorage.version !== master.version) {
-    console.log(
-      'Outdated version save file found:' + fromStorage.version + ' (Current version: ' + master.version + ')'
-    )
-    upgradeVersion(fromStorage)
-    // Logic for upgrading to newer versions goes here.
-  }
-
-  // get an array of the properties of saveData
-  // would also return functions of an object, but NOT methods from a class apparently, so it's fine
-  const propertiesMaster = Object.getOwnPropertyNames(master.data)
-  // check if data property exists?
-  const propertiesFromStorage = Object.getOwnPropertyNames(fromStorage.data)
-
-  // check each property to make sure it exists on the save data, if not add it
-  propertiesMaster.forEach(prop => {
-    if (typeof fromStorage.data[prop] === 'undefined') {
-      console.log(`${prop} was undefined, adding it to saveData`)
-      fromStorage.data[prop] = master.data[prop]
-    } else if (typeof fromStorage.data[prop] === 'object') {
-      // console.log(prop, 'is an object')
-      const innerPropertiesMaster = Object.getOwnPropertyNames(master.data[prop] as object)
-      // console.log('innerProperties', innerProperties)
-      innerPropertiesMaster.forEach(innerProp => {
-        if (typeof fromStorage.data[prop][innerProp] === 'undefined') {
-          console.log(`${prop}.${innerProp} was undefined, adding it to saveData`)
-          fromStorage.data[prop][innerProp] = master.data[prop][innerProp]
-        }
-      })
+    if (typeof fromStorage.version !== 'string') {
+        // TODO: define more rigorous type
+        console.log('Corrupted save file found: Invalid version number: ' + typeof fromStorage.version)
+        return
     }
-  })
 
-  // check if there are properties which are deprecated or deleted in a newer version, if so delete them
-  propertiesFromStorage.forEach(prop => {
-    if (typeof master.data[prop] === 'undefined') {
-      console.log(`${prop} should not be in saveData, deleting it from saveData`)
-      fromStorage.data[prop] = master.data[prop]
-      Reflect.deleteProperty(fromStorage.data, prop)
-    } else if (typeof master.data[prop] === 'object' && prop !== 'windowStack') {
-      const innerPropertiesFromStorage = Object.getOwnPropertyNames(fromStorage.data[prop] as object)
-      innerPropertiesFromStorage.forEach(innerProp => {
-        if (typeof master.data[prop][innerProp] === 'undefined') {
-          console.log(`${prop}.${innerProp} should not be in saveData, deleting it from saveData`)
-          Reflect.deleteProperty(fromStorage.data[prop], innerProp)
-        }
-      })
+    if (fromStorage.version !== master.version) {
+        console.log('Outdated version save file found:' + fromStorage.version + ' (Current version: ' + master.version + ')')
+        upgradeVersion(fromStorage)
+        // Logic for upgrading to newer versions goes here.
     }
-  })
 
-  console.log('Migration complete.')
+    // get an array of the properties of saveData
+    // would also return functions of an object, but NOT methods from a class apparently, so it's fine
+    const propertiesMaster = Object.getOwnPropertyNames(master.data)
+    // check if data property exists?
+    const propertiesFromStorage = Object.getOwnPropertyNames(fromStorage.data)
+
+    // check each property to make sure it exists on the save data, if not add it
+    propertiesMaster.forEach(prop => {
+        if (typeof fromStorage.data[prop] === 'undefined') {
+            console.log(`${prop} was undefined, adding it to saveData`)
+            fromStorage.data[prop] = master.data[prop]
+        } else if (typeof fromStorage.data[prop] === 'object') {
+            // console.log(prop, 'is an object')
+            const innerPropertiesMaster = Object.getOwnPropertyNames(master.data[prop] as object)
+            // console.log('innerProperties', innerProperties)
+            innerPropertiesMaster.forEach(innerProp => {
+                if (typeof fromStorage.data[prop][innerProp] === 'undefined') {
+                    console.log(`${prop}.${innerProp} was undefined, adding it to saveData`)
+                    fromStorage.data[prop][innerProp] = master.data[prop][innerProp]
+                }
+            })
+        }
+    })
+
+    // check if there are properties which are deprecated or deleted in a newer version, if so delete them
+    propertiesFromStorage.forEach(prop => {
+        if (typeof master.data[prop] === 'undefined') {
+            console.log(`${prop} should not be in saveData, deleting it from saveData`)
+            fromStorage.data[prop] = master.data[prop]
+            Reflect.deleteProperty(fromStorage.data, prop)
+        } else if (typeof master.data[prop] === 'object' && prop !== 'windowStack') {
+            const innerPropertiesFromStorage = Object.getOwnPropertyNames(fromStorage.data[prop] as object)
+            innerPropertiesFromStorage.forEach(innerProp => {
+                if (typeof master.data[prop][innerProp] === 'undefined') {
+                    console.log(`${prop}.${innerProp} should not be in saveData, deleting it from saveData`)
+                    Reflect.deleteProperty(fromStorage.data[prop], innerProp)
+                }
+            })
+        }
+    })
+
+    console.log('Migration complete.')
 }
 
 function upgradeVersion(save: SaveData): void {
-  if (save.version === '0.0.1') save.version = '0.1.1'
+    if (save.version === '0.0.1') save.version = '0.1.1'
 }
 
 /**
  * Resets saveGame in localstorage, resets all the stores and updates the savaData accordingly.
  */
 export function resetSaveGame(): void {
-  // update the stored gameModel with a new one
-  resetStores()
-  if (saveData !== null) saveData.updateFromStores()
-  sendMessage('Game reset.')
+    // update the stored gameModel with a new one
+    resetStores()
+    if (saveData !== null) saveData.updateFromStores()
+    sendMessage('Game reset.')
 }
 
 /**
  * Resets all the stores to their default starting values. (NewGame)
  */
 function resetStores(): void {
-  for (const key in store) store[key].reset()
+    for (const key in store) store[key].reset()
 }
 
 /**
@@ -206,22 +204,22 @@ function resetStores(): void {
  * Also can be utilized for possible upgrades where the base cost or multiplier of another upgrade changes.
  */
 export function recalculateStores(): void {
-  let upgrades: object = {}
-  // maybe change to store.upgrades.update() instead?
-  const unsubscribe = store.upgrades.subscribe($store => {
-    upgrades = $store
-  })
+    let upgrades: object = {}
+    // maybe change to store.upgrades.update() instead?
+    const unsubscribe = store.upgrades.subscribe($store => {
+        upgrades = $store
+    })
 
-  for (const [key, value] of Object.entries(upgrades)) {
-    value.maxBuy = upgradesInitial[key].maxBuy
-    if (typeof value.maxBuy === 'number' && value.bought > value.maxBuy) value.bought = value.maxBuy
-    value.costMultiplier = upgradesInitial[key].costMultiplier
-    value.cost = upgradesInitial[key].cost * Math.pow(upgradesInitial[key].costMultiplier, value.bought)
-    value.resource = upgradesInitial[key].resource
-  }
-  store.upgrades.refresh()
-  store.windowLocations.reset()
-  unsubscribe()
+    for (const [key, value] of Object.entries(upgrades)) {
+        value.maxBuy = upgradesInitial[key].maxBuy
+        if (typeof value.maxBuy === 'number' && value.bought > value.maxBuy) value.bought = value.maxBuy
+        value.costMultiplier = upgradesInitial[key].costMultiplier
+        value.cost = upgradesInitial[key].cost * Math.pow(upgradesInitial[key].costMultiplier, value.bought)
+        value.resource = upgradesInitial[key].resource
+    }
+    store.upgrades.refresh()
+    store.windowLocations.reset()
+    unsubscribe()
 }
 
 /**

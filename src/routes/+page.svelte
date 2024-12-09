@@ -13,15 +13,7 @@
         updateWindowLocation,
         updateWindowStacking
     } from '$lib/gamelogic/window-manager'
-    import {
-        ADMIN_MODE,
-        devToolsEnabled,
-        isDarkMode,
-        LORCA_OVERRIDE,
-        unlocked,
-        WindowId,
-        currentNotation
-    } from '$lib/store'
+    import { ADMIN_MODE, devToolsEnabled, isDarkMode, LORCA_OVERRIDE, unlocked, WindowId, currentNotation } from '$lib/store'
     import DevTools from '$lib/components/dev/DevTools.svelte'
     import ToggleUnlocks from '$lib/components/dev/ToggleUnlocks.svelte'
 
@@ -170,14 +162,10 @@
 
         /* dragWindow.style.left = clickedAtWindowPosX + (e.pageX - clickedAtX) + 'px'
       dragWindow.style.top = clickedAtWindowPosY + (e.pageY - clickedAtY) + 'px' */
-        dragWindow.style.transform = `translate(${clickedAtWindowPosX + e.pageX - clickedAtX}px, ${
-            clickedAtWindowPosY + e.pageY - clickedAtY
-        }px)`
+        dragWindow.style.transform = `translate(${clickedAtWindowPosX + e.pageX - clickedAtX}px, ${clickedAtWindowPosY + e.pageY - clickedAtY}px)`
 
-        background.style.backgroundPositionX =
-            clickedAtBackgroundPosX + (e.pageX - clickedAtX) * backgroundParallaxRatio + 'px'
-        background.style.backgroundPositionY =
-            clickedAtBackgroundPosY + (e.pageY - clickedAtY) * backgroundParallaxRatio + 'px'
+        background.style.backgroundPositionX = clickedAtBackgroundPosX + (e.pageX - clickedAtX) * backgroundParallaxRatio + 'px'
+        background.style.backgroundPositionY = clickedAtBackgroundPosY + (e.pageY - clickedAtY) * backgroundParallaxRatio + 'px'
         secretImage.style.left = clickedAtSecretImagePosX + (e.pageX - clickedAtX) * backgroundParallaxRatio + 'px'
         secretImage.style.top = clickedAtSecretImagePosY + (e.pageY - clickedAtY) * backgroundParallaxRatio + 'px'
     }
@@ -362,27 +350,16 @@
     </div>
 
     <div id="display" bind:this={background}>
-        <div
-            id="secretImage"
-            style="position: absolute; left: -800px; top: -500px; scale: 0.25"
-            bind:this={secretImage}>
+        <div id="secretImage" style="position: absolute; left: -800px; top: -500px; scale: 0.25" bind:this={secretImage}>
             <Image name="thonk" />
         </div>
 
         <div id="game" bind:this={gameWindow}>
-            <div
-                id={WindowId.thoughtComponent}
-                class="window"
-                on:mousedown={() => selectWindow(WindowId.thoughtComponent, gameWindow)}
-                use:initWindow>
+            <div id={WindowId.thoughtComponent} class="window" on:mousedown={() => selectWindow(WindowId.thoughtComponent, gameWindow)} use:initWindow>
                 <ThoughtComponent windowId={WindowId.thoughtComponent} />
             </div>
             {#if $unlocked.switzerland || $LORCA_OVERRIDE}
-                <div
-                    id={WindowId.cheeseComponent}
-                    class="window"
-                    on:mousedown={() => selectWindow(WindowId.cheeseComponent, gameWindow)}
-                    use:initWindow>
+                <div id={WindowId.cheeseComponent} class="window" on:mousedown={() => selectWindow(WindowId.cheeseComponent, gameWindow)} use:initWindow>
                     <CheeseComponent windowId={WindowId.cheeseComponent} />
                 </div>
             {/if}
@@ -405,29 +382,17 @@
                 </div>
             {/if}
             {#if $unlocked.milk || $LORCA_OVERRIDE}
-                <div
-                    id={WindowId.milkComponent}
-                    class="window"
-                    on:mousedown={() => selectWindow(WindowId.milkComponent, gameWindow)}
-                    use:initWindow>
+                <div id={WindowId.milkComponent} class="window" on:mousedown={() => selectWindow(WindowId.milkComponent, gameWindow)} use:initWindow>
                     <MilkComponent windowId={WindowId.milkComponent} />
                 </div>
             {/if}
             {#if $unlocked.milkTree || $LORCA_OVERRIDE}
-                <div
-                    id={WindowId.milkTreeComponent}
-                    class="window"
-                    on:mousedown={() => selectWindow(WindowId.milkTreeComponent, gameWindow)}
-                    use:initWindow>
+                <div id={WindowId.milkTreeComponent} class="window" on:mousedown={() => selectWindow(WindowId.milkTreeComponent, gameWindow)} use:initWindow>
                     <MilkTreeComponent windowId={WindowId.milkTreeComponent} />
                 </div>
             {/if}
             {#if $unlocked.bacteria || $LORCA_OVERRIDE}
-                <div
-                    id={WindowId.bacteriaComponent}
-                    class="window"
-                    on:mousedown={() => selectWindow(WindowId.bacteriaComponent, gameWindow)}
-                    use:initWindow>
+                <div id={WindowId.bacteriaComponent} class="window" on:mousedown={() => selectWindow(WindowId.bacteriaComponent, gameWindow)} use:initWindow>
                     <BacteriaComponent windowId={WindowId.bacteriaComponent} />
                 </div>
             {/if}

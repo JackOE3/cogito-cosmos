@@ -10,11 +10,7 @@
 </script>
 
 {#if unlocked}
-    <span
-        class="effect"
-        transition:fade|local={{ duration: 1000 }}
-        use:tooltip={{ data: tooltipText }}
-        class:bg-on-hover={tooltipText !== null}>
+    <span class="effect" transition:fade|local={{ duration: 1000 }} use:tooltip={{ data: tooltipText }} class:bg-on-hover={tooltipText !== null}>
         <slot>No Description</slot>
         [<span style="color:var(--themeColor2)">{formatNumber(factor, 2, $currentNotation)}x</span>]
     </span>

@@ -162,10 +162,7 @@
 
     <div style="display:flex; flex-direction:column; width:516px">
         <div class="flexRowContainer" style="height:max-content">
-            <button
-                style="width:170px; height: 2.5rem"
-                on:click={handleCheeseQueueButton}
-                class:disabled={$resource.thoughts < $cheeseCycleCost}>
+            <button style="width:170px; height: 2.5rem" on:click={handleCheeseQueueButton} class:disabled={$resource.thoughts < $cheeseCycleCost}>
                 {#if $cheeseQueueActive}
                     Top up the <br />cheese queue
                 {:else}
@@ -178,29 +175,17 @@
 
             <div class="gridColumn" style="width:100%">
                 <div id="cheeseBar">
-                    <ProgBar
-                        --width="100%"
-                        --height="16px"
-                        --barColor="yellow"
-                        --progress="{(100 * cheeseBarProgress) / $cheeseCycleDuration}%" />
+                    <ProgBar --width="100%" --height="16px" --barColor="yellow" --progress="{(100 * cheeseBarProgress) / $cheeseCycleDuration}%" />
                 </div>
 
                 <div style="width:100%; margin-top:0px;">
                     {#if $unlocked.cheeseQueue}
-                        <div
-                            transition:fade|local={{ duration: 1000 }}
-                            style="display:grid; grid-template-columns: auto 1fr auto; gap: 8px">
+                        <div transition:fade|local={{ duration: 1000 }} style="display:grid; grid-template-columns: auto 1fr auto; gap: 8px">
                             <span class="flexCenter">Cheese Queue:</span>
 
-                            <InputRange
-                                min={0}
-                                max={$maxCheeseQueue}
-                                bind:value={$currentCheeseQueue}
-                                onChange={handleCheeseGenerationInit} />
+                            <InputRange min={0} max={$maxCheeseQueue} bind:value={$currentCheeseQueue} onChange={handleCheeseGenerationInit} />
 
-                            <span
-                                class="flexCenter"
-                                style="width: 40px; height: 1rem; background: var(--Gray800); border-radius: 2px;">
+                            <span class="flexCenter" style="width: 40px; height: 1rem; background: var(--Gray800); border-radius: 2px;">
                                 {$currentCheeseQueue}
                             </span>
                         </div>
@@ -241,10 +226,7 @@
     </div>
 
     {#if $unlocked.cheeseQueueOverclocking || $LORCA_OVERRIDE}
-        <div
-            class="flexRowContainer"
-            transition:slide|local={{ duration: 1000 }}
-            style="align-items:flex-end; margin-top: -8px; height: 71px">
+        <div class="flexRowContainer" transition:slide|local={{ duration: 1000 }} style="align-items:flex-end; margin-top: -8px; height: 71px">
             <div style="display:flex; flex-direction:row; gap: 2px;">
                 <div
                     style="display:flex; flex-direction:column; background-color: var(--Gray800)"
@@ -259,8 +241,7 @@
                     </div>
 
                     <div style="height:2.5rem; display:flex; flex-direction:row; ">
-                        <div
-                            style="width: 4rem; display:flex; flex-direction:column; justify-content:center; align-items: center; gap: 0.125rem ">
+                        <div style="width: 4rem; display:flex; flex-direction:column; justify-content:center; align-items: center; gap: 0.125rem ">
                             <span
                                 style="font-weight: bold; color:white; background: rgb(10, 125, 16); padding-left:0.25rem; padding-right: 0.25rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.4); ">
                                 SPEED
@@ -278,16 +259,12 @@
                     </div>
                 </div>
                 <div style="width: 100%; display:flex; flex-direction:column; justify-content: space-between">
-                    <button
-                        style="height: 2rem; width: 2rem; display: flex;"
-                        on:click={() => $cheeseQueueOverclockLvl++}>
+                    <button style="height: 2rem; width: 2rem; display: flex;" on:click={() => $cheeseQueueOverclockLvl++}>
                         <div style="scale: 0.5; transform: rotate(180deg); filter: invert(100%); ">
                             <Image name="chevron-arrow-down" alt="+1 level" />
                         </div>
                     </button>
-                    <button
-                        style="height: 2rem; width: 2rem; display: flex;"
-                        on:click={() => $cheeseQueueOverclockLvl--}>
+                    <button style="height: 2rem; width: 2rem; display: flex;" on:click={() => $cheeseQueueOverclockLvl--}>
                         <div style="scale: 0.5; filter: invert(100%);">
                             <Image name="chevron-arrow-down" alt="-1 level" />
                         </div>
@@ -306,11 +283,7 @@
                                 Component: CheeseFactoryProtocol,
                                 anchor: 'parentElement'
                             }}>
-                            <input
-                                type="radio"
-                                name="cheeseFactoryMode"
-                                bind:group={$cheeseFactoryMode}
-                                value="meticulous" />
+                            <input type="radio" name="cheeseFactoryMode" bind:group={$cheeseFactoryMode} value="meticulous" />
                             meticulous
                         </label>
                         <label
@@ -319,11 +292,7 @@
                                 Component: CheeseFactoryProtocol,
                                 anchor: 'parentElement'
                             }}>
-                            <input
-                                type="radio"
-                                name="cheeseFactoryMode"
-                                bind:group={$cheeseFactoryMode}
-                                value="nominal" />
+                            <input type="radio" name="cheeseFactoryMode" bind:group={$cheeseFactoryMode} value="nominal" />
                             nominal
                         </label>
                         <label
@@ -332,11 +301,7 @@
                                 Component: CheeseFactoryProtocol,
                                 anchor: 'parentElement'
                             }}>
-                            <input
-                                type="radio"
-                                name="cheeseFactoryMode"
-                                bind:group={$cheeseFactoryMode}
-                                value="warpSpeed" />
+                            <input type="radio" name="cheeseFactoryMode" bind:group={$cheeseFactoryMode} value="warpSpeed" />
                             warp speed
                         </label>
                     </fieldset>
@@ -352,10 +317,7 @@
             <UpgradeButton
                 upgradeName="cheeseYield"
                 {buyMaxUpgrades}
-                tooltipText={`+${formatNumber(
-                    (($upgrades.cheeseYield.bought + 1) * $cheeseCycleBatchSize) / $cheeseCycleBaseYield,
-                    2
-                )}
+                tooltipText={`+${formatNumber((($upgrades.cheeseYield.bought + 1) * $cheeseCycleBatchSize) / $cheeseCycleBaseYield, 2)}
         cheese per cycle <br>
         +${formatTime((cheeseYieldDeltaDuration * $cheeseCycleDuration) / $cheeseCycleBaseDuration / 1000)}
         cycle duration <br>(without scaling: +0.5s cycle duration)`}>
@@ -374,9 +336,7 @@
                 upgradeName="cheeseThoughtMult"
                 {buyMaxUpgrades}
                 btnUnlocked={$unlocked.cheeseQueue}
-                tooltipText={`Currently: ${
-                    $upgrades.cheeseThoughtMult.bought * $upgrades.cheeseThoughtMult.bought
-                }x <br> Scales ^2 with #upgrades.`}>
+                tooltipText={`Currently: ${$upgrades.cheeseThoughtMult.bought * $upgrades.cheeseThoughtMult.bought}x <br> Scales ^2 with #upgrades.`}>
                 {#if $upgrades.cheeseThoughtMult.bought === 0}
                     Cheese increases thought gain
                 {:else}
@@ -394,35 +354,23 @@
         </div>
 
         <div class="gridColumn" style="height:264px; width: 100%">
-            <EffectComponent
-                title={$upgrades.cheeseThoughtMult.bought > 0 || $unlocked.cheeseQueueLengthBoost ? 'Effects' : '???'}>
+            <EffectComponent title={$upgrades.cheeseThoughtMult.bought > 0 || $unlocked.cheeseQueueLengthBoost ? 'Effects' : '???'}>
                 <Effect
                     factor={$cheeseThoughtMult}
                     unlocked={$upgrades.cheeseThoughtMult.bought > 0}
-                    tooltipText={`Scaling: log(cheese) &times; ${
-                        $upgrades.cheeseThoughtMult.bought * $upgrades.cheeseThoughtMult.bought
-                    }`}>
+                    tooltipText={`Scaling: log(cheese) &times; ${$upgrades.cheeseThoughtMult.bought * $upgrades.cheeseThoughtMult.bought}`}>
                     Cheese increases thoughts/s
                 </Effect>
 
-                <Effect
-                    factor={$cheeseQueueLengthBoostFactor}
-                    unlocked={$unlocked.cheeseQueueLengthBoost}
-                    tooltipText="Scaling: capacity^2">
+                <Effect factor={$cheeseQueueLengthBoostFactor} unlocked={$unlocked.cheeseQueueLengthBoost} tooltipText="Scaling: capacity^2">
                     {unlocks.cheese.find(v => v.name === UnlockName.CHEESE_QUEUE_LENGTH_BOOST)?.description}
                 </Effect>
 
-                <Effect
-                    factor={$cheeseCycleAcceleratorFactor}
-                    unlocked={$unlocked.cheeseCycleAccelerator}
-                    tooltipText="Scaling: log(cycles)">
+                <Effect factor={$cheeseCycleAcceleratorFactor} unlocked={$unlocked.cheeseCycleAccelerator} tooltipText="Scaling: log(cycles)">
                     {unlocks.cheese.find(v => v.name === UnlockName.CHEESE_CYCLE_ACCELERATOR)?.description}
                 </Effect>
 
-                <Effect
-                    factor={$cheeseCyclesThoughtMult}
-                    unlocked={$unlocked.cheeseCyclesBoostThoughts}
-                    tooltipText="Scaling: cycles^1.5">
+                <Effect factor={$cheeseCyclesThoughtMult} unlocked={$unlocked.cheeseCyclesBoostThoughts} tooltipText="Scaling: cycles^1.5">
                     {unlocks.cheese.find(v => v.name === UnlockName.CHEESE_CYCLES_BOOST_THOUGHTS)?.description}
                 </Effect>
 
