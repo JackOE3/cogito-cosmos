@@ -36,6 +36,9 @@
 
     import { startGameLoop } from '$lib/gamelogic/gameloop'
 
+    import backgroundImage from '$lib/images/endless-constellation.svg'
+    import Image from '$lib/components/Image.svelte'
+
     /**
      *  Start the game loop in the background
      * 	This also calculates the offline progress
@@ -198,7 +201,7 @@
         panToWindow(WindowId.thoughtComponent)
         background.style.backgroundPositionX = '0px'
         background.style.backgroundPositionY = '0px'
-        background.style.background = "url('assets/endless-constellation.svg')"
+        background.style.background = `url("${backgroundImage}")`
 
         // checks if dark mode is enabled in the browser:
         if ($isDarkMode === 'notChecked') {
@@ -357,13 +360,12 @@
     </div>
 
     <div id="display" bind:this={background}>
-        <img
+        <div
             id="secretImage"
-            src="assets/thonk.png"
-            alt="thonk"
-            draggable="false"
             style="position: absolute; left: -800px; top: -500px; scale: 0.25"
-            bind:this={secretImage} />
+            bind:this={secretImage}>
+            <Image name="thonk" />
+        </div>
 
         <div id="game" bind:this={gameWindow}>
             <div
