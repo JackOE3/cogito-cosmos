@@ -106,47 +106,54 @@ export function panToWindow(windowId: WindowId, jump = true): void {
     document.body.clientHeight
   )
 
-  const destinationX = (browserWindowWidth - windowRect.width) / 2 - offset.left
-  const destinationY = (browserWindowHeight - windowRect.height) / 2 - offset.top
-
-  const translationX = destinationX - gameRect.left
-  const translationY = destinationY - gameRect.top
-
   const startX = gameRect.left
   const startY = gameRect.top
 
-  const backgroundStartX = parseFloat(background.style.backgroundPositionX)
-  const backgroundStartY = parseFloat(background.style.backgroundPositionY)
+  const destinationX = (browserWindowWidth - windowRect.width) / 2 - offset.left
+  const destinationY = (browserWindowHeight - windowRect.height) / 2 - offset.top
+
+  const translationX = destinationX - startX
+  const translationY = destinationY - startY
+
+  let transformStartX = 0, transformStartY = 0
+    if (gameWindow.style.transform) {
+        [transformStartX, transformStartY] = transformToArray(gameWindow.style.transform)
+    }
+
+  let backgroundStartX = parseFloat(background.style.backgroundPositionX)
+  let backgroundStartY = parseFloat(background.style.backgroundPositionY)
 
   secretImage.style.left = `${parseFloat(secretImage.style.left) + translationX * backgroundParallaxRatio}px`
   secretImage.style.top = `${parseFloat(secretImage.style.top) + translationY * backgroundParallaxRatio}px`
+
   if (jump) {
-    gameWindow.style.left = `${destinationX}px`
-    gameWindow.style.top = `${destinationY}px`
+    gameWindow.style.transform = `translate(${transformStartX + translationX}px, ${transformStartY + translationY}px)`
+
     background.style.backgroundPositionX = `${
-      parseFloat(background.style.backgroundPositionX) + translationX * backgroundParallaxRatio
+        backgroundStartX  + translationX * backgroundParallaxRatio
     }px`
     background.style.backgroundPositionY = `${
-      parseFloat(background.style.backgroundPositionY) + translationY * backgroundParallaxRatio
+        backgroundStartY + translationY * backgroundParallaxRatio
     }px`
     return
   }
 
   const translationVecLen = Math.sqrt(translationX * translationX + translationY * translationY)
-  const translationXNormalized = translationX / translationVecLen
-  const translationYNormalized = translationY / translationVecLen
+  const translationXNormalized = translationVecLen !== 0 ? translationX / translationVecLen : 0
+  const translationYNormalized = translationVecLen !== 0 ? translationY / translationVecLen : 0
 
   cancelAnimationFrame(panToWindowAnimId)
 
   keysDisabled.set(true)
+
   panToWindowAnimId = requestAnimationFrame((currentTime: number) => {
     animatePanningToWindow(
       currentTime,
       translationXNormalized,
       translationYNormalized,
       translationVecLen,
-      startX,
-      startY,
+      transformStartX,
+      transformStartY,
       backgroundStartX,
       backgroundStartY,
       gameWindow,
@@ -165,8 +172,8 @@ function animatePanningToWindow(
   eX: number,
   eY: number,
   translationDistance: number,
-  startX: number,
-  startY: number,
+  transformStartX: number,
+  transformStartY: number,
   backgroundStartX: number,
   backgroundStartY: number,
   gameWindow: HTMLElement,
@@ -179,8 +186,8 @@ function animatePanningToWindow(
   lastTimePanning = currentTime
   panningDistance += 0.5 * deltaTimeMillis
 
-  gameWindow.style.left = `${startX + eX * panningDistance}px`
-  gameWindow.style.top = `${startY + eY * panningDistance}px`
+  gameWindow.style.transform = `translate(${transformStartX + eX * panningDistance}px, ${transformStartY + eY * panningDistance}px)`
+
   background.style.backgroundPositionX = `${backgroundStartX + eX * panningDistance * backgroundParallaxRatio}px`
   background.style.backgroundPositionY = `${backgroundStartY + eY * panningDistance * backgroundParallaxRatio}px`
 
@@ -191,8 +198,8 @@ function animatePanningToWindow(
         eX,
         eY,
         translationDistance,
-        startX,
-        startY,
+        transformStartX,
+        transformStartY,
         backgroundStartX,
         backgroundStartY,
         gameWindow,
@@ -203,6 +210,10 @@ function animatePanningToWindow(
     lastTimePanning = null
     panningDistance = 0
     keysDisabled.set(false)
+    // panning isnt exact because of the if condition above, this makes it exact:
+    const translationX = eX * translationDistance
+    const translationY = eY * translationDistance
+    gameWindow.style.transform = `translate(${transformStartX + translationX}px, ${transformStartY + translationY}px)`
   }
 }
 
@@ -211,4 +222,12 @@ function pickFirstPositiveNumber(...nums: unknown[]): number {
     if (typeof num === 'number' && num > 0) return num
   }
   return 0
+}
+
+function transformToArray(transform: string): number[] {
+    return transform
+                .split('(')[1]
+                .split(')')[0]
+                .split(',')
+                .map(parseFloat);
 }

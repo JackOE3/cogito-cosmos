@@ -154,6 +154,7 @@
 
         /* clickedAtWindowPosX = getOffset(dragWindow).left
       clickedAtWindowPosY = getOffset(dragWindow).top */
+        //console.log('AFWAFAWF', background.style.backgroundPositionX, parseInt(background.style.backgroundPositionX))
         clickedAtBackgroundPosX = parseInt(background.style.backgroundPositionX)
         clickedAtBackgroundPosY = parseInt(background.style.backgroundPositionY)
         clickedAtSecretImagePosX = parseInt(secretImage.style.left)
@@ -198,9 +199,10 @@
     onMount(() => {
         updateWindowStacking(gameWindow)
         setAllWindowLocations()
-        panToWindow(WindowId.thoughtComponent)
         background.style.backgroundPositionX = '0px'
         background.style.backgroundPositionY = '0px'
+        panToWindow(WindowId.thoughtComponent)
+
         background.style.background = `url("${backgroundImage}")`
 
         // checks if dark mode is enabled in the browser:
@@ -350,7 +352,7 @@
         <button on:click={changeNotation}>Notation: {$currentNotation}</button>
         <button on:click={resetWindowLayout}>Layout Reset</button>
         <button on:click={switchTheme}>Theme: {$isDarkMode ? 'Dark' : 'Light'}</button>
-        <button on:click={() => panToWindow(WindowId.thoughtComponent)}>Home</button>
+        <button on:click={() => panToWindow(WindowId.thoughtComponent, true)}>Home</button>
         <input type="string" bind:value={saveDataString} />
         <button on:click={handleExport}>Export</button>
         <button on:click={handleImport}>Import</button>
