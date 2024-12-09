@@ -1,7 +1,7 @@
 <script lang="ts">
   import Window from './window-model/Window.svelte'
   import UnlockDrawer from '../UnlockDrawer.svelte'
-  import { formatNumber, formatTime } from '@gamelogic/utils'
+  import { formatNumber, formatTime } from '$lib/gamelogic/utils'
   import UpgradeButton from '../UpgradeButton.svelte'
   import {
     unlocks,
@@ -18,7 +18,7 @@
     thoughtsPerSecBase,
     UnlockName,
     WindowId,
-  } from '@store'
+  } from '$lib/store'
 
   export let windowId: WindowId
 
@@ -87,7 +87,7 @@
     myReq = requestAnimationFrame(animateThoughtBoost)
   })
   onDestroy(() => {
-    cancelAnimationFrame(myReq)
+    if (cancelAnimationFrame) cancelAnimationFrame(myReq)
   })
 </script>
 

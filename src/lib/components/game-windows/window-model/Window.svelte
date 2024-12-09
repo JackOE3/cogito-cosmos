@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from 'svelte'
   import { fade } from 'svelte/transition'
-  import { WindowId, windowMinimized, windowStack } from '@store'
+  import { WindowId, windowMinimized, windowStack } from '$lib/store'
 
   export let title = ''
   export let windowId: WindowId
@@ -69,7 +69,9 @@
     border-width: 2px;
     border-style: solid;
     border-radius: 4px;
-    box-shadow: 0 0 5px 1px var(--themeColor1), inset 0 0 1px 2px rgba(0, 0, 0, 0.4);
+    box-shadow:
+      0 0 5px 1px var(--themeColor1),
+      inset 0 0 1px 2px rgba(0, 0, 0, 0.4);
   }
 
   .content {

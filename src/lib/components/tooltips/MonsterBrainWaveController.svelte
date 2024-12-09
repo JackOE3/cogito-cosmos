@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { formatNumber } from '@gamelogic/utils'
+  import { formatNumber } from '$lib/gamelogic/utils'
   import {
     type BrainMode,
     cheeseMonsterDeathRateStats,
     cheeseMonsterBrainModeResourceFactors,
     currentNotation,
-  } from '@store'
+  } from '$lib/store'
 
   export let data: BrainMode
   export let top = 0

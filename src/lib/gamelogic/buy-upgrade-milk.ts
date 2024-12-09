@@ -1,6 +1,6 @@
 import { get } from 'svelte/store'
-import { resource, type IUpgrade, milkUpgradeMultiplies, milkUpgradeBasicMultiplier } from '@store'
-import type { baseStore } from '@store/customStore'
+import { resource, type IUpgrade, milkUpgradeMultiplies, milkUpgradeBasicMultiplier } from '$lib/store'
+import type { baseStore } from '$lib/store/customStore'
 
 type returnSignature = (upgradeName: string) => void
 

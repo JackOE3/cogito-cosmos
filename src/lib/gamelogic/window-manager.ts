@@ -1,4 +1,4 @@
-import { WindowId, windowStack, windowLocations, windowMinimized } from '@store'
+import { WindowId, windowStack, windowLocations, windowMinimized } from '$lib/store'
 import { get, writable } from 'svelte/store'
 
 export const keysDisabled = writable(false)

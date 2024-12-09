@@ -10,7 +10,7 @@ import {
   cheeseMonsterDeathsPerSec,
   approxCheeseBrainsPerSec,
   type Resources,
-} from '@store'
+} from '$lib/store'
 
 let accumulateSecond = 0
 

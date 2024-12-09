@@ -1,10 +1,10 @@
 <script lang="ts">
   import { flip } from 'svelte/animate'
-  import { messageQueue } from '@gamelogic/notifications'
+  import { messageQueue } from '$lib/gamelogic/notifications'
   import Notification from './Notification.svelte'
 </script>
 
-<!-- 
+<!--
   Layout for the list of notification messages
   animate:flip will make the messages move smoothly up the list when one is removed
 -->

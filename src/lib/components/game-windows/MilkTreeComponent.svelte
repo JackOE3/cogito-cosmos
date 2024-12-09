@@ -1,9 +1,9 @@
 <script lang="ts">
   import Window from './window-model/Window.svelte'
-  import { formatNumber } from '@gamelogic/utils'
+  import { formatNumber } from '$lib/gamelogic/utils'
   import { tooltip } from '../tooltips/tooltip'
   import FixedSizeTooltip from '../tooltips/FixedSizeTooltip.svelte'
-  import { resource, skillTree, allowedSkillTreeConnections, WindowId } from '@store'
+  import { resource, skillTree, allowedSkillTreeConnections, WindowId } from '$lib/store'
   import { onMount } from 'svelte'
 
   export let windowId: WindowId

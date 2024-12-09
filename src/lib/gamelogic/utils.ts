@@ -1,9 +1,9 @@
-import { currentNotation, type Notation } from '@store/primitive/misc'
+import { currentNotation, type Notation } from '$lib/store/primitive/misc'
 
 // prettier-ignore
-const suffixesDefault = [ 
+const suffixesDefault = [
   'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc', 'Ud', 'Dd', 'Td', 'Qad', 'Qid', 'Sxd', 'Spd', 'Od',
-  'Nd','V', 'Uv', 'Dv','Tv', 'Qav', 'Qiv', 'Sxv', 'Spv', 'Ov', 'Nv', 'Tt' 
+  'Nd','V', 'Uv', 'Dv','Tv', 'Qav', 'Qiv', 'Sxv', 'Spv', 'Ov', 'Nv', 'Tt'
 ]
 // prettier-ignore
 const suffixesLetters = [

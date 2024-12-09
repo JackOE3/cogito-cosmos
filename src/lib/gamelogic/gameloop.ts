@@ -8,7 +8,7 @@ import {
   thoughtsPerSec,
   totalTimePlayed,
   bacteriaPerSec,
-} from '@store'
+} from '$lib/store'
 import { saveSaveGame } from './saveload'
 
 // natural log of 2

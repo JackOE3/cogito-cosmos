@@ -2,7 +2,7 @@
   import Window from './window-model/Window.svelte'
   import EffectComponent from '../EffectComponent.svelte'
   import Effect from '../Effect.svelte'
-  import { costColor, formatNumber, formatTime, formatWhole } from '@gamelogic/utils'
+  import { costColor, formatNumber, formatTime, formatWhole } from '$lib/gamelogic/utils'
   import { fade, slide } from 'svelte/transition'
   import ProgBar from '../misc/ProgBar.svelte'
   import UpgradeButton from '../UpgradeButton.svelte'
@@ -37,7 +37,7 @@
     mcByproductAmount,
     WindowId,
     cheeseCyclesPerBarFill,
-  } from '@store'
+  } from '$lib/store'
   import UnlockDrawer from '../UnlockDrawer.svelte'
   import { tooltip } from '../tooltips/tooltip'
   import CheeseFactoryProtocol from '../tooltips/CheeseFactoryProtocol.svelte'
@@ -334,9 +334,9 @@
         tooltipText={`+${formatNumber(
           (($upgrades.cheeseYield.bought + 1) * $cheeseCycleBatchSize) / $cheeseCycleBaseYield,
           2
-        )} 
+        )}
         cheese per cycle <br>
-        +${formatTime((cheeseYieldDeltaDuration * $cheeseCycleDuration) / $cheeseCycleBaseDuration / 1000)} 
+        +${formatTime((cheeseYieldDeltaDuration * $cheeseCycleDuration) / $cheeseCycleBaseDuration / 1000)}
         cycle duration <br>(without scaling: +0.5s cycle duration)`}
       >
         Your workers create more cheese but also take longer

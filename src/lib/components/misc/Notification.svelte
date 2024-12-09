@@ -1,7 +1,7 @@
 <script lang="ts">
   import { fly } from 'svelte/transition'
   import { sineInOut } from 'svelte/easing'
-  import type { Message } from '@gamelogic/notifications'
+  import type { Message } from '$lib/gamelogic/notifications'
   export let message: Message
 </script>
 

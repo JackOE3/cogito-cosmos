@@ -1,6 +1,6 @@
 <script lang="ts">
   import { formatWhole, formatResourceName } from '../gamelogic/utils'
-  import { upgrades, resource, LORCA_OVERRIDE } from '@store'
+  import { upgrades, resource, LORCA_OVERRIDE } from '$lib/store'
   import { tooltip } from './tooltips/tooltip'
   import { derived, get } from 'svelte/store'
 

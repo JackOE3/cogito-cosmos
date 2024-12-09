@@ -1,4 +1,4 @@
-import { type SvelteComponentDev } from 'svelte/internal'
+import { type SvelteComponent } from 'svelte'
 import Tooltip from './Tooltip.svelte'
 
 export enum Direction {
@@ -14,10 +14,10 @@ export function tooltip(
     data?: unknown
     anchor?: string
     direction?: Direction
-    Component?: typeof SvelteComponentDev
+    Component?: typeof SvelteComponent
   }
 ): object {
-  let tooltipComponent: SvelteComponentDev
+  let tooltipComponent: SvelteComponent
   const TooltipConstructor = options.Component ?? Tooltip
 
   let tooltipData: unknown | null = options.data ?? null

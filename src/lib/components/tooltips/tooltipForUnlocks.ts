@@ -1,4 +1,4 @@
-import type { IUnlock } from '@store'
+import type { IUnlock } from '$lib/store'
 import UnlockTooltip from './UnlockTooltip.svelte'
 
 export function tooltipForUnlocks(

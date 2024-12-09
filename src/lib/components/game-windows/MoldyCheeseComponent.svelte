@@ -1,6 +1,6 @@
 <script lang="ts">
   import Window from './window-model/Window.svelte'
-  import { formatNumber, formatWhole } from '@gamelogic/utils'
+  import { formatNumber, formatWhole } from '$lib/gamelogic/utils'
   import UpgradeButton from '../UpgradeButton.svelte'
   import {
     LORCA_OVERRIDE,
@@ -18,7 +18,7 @@
     mcHalflifeBoostFactor,
     mcConversionCooldownMS,
     WindowId,
-  } from '@store'
+  } from '$lib/store'
   import UnlockDrawer from '../UnlockDrawer.svelte'
   import EffectComponent from '../EffectComponent.svelte'
   import Effect from '../Effect.svelte'
@@ -86,7 +86,9 @@
       (Moldy cheese is an unstable isotope of cheese and can decay) <br />
       {#if $unlocked.moldyCheeseByproduct || $LORCA_OVERRIDE}
         You gain {formatNumber($mcByproductAmount, 2)} moldy cheese
-        {#if $moldyCheeseChance !== 1} with a {formatWhole($moldyCheeseChance * 100)}% chance {/if}
+        {#if $moldyCheeseChance !== 1}
+          with a {formatWhole($moldyCheeseChance * 100)}% chance
+        {/if}
         whenever a cheese cycle completes
         <br />
         Estimated rate: {formatNumber(($mcByproductAmount / ($cheeseCycleDuration / 1000)) * $moldyCheeseChance, 2)} moldy

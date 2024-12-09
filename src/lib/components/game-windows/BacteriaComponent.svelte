@@ -1,6 +1,6 @@
 <script lang="ts">
   import Window from './window-model/Window.svelte'
-  import { formatNumber, formatWhole } from '@gamelogic/utils'
+  import { formatNumber, formatWhole } from '$lib/gamelogic/utils'
   import UpgradeButton from '../UpgradeButton.svelte'
   import {
     bacteriaPerSec,
@@ -15,7 +15,7 @@
     cheeseCyclesPerBarFill,
     currentNotation,
     cheeseMonsterDeathsMultiplicity,
-  } from '@store'
+  } from '$lib/store'
   import { tooltip } from '../tooltips/tooltip'
   import UnlockDrawer from '../UnlockDrawer.svelte'
 
@@ -78,9 +78,6 @@
 
 <style>
   * {
-    --unlockedColor: white
-    --maxedColor: var(--unlockedColor);
-    
+    --unlockedColor: white --maxedColor: var(--unlockedColor);
   }
-
 </style>

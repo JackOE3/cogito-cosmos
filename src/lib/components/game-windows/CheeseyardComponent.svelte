@@ -1,6 +1,6 @@
 <script lang="ts">
   import Window from './window-model/Window.svelte'
-  import { formatNumber, formatWhole } from '@gamelogic/utils'
+  import { formatNumber, formatWhole } from '$lib/gamelogic/utils'
   import { tooltip } from '../tooltips/tooltip'
   import UpgradeButton from '../UpgradeButton.svelte'
   import {
@@ -26,7 +26,7 @@
     upgrades,
     unlocked,
     WindowId,
-  } from '@store'
+  } from '$lib/store'
   import { fade } from 'svelte/transition'
   import UnlockDrawer from '../UnlockDrawer.svelte'
   import EffectComponent from '../EffectComponent.svelte'

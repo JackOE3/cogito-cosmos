@@ -2,7 +2,7 @@
   import ImageButton from '../misc/ImageButton.svelte'
 
   import Window from './window-model/Window.svelte'
-  import { formatNumber, formatResourceName, formatWhole } from '@gamelogic/utils'
+  import { formatNumber, formatResourceName, formatWhole } from '$lib/gamelogic/utils'
   import UpgradeButton from '../UpgradeButton.svelte'
   import { derived, get } from 'svelte/store'
   import {
@@ -22,7 +22,7 @@
     currentNotation,
     milkResetMilestones,
     totalMilkResets,
-  } from '@store'
+  } from '$lib/store'
   import { tooltip } from '../tooltips/tooltip'
   import UnlockDrawer from '../UnlockDrawer.svelte'
   import EffectComponent from '../EffectComponent.svelte'
@@ -35,6 +35,7 @@
     MODLY_CHEESE = 'moldyCheese',
     CHEESEYARD = 'cheeseyard',
   }
+
   let themeId = 'thoughts'
   let currentUpgradeName = 'milkThoughtsGain'
 
@@ -207,16 +208,14 @@
 
 <style>
   * {
-    --unlockedColor: white
-    --maxedColor: var(--unlockedColor);
-    
+    --unlockedColor: white --maxedColor: var(--unlockedColor);
   }
   .milestone-number {
-    width:20px;
+    width: 20px;
     border-radius: 4px;
     background-color: var(--Gray600);
-    display:flex; 
-    justify-content:center;
+    display: flex;
+    justify-content: center;
     opacity: var(--medium-emphasis);
   }
   .unlocked {
@@ -240,8 +239,6 @@
   .upgrade-button-container {
     display: flex;
 
-    gap: 2px
+    gap: 2px;
   }
-
-
 </style>

@@ -12,7 +12,7 @@ import {
   type CheeseFactoryMode,
   type BrainMode,
 } from '../primitive'
-import { checkBoolForNum } from '@gamelogic/utils'
+import { checkBoolForNum } from '$lib/gamelogic/utils'
 
 export const thoughtBoostMax = derived(
   upgrades,

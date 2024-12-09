@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type CheeseFactoryMode, cheeseModeStats } from '@store'
+  import { type CheeseFactoryMode, cheeseModeStats } from '$lib/store'
 
   export let data: CheeseFactoryMode
   export let top = 0

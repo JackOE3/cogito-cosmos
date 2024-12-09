@@ -2,7 +2,7 @@
   import { formatNumber } from '../gamelogic/utils'
   import { fade } from 'svelte/transition'
   import { tooltip } from './tooltips/tooltip'
-  import { currentNotation } from '@store'
+  import { currentNotation } from '$lib/store'
 
   export let factor: number
   export let unlocked = true

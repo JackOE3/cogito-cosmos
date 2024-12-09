@@ -1,7 +1,7 @@
 import { get } from 'svelte/store'
 import { sendMessage } from './notifications'
-import * as store from '@store/primitive/to-save'
-import { upgradesInitial } from '@store'
+import * as store from '$lib/store/primitive/to-save'
+import { upgradesInitial } from '$lib/store'
 // import {compress, decompress} from 'lz-string'
 
 const CURRENT_SAVE_VERSION = '0.1.1'

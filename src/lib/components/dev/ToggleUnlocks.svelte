@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { unlocked } from '@store'
+  import { unlocked } from '$lib/store'
 
   function toggleUnlock(name: string): void {
     $unlocked[name] = !$unlocked[name]

@@ -25,7 +25,7 @@ import {
   totalMonsterDeathsLootBoost,
   moldyCheeseChance,
 } from './from-primitive'
-import { checkBoolForNum } from '@gamelogic/utils'
+import { checkBoolForNum } from '$lib/gamelogic/utils'
 
 const baseCost = 10
 export const cheeseCycleBase = {
