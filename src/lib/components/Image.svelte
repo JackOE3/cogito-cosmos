@@ -13,14 +13,11 @@
         if (images[path]) {
             images[path]()
                 .then(img => {
-                    console.log('IMAGE:', img)
                     if (image) image.setAttribute('src', img.default)
                 })
                 .catch(error => {
                     console.error(`Error loading image ${path}:`, error)
                 })
-        } else {
-            console.log('path doesnt exist:', path)
         }
     }
 

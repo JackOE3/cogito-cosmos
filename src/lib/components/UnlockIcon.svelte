@@ -1,7 +1,7 @@
 <script lang="ts">
     import { formatWhole } from '../gamelogic/utils'
     import { unlocked, resource, type IUnlock } from '$lib/store'
-    import { Direction, tooltip } from './tooltips/tooltip'
+    import { Direction, tooltip } from './tooltips/tooltip.svelte'
     import UnlockTooltip from './tooltips/UnlockTooltip.svelte'
     import { derived } from 'svelte/store'
     import Image from './Image.svelte'

@@ -1,4 +1,4 @@
-import { type SvelteComponent } from 'svelte'
+import { mount, unmount } from 'svelte';
 import Tooltip from './Tooltip.svelte'
 
 export enum Direction {
@@ -14,22 +14,25 @@ export function tooltip(
     data?: unknown
     anchor?: string
     direction?: Direction
-    Component?: typeof SvelteComponent
+    Component?: any
   }
 ): object {
-  let tooltipComponent: SvelteComponent
-  const TooltipConstructor = options.Component ?? Tooltip
+    let tooltipComponent: Record<string, any>
+    const TooltipComponent = options.Component ?? Tooltip
+    const myProps = $state({
+        data: options.data ?? null,
+        top: 0,
+        left: 0,
+    });
 
-  let tooltipData: unknown | null = options.data ?? null
   let mousePressed = false
   let tooltipShown = false
 
   function mouseEnter(_event: MouseEvent): void {
-    if (tooltipData === null || mousePressed) return
+    if (myProps.data === null || mousePressed) return
 
     let rect: DOMRect
-    let top: number
-    let left: number
+
     if (options.anchor === 'parentElement') {
       rect = element.parentElement?.getBoundingClientRect() ?? new DOMRect(0, 0, 0, 0)
     } else if (options.anchor === 'offsetParent') {
@@ -39,38 +42,26 @@ export function tooltip(
     }
 
     if (options.direction === Direction.RIGHT) {
-      top = rect.top
-      left = rect.right + 8
+      myProps.top = rect.top
+      myProps.left = rect.right + 8
     } else {
-      top = rect.bottom + 10
-      left = rect.left
+        myProps.top = rect.bottom + 10
+        myProps.left = rect.left
     }
 
-    tooltipComponent = new TooltipConstructor({
-      props: {
-        data: tooltipData,
-        top,
-        left,
-      },
-      target: document.body,
-    })
+    tooltipComponent = mount(TooltipComponent, { target: document.body, props: myProps });
     tooltipShown = true
   }
 
   function mouseLeave(): void {
-    if (tooltipData === null || mousePressed) return
-    tooltipComponent.$destroy()
+    if (myProps.data === null || mousePressed) return
+    unmount(tooltipComponent)
   }
 
   function mouseMove(_event: MouseEvent): void {
-    if (tooltipData === null || !mousePressed || !tooltipShown) return
-    tooltipComponent.$destroy()
+    if (myProps.data === null || !mousePressed || !tooltipShown) return
+    unmount(tooltipComponent)
     tooltipShown = false
-
-    /*  tooltipComponent.$set({
-      x: event.pageX,
-      y: event.pageY,
-    }) */
   }
 
   function mouseDown(_event: MouseEvent): void {
@@ -94,13 +85,14 @@ export function tooltip(
     update({ data }) {
       // update the local variable from here, else the tooltip would reset
       // to the starting value if it's destroyed and created again
-      tooltipData = data
+      myProps.data = data
       // programmatically sets props on an instance. component.$set({ x: 1 })
       // is equivalent to x = 1 inside the component's <script> block.
-      if (tooltipComponent !== undefined) tooltipComponent.$set({ data })
+      //if (tooltipComponent !== undefined) tooltipComponent.$set({ data })
     },
     destroy() {
-      if (tooltipComponent !== undefined) tooltipComponent.$destroy()
+    console.log("DESTROYED TOOLTIP")
+      if (tooltipComponent !== undefined) unmount(tooltipComponent)
       element.removeEventListener('mouseenter', mouseEnter)
       element.removeEventListener('mousemove', mouseMove)
       element.removeEventListener('mouseleave', mouseLeave)

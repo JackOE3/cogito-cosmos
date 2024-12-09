@@ -7,10 +7,10 @@ export function tooltipForUnlocks(
     data: IUnlock
   }
 ): object {
-  let tooltipComponent: UnlockTooltip
+    let tooltipComponent: UnlockTooltip
   let tooltipData = options.data ?? null
   let mousePressed = false
-  let tooltipShown = false
+    let tooltipShown = false
 
   function mouseEnter(_event: MouseEvent): void {
     if (tooltipData === null || mousePressed) return

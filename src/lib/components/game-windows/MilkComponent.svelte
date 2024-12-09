@@ -21,7 +21,7 @@
         milkResetMilestones,
         totalMilkResets
     } from '$lib/store'
-    import { tooltip } from '../tooltips/tooltip'
+    import { tooltip } from '../tooltips/tooltip.svelte'
     import UnlockDrawer from '../UnlockDrawer.svelte'
     import EffectComponent from '../EffectComponent.svelte'
     import Image from '../Image.svelte'

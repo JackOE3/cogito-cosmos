@@ -39,7 +39,7 @@
         cheeseCyclesPerBarFill
     } from '$lib/store'
     import UnlockDrawer from '../UnlockDrawer.svelte'
-    import { tooltip } from '../tooltips/tooltip'
+    import { tooltip } from '../tooltips/tooltip.svelte'
     import CheeseFactoryProtocol from '../tooltips/CheeseFactoryProtocol.svelte'
     import { onDestroy, onMount } from 'svelte'
     import Image from '../Image.svelte'

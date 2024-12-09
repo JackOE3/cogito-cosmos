@@ -1,139 +1,138 @@
 <script lang="ts">
-  import { formatResourceName, formatNumber } from '$lib/gamelogic/utils'
-  import { buyUpgrade } from '$lib/gamelogic/buy-upgrade'
-  import { upgrades, resource, LORCA_OVERRIDE, currentNotation, milkUpgradeEffects, unlocked } from '$lib/store'
-  import { tooltip } from './tooltips/tooltip'
-  import { derived, get } from 'svelte/store'
-  import { fade } from 'svelte/transition'
-  /* import { buyUpgradeMilk } from '@gamelogic/buy-upgrade-milk' */
+    import { formatResourceName, formatNumber } from '$lib/gamelogic/utils'
+    import { buyUpgrade } from '$lib/gamelogic/buy-upgrade'
+    import { upgrades, resource, LORCA_OVERRIDE, currentNotation, milkUpgradeEffects, unlocked } from '$lib/store'
+    import { tooltip } from './tooltips/tooltip.svelte'
+    import { derived, get } from 'svelte/store'
+    import { fade } from 'svelte/transition'
+    /* import { buyUpgradeMilk } from '@gamelogic/buy-upgrade-milk' */
 
-  export let upgradeName: string
-  export let tooltipText: string | null = null
-  export let buyMaxUpgrades = false // setContext/getContext better?
-  export let btnUnlocked = true
+    export let upgradeName: string
+    export let tooltipText: string | null = null
+    export let buyMaxUpgrades = false // setContext/getContext better?
+    export let btnUnlocked = true
 
-  const resourceName = get(upgrades)[upgradeName].resource
-  const cost = derived(upgrades, $upgrades => $upgrades[upgradeName].cost)
-  const canAfford = derived(resource, $resource => $resource[resourceName] >= get(cost))
-  const maxBuy = derived(upgrades, $upgrades => $upgrades[upgradeName].maxBuy)
-  const isMaxed = derived(upgrades, $upgrades => {
-    const maxBuy = $upgrades[upgradeName].maxBuy
-    return maxBuy !== null && $upgrades[upgradeName].bought >= maxBuy
-  })
-  const upgradesBought = derived(upgrades, $upgrades => $upgrades[upgradeName].bought)
+    const resourceName = get(upgrades)[upgradeName].resource
+    const cost = derived(upgrades, $upgrades => $upgrades[upgradeName].cost)
+    const canAfford = derived(resource, $resource => $resource[resourceName] >= get(cost))
+    const maxBuy = derived(upgrades, $upgrades => $upgrades[upgradeName].maxBuy)
+    const isMaxed = derived(upgrades, $upgrades => {
+        const maxBuy = $upgrades[upgradeName].maxBuy
+        return maxBuy !== null && $upgrades[upgradeName].bought >= maxBuy
+    })
+    const upgradesBought = derived(upgrades, $upgrades => $upgrades[upgradeName].bought)
 
-  // beforeUpdate(() => console.log('beforeUpdate'))
+    // beforeUpdate(() => console.log('beforeUpdate'))
 
-  function handleUpgradeClicked(): void {
-    buyUpgrade(upgrades)(upgradeName, buyMaxUpgrades)
-  }
+    function handleUpgradeClicked(): void {
+        buyUpgrade(upgrades)(upgradeName, buyMaxUpgrades)
+    }
 </script>
 
 {#if btnUnlocked || $LORCA_OVERRIDE}
-  <button
-    on:click={handleUpgradeClicked}
-    on:click
-    class:disabled={!$canAfford && !$isMaxed}
-    use:tooltip={{ data: tooltipText }}
-    class:maxed={$isMaxed}
-    transition:fade|local={{ duration: 1000 }}
-  >
-    <div style="display:grid; grid-template-rows: auto 14px; height: 100%">
-      <div id="text">
-        <slot />
-      </div>
-      <div id="cost">
-        {#if !$isMaxed}
-          {formatNumber($cost, 2, $currentNotation)}
-          {formatResourceName(resourceName)}
-        {/if}
-      </div>
-    </div>
+    <button
+        on:click={handleUpgradeClicked}
+        on:click
+        class:disabled={!$canAfford && !$isMaxed}
+        use:tooltip={{ data: tooltipText }}
+        class:maxed={$isMaxed}
+        transition:fade|local={{ duration: 1000 }}>
+        <div style="display:grid; grid-template-rows: auto 14px; height: 100%">
+            <div id="text">
+                <slot />
+            </div>
+            <div id="cost">
+                {#if !$isMaxed}
+                    {formatNumber($cost, 2, $currentNotation)}
+                    {formatResourceName(resourceName)}
+                {/if}
+            </div>
+        </div>
 
-    <div id="boughtContainer">
-      {#if $maxBuy !== null}
-        {#if $isMaxed}
-          MAX
-        {:else}
-          {$upgradesBought}/{$maxBuy}
-        {/if}
-      {:else}
-        {$upgradesBought}
-      {/if}
-    </div>
-  </button>
+        <div id="boughtContainer">
+            {#if $maxBuy !== null}
+                {#if $isMaxed}
+                    MAX
+                {:else}
+                    {$upgradesBought}/{$maxBuy}
+                {/if}
+            {:else}
+                {$upgradesBought}
+            {/if}
+        </div>
+    </button>
 {:else}
-  <button disabled>???</button>
+    <button disabled>???</button>
 {/if}
 
 <style>
-  #text {
-    height: 100%;
-    padding-left: 4px;
-    padding-right: 4px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
-  #cost {
-    z-index: 0;
-    height: max-content;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
-    background-color: rgba(0, 0, 0, 0.2);
+    #text {
+        height: 100%;
+        padding-left: 4px;
+        padding-right: 4px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    #cost {
+        z-index: 0;
+        height: max-content;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        background-color: rgba(0, 0, 0, 0.2);
 
-    /* background-color: rgba(8, 248, 0, 0.4);
+        /* background-color: rgba(8, 248, 0, 0.4);
     background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4) 0%, transparent 40%); */
-  }
-  #boughtContainer {
-    position: absolute;
-    right: -2px;
-    bottom: -2px;
-    height: max-content;
-    min-width: 24px;
-    width: max-content;
-    padding: 2px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 0%;
-    background-color: var(--themeColor1);
-    outline: 1px solid rgba(0, 0, 0, 0.6);
-    border-top: 2px solid rgba(255, 255, 255, 0.6);
-    border-left: 2px solid rgba(255, 255, 255, 0.6);
-    border-bottom: 2px solid rgba(0, 0, 0, 0.6);
-    border-right: 2px solid rgba(0, 0, 0, 0.6);
-    border-top-left-radius: 8px;
-  }
-  button {
-    min-height: 50px;
-    height: 60px;
-    width: 200px;
-    position: relative;
-    padding: 0px;
-  }
+    }
+    #boughtContainer {
+        position: absolute;
+        right: -2px;
+        bottom: -2px;
+        height: max-content;
+        min-width: 24px;
+        width: max-content;
+        padding: 2px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 0%;
+        background-color: var(--themeColor1);
+        outline: 1px solid rgba(0, 0, 0, 0.6);
+        border-top: 2px solid rgba(255, 255, 255, 0.6);
+        border-left: 2px solid rgba(255, 255, 255, 0.6);
+        border-bottom: 2px solid rgba(0, 0, 0, 0.6);
+        border-right: 2px solid rgba(0, 0, 0, 0.6);
+        border-top-left-radius: 8px;
+    }
+    button {
+        min-height: 50px;
+        height: 60px;
+        width: 200px;
+        position: relative;
+        padding: 0px;
+    }
 
-  button.disabled {
-    opacity: var(--disabled); /* override */
-  }
-  button:not(.disabled):hover {
-    /*  outline: 1px solid white; */
-    background-color: var(--Gray600);
-  }
+    button.disabled {
+        opacity: var(--disabled); /* override */
+    }
+    button:not(.disabled):hover {
+        /*  outline: 1px solid white; */
+        background-color: var(--Gray600);
+    }
 
-  .maxed {
-    background: linear-gradient(to bottom, var(--themeColor1), rgba(0, 0, 0, 0.6));
-    color: var(--themeColor2, white);
-    pointer-events: none;
+    .maxed {
+        background: linear-gradient(to bottom, var(--themeColor1), rgba(0, 0, 0, 0.6));
+        color: var(--themeColor2, white);
+        pointer-events: none;
 
-    border-left: var(--themeColor2);
-    border-right: var(--themeColor1);
-    border-top: var(--themeColor2);
-    border-bottom: var(--themeColor1);
-    border-width: 2px;
-    border-style: solid;
-  }
+        border-left: var(--themeColor2);
+        border-right: var(--themeColor1);
+        border-top: var(--themeColor2);
+        border-bottom: var(--themeColor1);
+        border-width: 2px;
+        border-style: solid;
+    }
 </style>
