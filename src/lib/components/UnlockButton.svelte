@@ -2,7 +2,7 @@
     import { formatWhole, formatResourceName } from '$lib/gamelogic/utils'
     import { unlocked, resource, LORCA_OVERRIDE } from '$lib/store'
     import { tooltip } from './tooltips/tooltip.svelte'
-    import type { IUnlock, unlockType } from '$lib/store'
+    import type { IUnlock, Resource } from '$lib/store'
 
     export let unlock: IUnlock
     // export let tooltipText: string | null = null
@@ -11,8 +11,8 @@
 
     function unlockFeature(): void {
         const cost: number = unlock.cost
-        if ($resource[unlock.resource] < cost) return
-        $resource[unlock.resource] -= cost
+        if ($resource[unlock.resource as Resource] < cost) return
+        $resource[unlock.resource as Resource] -= cost
         unlocked.update($unlocked => {
             $unlocked[unlock.name] = true
             return $unlocked
@@ -25,7 +25,7 @@
     {#if btnUnlocked || $LORCA_OVERRIDE}
         <button
             on:click={unlockFeature}
-            class:disabled={$unlocked[unlock.name] || $resource[unlock.resource] < unlock.cost}
+            class:disabled={$unlocked[unlock.name] || $resource[unlock.resource as Resource] < unlock.cost}
             use:tooltip={{ data: unlock.tooltipText }}
             class:unlocked={$unlocked[unlock.name]}>
             <slot />

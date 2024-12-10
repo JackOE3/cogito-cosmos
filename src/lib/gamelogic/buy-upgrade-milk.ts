@@ -1,5 +1,5 @@
 import { get } from 'svelte/store'
-import { resource, type IUpgrade, milkUpgradeMultiplies, milkUpgradeBasicMultiplier } from '$lib/store'
+import { resource, type IUpgrade, milkUpgradeMultiplies, milkUpgradeBasicMultiplier, Resource } from '$lib/store'
 import type { baseStore } from '$lib/store/customStore'
 
 type returnSignature = (upgradeName: string) => void
@@ -13,7 +13,7 @@ export function buyUpgradeMilk(upgrades: baseStore<Record<string, IUpgrade>>): r
             const upgrade: IUpgrade = $store[upgradeName]
 
             let checkoutCost = 0
-            const res = get(resource)[upgrade.resource]
+            const res = get(resource)[upgrade.resource as Resource]
 
             if (res < upgrade.cost) return $store
 
@@ -40,7 +40,7 @@ export function buyUpgradeMilk(upgrades: baseStore<Record<string, IUpgrade>>): r
             })
 
             resource.update($resource => {
-                $resource[upgrade.resource] -= checkoutCost
+                $resource[upgrade.resource as Resource] -= checkoutCost
                 return $resource
             })
 

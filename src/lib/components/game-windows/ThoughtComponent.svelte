@@ -142,7 +142,7 @@
     <div class="flexRowContainer">
         {#if $unlocked.thoughtBoost}
             <button on:click={handleThink}>
-                Thought Boost <span class="iconify" data-icon="icon-park-outline:brain" /><br />
+                Thought Boost <span class="iconify" data-icon="icon-park-outline:brain"></span><br />
                 x{formatNumber($thoughtBoostMax, 2)} thoughts/s for {formatTime($thoughtBoostDuration / 1000)}
             </button>
         {:else}

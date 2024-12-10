@@ -360,46 +360,10 @@ export const unlocks: Record<string, IUnlock[]> = {
 }
 
 export const unlocked = makeStore<Record<UnlockName, boolean>>(convertEnumToFlagObject(UnlockName))
-/* export const unlocked = makeStore<Record<UnlockName, boolean>>({
-  start: true,
-
-  // Cogito Ergo Sum
-  thinkPassively: false,
-  thinkFaster: false,
-  thoughtBoost: false,
-  thoughts50Percent: false,
-  switzerland: false,
-  thoughtBoostStack: false,
-  moldyCheese: false,
-  milk: false,
-
-  // Switzerland Simulator
-  cheeseQueue: false,
-  cheeseQueueLengthBoost: false,
-  cheeseBoost: false,
-  cheeseCycleAccelerator: false,
-  thoughtJerk: false,
-  cheeseModes: false,
-  cheeseCyclesBoostThoughts: false,
-
-  // Moldy Cheese
-  moldyCheeseByproduct: false,
-  manualMoldyCheeseConversionBoost: false,
-  cheeseyard: false,
-  moldyCheeseCycleDurationBoost: false,
-
-  // The Cheeseyard
-  monsterBrainWaveController: false,
-  cheeseMonsterMassacre: false,
-  cheeseMonsterCollectiveSentience: false,
-  cheeseMonsterTotalDeathsBoost: false,
-
-  // Milk
-}) */
 
 function convertEnumToFlagObject(enumme: typeof UnlockName): Record<UnlockName, boolean> {
     const obj = Object.values(enumme)
-    const result = {}
+    const result: { [key: string]: boolean } = {}
     obj.forEach(value => {
         if (value === enumme.START) result[value] = true
         else result[value] = false

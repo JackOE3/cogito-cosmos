@@ -11,16 +11,6 @@ export enum Resource {
     MILK_POINTS = 'milkPoints'
 }
 export type Resources = Record<Resource, number>
-/* export interface Resource {
-  thoughts: number
-  cheese: number
-  moldyCheese: number
-  cheeseMonster: number
-  cheeseBrains: number
-  milk: number
-  bacteria: number
-  milkPoints: number
-} */
 
 export const resource = makeStore<Resources>({
     thoughts: 0,

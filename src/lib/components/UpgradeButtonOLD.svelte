@@ -1,6 +1,6 @@
 <script lang="ts">
     import { formatWhole, formatResourceName } from '../gamelogic/utils'
-    import { upgrades, resource, LORCA_OVERRIDE } from '$lib/store'
+    import { upgrades, resource, LORCA_OVERRIDE, Resource } from '$lib/store'
     import { tooltip } from './tooltips/tooltip.svelte'
     import { derived, get } from 'svelte/store'
 
@@ -11,7 +11,7 @@
 
     const resourceName = get(upgrades)[upgradeName].resource
     const cost = derived(upgrades, $upgrades => $upgrades[upgradeName].cost)
-    const canAfford = derived(resource, $resource => $resource[resourceName] >= get(cost))
+    const canAfford = derived(resource, $resource => $resource[resourceName as Resource] >= get(cost))
     const isMaxed = derived(upgrades, $upgrades => {
         const maxBuy = $upgrades[upgradeName].maxBuy
         return maxBuy !== null && $upgrades[upgradeName].bought >= maxBuy

@@ -1,14 +1,14 @@
 <script lang="ts">
-    import { unlocked } from '$lib/store'
+    import { unlocked, UnlockName } from '$lib/store'
 
-    function toggleUnlock(name: string): void {
+    function toggleUnlock(name: UnlockName): void {
         $unlocked[name] = !$unlocked[name]
     }
 </script>
 
 <div>
     {#each Object.entries($unlocked) as [name, isUnlocked], id}
-        <button on:click={() => toggleUnlock(name)}>
+        <button on:click={() => toggleUnlock(name as UnlockName)}>
             {id}
             {name}
             {isUnlocked ? '✅' : '❌'}

@@ -13,7 +13,7 @@
         if (images[path]) {
             images[path]()
                 .then(img => {
-                    if (image) image.setAttribute('src', img.default)
+                    if (image instanceof HTMLElement) image.setAttribute('src', img.default)
                 })
                 .catch(error => {
                     console.error(`Error loading image ${path}:`, error)

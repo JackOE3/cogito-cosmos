@@ -51,10 +51,10 @@
         {/if}
     </div>
 
-    <div class="corner" id="corner-top-right" />
-    <div class="corner" id="corner-top-left" />
-    <div class="corner" id="corner-bottom-right" />
-    <div class="corner" id="corner-bottom-left" />
+    <div class="corner" id="corner-top-right"></div>
+    <div class="corner" id="corner-top-left"></div>
+    <div class="corner" id="corner-bottom-right"></div>
+    <div class="corner" id="corner-bottom-left"></div>
 </div>
 
 <style>
@@ -137,9 +137,6 @@
     .window-bar-min-max:active {
         border-width: 2px;
         outline-width: 1px;
-    }
-    .window-bar-min-max > img {
-        width: 60%;
     }
     .window-bar-min-max:hover {
         background-color: white;

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { formatWhole } from '../gamelogic/utils'
-    import { unlocked, resource, type IUnlock } from '$lib/store'
+    import { unlocked, resource, type IUnlock, Resource } from '$lib/store'
     import { Direction, tooltip } from './tooltips/tooltip.svelte'
     import UnlockTooltip from './tooltips/UnlockTooltip.svelte'
     import { derived } from 'svelte/store'
@@ -10,13 +10,13 @@
     export let tempCount: number
     export let folderName: string
 
-    const canAfford = derived(resource, $resource => $resource[unlock.resource] >= unlock.cost)
+    const canAfford = derived(resource, $resource => $resource[unlock.resource as Resource] >= unlock.cost)
     const isUnlocked = derived(unlocked, $unlocked => $unlocked[unlock.name])
 
     function unlockFeature(): void {
         const cost: number = unlock.cost
-        if ($resource[unlock.resource] < cost || $unlocked[unlock.name]) return
-        $resource[unlock.resource] -= cost
+        if ($resource[unlock.resource as Resource] < cost || $unlocked[unlock.name]) return
+        $resource[unlock.resource as Resource] -= cost
         unlocked.update($unlocked => {
             $unlocked[unlock.name] = true
             return $unlocked
@@ -90,9 +90,4 @@
     bottom: 2px;
     left: 4px;
   } */
-    button > img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-    }
 </style>

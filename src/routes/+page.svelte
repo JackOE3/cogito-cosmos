@@ -23,7 +23,6 @@
     import CheeseyardComponent from '$lib/components/game-windows/CheeseyardComponent.svelte'
     import MilkComponent from '$lib/components/game-windows/MilkComponent.svelte'
     import MilkTreeComponent from '$lib/components/game-windows/MilkTreeComponent.svelte'
-    import { getOffset } from '$lib/gamelogic/utils'
     import BacteriaComponent from '$lib/components/game-windows/BacteriaComponent.svelte'
 
     import { startGameLoop } from '$lib/gamelogic/gameloop'
@@ -76,6 +75,7 @@
 
     function translateFromCSSToArray(el: HTMLElement): [number, number] | null {
         const str = window.getComputedStyle(el).getPropertyValue('transform')
+        // eslint-disable-next-line no-useless-escape
         const transformArray = str.match(/(-?[0-9\.]+)/g)
 
         if (transformArray === null) {
@@ -316,6 +316,7 @@
         // ideally check if saveDataString is of type SaveData
         if (saveDataString !== null) importSaveGame(saveDataString)
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     function showCredits(): void {
         console.log('TODO Credit Modal')
         // Background: https://www.svgbackgrounds.com/
@@ -355,11 +356,21 @@
         </div>
 
         <div id="game" bind:this={gameWindow}>
-            <div id={WindowId.thoughtComponent} class="window" on:mousedown={() => selectWindow(WindowId.thoughtComponent, gameWindow)} use:initWindow>
+            <div
+                id={WindowId.thoughtComponent}
+                class="window"
+                on:mousedown={() => selectWindow(WindowId.thoughtComponent, gameWindow)}
+                use:initWindow
+                role="none">
                 <ThoughtComponent windowId={WindowId.thoughtComponent} />
             </div>
             {#if $unlocked.switzerland || $LORCA_OVERRIDE}
-                <div id={WindowId.cheeseComponent} class="window" on:mousedown={() => selectWindow(WindowId.cheeseComponent, gameWindow)} use:initWindow>
+                <div
+                    id={WindowId.cheeseComponent}
+                    class="window"
+                    on:mousedown={() => selectWindow(WindowId.cheeseComponent, gameWindow)}
+                    use:initWindow
+                    role="none">
                     <CheeseComponent windowId={WindowId.cheeseComponent} />
                 </div>
             {/if}
@@ -368,7 +379,8 @@
                     id={WindowId.moldyCheeseComponent}
                     class="window"
                     on:mousedown={() => selectWindow(WindowId.moldyCheeseComponent, gameWindow)}
-                    use:initWindow>
+                    use:initWindow
+                    role="none">
                     <MoldyCheeseComponent windowId={WindowId.moldyCheeseComponent} />
                 </div>
             {/if}
@@ -377,22 +389,38 @@
                     id={WindowId.cheeseyardComponent}
                     class="window"
                     on:mousedown={() => selectWindow(WindowId.cheeseyardComponent, gameWindow)}
-                    use:initWindow>
+                    use:initWindow
+                    role="none">
                     <CheeseyardComponent windowId={WindowId.cheeseyardComponent} />
                 </div>
             {/if}
             {#if $unlocked.milk || $LORCA_OVERRIDE}
-                <div id={WindowId.milkComponent} class="window" on:mousedown={() => selectWindow(WindowId.milkComponent, gameWindow)} use:initWindow>
+                <div
+                    id={WindowId.milkComponent}
+                    class="window"
+                    on:mousedown={() => selectWindow(WindowId.milkComponent, gameWindow)}
+                    use:initWindow
+                    role="none">
                     <MilkComponent windowId={WindowId.milkComponent} />
                 </div>
             {/if}
             {#if $unlocked.milkTree || $LORCA_OVERRIDE}
-                <div id={WindowId.milkTreeComponent} class="window" on:mousedown={() => selectWindow(WindowId.milkTreeComponent, gameWindow)} use:initWindow>
+                <div
+                    id={WindowId.milkTreeComponent}
+                    class="window"
+                    on:mousedown={() => selectWindow(WindowId.milkTreeComponent, gameWindow)}
+                    use:initWindow
+                    role="none">
                     <MilkTreeComponent windowId={WindowId.milkTreeComponent} />
                 </div>
             {/if}
             {#if $unlocked.bacteria || $LORCA_OVERRIDE}
-                <div id={WindowId.bacteriaComponent} class="window" on:mousedown={() => selectWindow(WindowId.bacteriaComponent, gameWindow)} use:initWindow>
+                <div
+                    id={WindowId.bacteriaComponent}
+                    class="window"
+                    on:mousedown={() => selectWindow(WindowId.bacteriaComponent, gameWindow)}
+                    use:initWindow
+                    role="none">
                     <BacteriaComponent windowId={WindowId.bacteriaComponent} />
                 </div>
             {/if}
