@@ -10,7 +10,7 @@
     import {
         LORCA_OVERRIDE,
         resource,
-        upgrades,
+        upgradeCount,
         unlocked,
         currentCheeseQueue,
         cheeseQueueOverclockLvl,
@@ -317,7 +317,7 @@
             <UpgradeButton
                 upgradeName="cheeseYield"
                 {buyMaxUpgrades}
-                tooltipText={`+${formatNumber((($upgrades.cheeseYield.bought + 1) * $cheeseCycleBatchSize) / $cheeseCycleBaseYield, 2)}
+                tooltipText={`+${formatNumber((($upgradeCount.cheeseYield + 1) * $cheeseCycleBatchSize) / $cheeseCycleBaseYield, 2)}
         cheese per cycle <br>
         +${formatTime((cheeseYieldDeltaDuration * $cheeseCycleDuration) / $cheeseCycleBaseDuration / 1000)}
         cycle duration <br>(without scaling: +0.5s cycle duration)`}>
@@ -336,8 +336,8 @@
                 upgradeName="cheeseThoughtMult"
                 {buyMaxUpgrades}
                 btnUnlocked={$unlocked.cheeseQueue}
-                tooltipText={`Currently: ${$upgrades.cheeseThoughtMult.bought * $upgrades.cheeseThoughtMult.bought}x <br> Scales ^2 with #upgrades.`}>
-                {#if $upgrades.cheeseThoughtMult.bought === 0}
+                tooltipText={`Currently: ${$upgradeCount.cheeseThoughtMult * $upgradeCount.cheeseThoughtMult}x <br> Scales ^2 with #upgrades.`}>
+                {#if $upgradeCount.cheeseThoughtMult === 0}
                     Cheese increases thought gain
                 {:else}
                     Increase effect of cheese boosting thought gain
@@ -354,11 +354,11 @@
         </div>
 
         <div class="gridColumn" style="height:264px; width: 100%">
-            <EffectComponent title={$upgrades.cheeseThoughtMult.bought > 0 || $unlocked.cheeseQueueLengthBoost ? 'Effects' : '???'}>
+            <EffectComponent title={$upgradeCount.cheeseThoughtMult > 0 || $unlocked.cheeseQueueLengthBoost ? 'Effects' : '???'}>
                 <Effect
                     factor={$cheeseThoughtMult}
-                    unlocked={$upgrades.cheeseThoughtMult.bought > 0}
-                    tooltipText={`Scaling: log(cheese) &times; ${$upgrades.cheeseThoughtMult.bought * $upgrades.cheeseThoughtMult.bought}`}>
+                    unlocked={$upgradeCount.cheeseThoughtMult > 0}
+                    tooltipText={`Scaling: log(cheese) &times; ${$upgradeCount.cheeseThoughtMult * $upgradeCount.cheeseThoughtMult}`}>
                     Cheese increases thoughts/s
                 </Effect>
 

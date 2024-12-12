@@ -1,9 +1,9 @@
 import { derived } from 'svelte/store'
-import { UnlockName, highestMilk, resource, upgrades } from '../primitive'
+import { UnlockName, highestMilk, resource, upgradeCount } from '../primitive'
 
 export const milkFromReset = derived(resource, $resource => (1 + 1e-5 * Math.pow($resource.thoughts, 0.25)) * (1 + 1e-7 * Math.pow($resource.cheese, 0.5)))
 
-export const bacteriaGrowthFactor = derived(upgrades, $upgrades => 1 + $upgrades.bacteriaGrowth.bought)
+export const bacteriaGrowthFactor = derived(upgradeCount, $upgradeCount => 1 + $upgradeCount.bacteriaGrowth)
 export const bacteriaPerSec = derived(
     [highestMilk, bacteriaGrowthFactor],
     ([$highestMilk, $bacteriaGrowthFactor]) => 1e-3 * Math.pow($highestMilk, 2) * $bacteriaGrowthFactor
@@ -15,12 +15,12 @@ const milkUpgradeLevel = {
     moldyCheese: 1,
     cheeseBrains: 1
 }
-export const milkUpgradeMultiplies = derived(upgrades, $upgrades => {
+export const milkUpgradeMultiplies = derived(upgradeCount, $upgradeCount => {
     const result = {
-        thoughts: 1 + 0.5 * Math.pow($upgrades.milkThoughtsGain.bought, milkUpgradeLevel.thoughts + 1),
-        cheese: 1 + 0.25 * Math.pow($upgrades.milkCheeseGain.bought, milkUpgradeLevel.cheese + 1),
-        moldyCheese: 1 + 0.25 * Math.pow($upgrades.milkMoldyCheeseGain.bought, milkUpgradeLevel.moldyCheese + 1),
-        cheeseBrains: 1 + 0.5 * Math.pow($upgrades.milkCheeseBrainsGain.bought, milkUpgradeLevel.cheeseBrains + 1)
+        thoughts: 1 + 0.5 * Math.pow($upgradeCount.milkThoughtsGain, milkUpgradeLevel.thoughts + 1),
+        cheese: 1 + 0.25 * Math.pow($upgradeCount.milkCheeseGain, milkUpgradeLevel.cheese + 1),
+        moldyCheese: 1 + 0.25 * Math.pow($upgradeCount.milkMoldyCheeseGain, milkUpgradeLevel.moldyCheese + 1),
+        cheeseBrains: 1 + 0.5 * Math.pow($upgradeCount.milkCheeseBrainsGain, milkUpgradeLevel.cheeseBrains + 1)
     }
     return result
 })
@@ -66,7 +66,7 @@ export const milkUpgradeEffects = {
         {
             name: UnlockName.STACKS_INCREASE_THOUGHT_BOOST_STRENGTH,
             upgradesNeeded: 20,
-            description: 'The effect of Thought Jerk grows stronger based on total upgrades bought. ',
+            description: 'The effect of Thought Jerk grows stronger based on total upgradeCount bought. ',
             tooltipText: '-'
         }
     ],
@@ -80,7 +80,7 @@ export const milkUpgradeEffects = {
         {
             name: UnlockName.STACKS_INCREASE_THOUGHT_BOOST_STRENGTH,
             upgradesNeeded: 3,
-            description: 'Cheese upgrade 4 (divides the cost…) applies to ALL pre-milk upgrades.',
+            description: 'Cheese upgrade 4 (divides the cost…) applies to ALL pre-milk upgradeCount.',
             tooltipText: '-'
         },
         {
@@ -144,7 +144,7 @@ export const milkUpgradeEffects = {
         {
             name: UnlockName.STACKS_INCREASE_THOUGHT_BOOST_STRENGTH,
             upgradesNeeded: 3,
-            description: 'Improve the effect scaling of cheeseyard upgrades.',
+            description: 'Improve the effect scaling of cheeseyard upgradeCount.',
             tooltipText: 'From linear to quadratic.'
         },
         {
@@ -160,13 +160,13 @@ export const milkResetMilestones = [
     {
         name: UnlockName.BUY_MAX_UPGRADES,
         resetsNeeded: 1,
-        description: 'Unlock Buy Max button for pre-milk upgrades.',
+        description: 'Unlock Buy Max button for pre-milk upgradeCount.',
         tooltipText: 'Can be toggled ON/OFF.'
     },
     {
         name: UnlockName.AUTO_BUY_UPGRADES,
         resetsNeeded: 2,
-        description: 'Gain the ability to auto-buy (repeatable) pre-milk upgrades.',
+        description: 'Gain the ability to auto-buy (repeatable) pre-milk upgradeCount.',
         tooltipText: 'Can be toggled ON/OFF.'
     },
     {
@@ -226,7 +226,7 @@ export const milkResetMilestones = [
     {
         name: UnlockName.FREE_PRE_MILK_UPGRADES,
         resetsNeeded: 20,
-        description: 'Buying pre-milk upgrades no longer decrease resources.',
+        description: 'Buying pre-milk upgradeCount no longer decrease resources.',
         tooltipText: 'TBD'
     }
 ]

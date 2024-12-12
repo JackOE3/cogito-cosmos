@@ -1,31 +1,30 @@
 <script lang="ts">
     import { formatResourceName, formatNumber } from '$lib/gamelogic/utils'
     import { buyUpgrade } from '$lib/gamelogic/buy-upgrade'
-    import { upgrades, resource, LORCA_OVERRIDE, currentNotation, Resource } from '$lib/store'
+    import { upgrades, upgradeCount, resource, LORCA_OVERRIDE, currentNotation, Resource, type UpgradeName, upgradeCost } from '$lib/store'
     import { tooltip } from './tooltips/tooltip.svelte'
-    import { derived, get } from 'svelte/store'
+    import { derived } from 'svelte/store'
     import { fade } from 'svelte/transition'
     /* import { buyUpgradeMilk } from '@gamelogic/buy-upgrade-milk' */
 
-    export let upgradeName: string
+    export let upgradeName: UpgradeName
     export let tooltipText: string | null = null
     export let buyMaxUpgrades = false // setContext/getContext better?
     export let btnUnlocked = true
 
-    const resourceName = get(upgrades)[upgradeName].resource
-    const cost = derived(upgrades, $upgrades => $upgrades[upgradeName].cost)
-    const canAfford = derived(resource, $resource => $resource[resourceName as Resource] >= get(cost))
-    const maxBuy = derived(upgrades, $upgrades => $upgrades[upgradeName].maxBuy)
-    const isMaxed = derived(upgrades, $upgrades => {
-        const maxBuy = $upgrades[upgradeName].maxBuy
-        return maxBuy !== null && $upgrades[upgradeName].bought >= maxBuy
+    const resourceName = upgrades[upgradeName].resource
+    let cost = derived(upgradeCost, $upgradeCost => $upgradeCost[upgradeName])
+    const canAfford = derived(resource, $resource => $resource[resourceName as Resource] >= $cost)
+    const maxBuy = upgrades[upgradeName].maxBuy
+    const isMaxed = derived(upgradeCount, $upgradeCount => {
+        return maxBuy !== null && $upgradeCount[upgradeName] >= maxBuy
     })
-    const upgradesBought = derived(upgrades, $upgrades => $upgrades[upgradeName].bought)
+    const upgradesBought = derived(upgradeCount, $upgradeCount => $upgradeCount[upgradeName])
 
     // beforeUpdate(() => console.log('beforeUpdate'))
 
     function handleUpgradeClicked(): void {
-        buyUpgrade(upgrades)(upgradeName, buyMaxUpgrades)
+        buyUpgrade(upgrades, upgradeCount, upgradeCost)(upgradeName, buyMaxUpgrades)
     }
 </script>
 
@@ -50,11 +49,11 @@
         </div>
 
         <div id="boughtContainer">
-            {#if $maxBuy !== null}
+            {#if maxBuy !== null}
                 {#if $isMaxed}
                     MAX
                 {:else}
-                    {$upgradesBought}/{$maxBuy}
+                    {$upgradesBought}/{maxBuy}
                 {/if}
             {:else}
                 {$upgradesBought}
@@ -65,6 +64,14 @@
     <button disabled>???</button>
 {/if}
 
+<!-- <UpgradeButton
+    upgradeName="thoughtAcceleration"
+    {buyMaxUpgrades}
+    btnUnlocked={$unlocked.thinkFaster}
+    tooltipText={`+${formatNumber(thoughtAccelDisplay, 2)} thought${thoughtAccelDisplay > 1 ? 's' : ''}/s`}>
+    Thought Acceleration
+</UpgradeButton>
+ -->
 <style>
     #text {
         height: 100%;

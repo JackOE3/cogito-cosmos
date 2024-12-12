@@ -15,7 +15,6 @@
         unlocks,
         milkUpgradeMultiplies,
         milkUpgradeEffects,
-        upgradesInitial,
         UnlockName,
         currentNotation,
         milkResetMilestones,

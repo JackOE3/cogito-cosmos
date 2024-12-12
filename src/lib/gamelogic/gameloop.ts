@@ -2,7 +2,7 @@ import { get } from 'svelte/store'
 import { handleCheeseMonster } from './cheeseMonster'
 import { lastSaved, resource, highestMilk, mcHalfLifeSeconds, thoughtsPerSec, totalTimePlayed, bacteriaPerSec, mood } from '$lib/store'
 import { saveSaveGame } from './saveload'
-import { insightPerSec, knowledgePerSec } from '$lib/store/derived/thoughts'
+import { insightPerSec, knowledgePerSec } from '$lib/store'
 
 // natural log of 2
 const LN2 = 0.69314718056
@@ -85,7 +85,7 @@ function gameUpdate(deltaTimeSeconds: number): void {
             $resource.thoughts += get(thoughtsPerSec) * deltaTimeSeconds
         } else if (get(mood) === 'neutral') {
             $resource.knowledge += get(knowledgePerSec) * deltaTimeSeconds
-            $resource.thoughts *= 1 - 0.25 * deltaTimeSeconds
+            $resource.thoughts *= 1 - 0.05 * deltaTimeSeconds
         } else if (get(mood) === 'sad') {
             $resource.insight += get(insightPerSec) * deltaTimeSeconds
         }

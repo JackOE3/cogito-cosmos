@@ -64,7 +64,7 @@ export interface IUnlock {
     name: UnlockName
     title: string
     description: string
-    tooltipText?: string
+    tooltipText: string
     cost: number
     resource: ResourceType
     type: UnlockType
@@ -81,7 +81,7 @@ export const unlocks: Record<string, IUnlock[]> = {
             tooltipText: '"I think, therefore I am."',
             cost: 10,
             resource: 'thoughts',
-            type: 'Boost'
+            type: 'Effect'
         },
         {
             name: UnlockName.THINK_FASTER,
@@ -99,16 +99,6 @@ export const unlocks: Record<string, IUnlock[]> = {
             description: 'Let go of all earthly desires and transcend emotions.',
             tooltipText: 'TBD',
             cost: 100,
-            resource: 'thoughts',
-            type: 'Mechanic',
-            availableAt: UnlockName.THINK_PASSIVELY
-        },
-        {
-            name: UnlockName.THOUGHT_BOOST,
-            title: 'Boost your thinking',
-            description: 'Instead of thinking once when you click, you gain a production multiplier temporarily.',
-            tooltipText: '"I dont want to spam click a gazillion times to play ur game"',
-            cost: 50,
             resource: 'thoughts',
             type: 'Mechanic',
             availableAt: UnlockName.THINK_PASSIVELY
@@ -132,16 +122,6 @@ export const unlocks: Record<string, IUnlock[]> = {
             resource: 'thoughts',
             type: 'Unlock',
             availableAt: UnlockName.THINK_PASSIVELY
-        },
-        {
-            name: UnlockName.THOUGHT_BOOST_STACK,
-            title: 'Extended Focus',
-            description: 'Gain the ability to stack Thought Boosts.',
-            tooltipText: 'Viagra for the brain',
-            cost: 1e6,
-            resource: 'thoughts',
-            type: 'Unlock',
-            availableAt: UnlockName.CHEESE_QUEUE
         },
         {
             name: UnlockName.MOLDY_CHEESE,
@@ -174,8 +154,28 @@ export const unlocks: Record<string, IUnlock[]> = {
             tooltipText: 'TBD',
             cost: 10,
             resource: 'knowledge',
-            type: 'Unlock',
+            type: 'Effect',
             availableAt: UnlockName.NEUTRAL_MOOD
+        },
+        {
+            name: UnlockName.THOUGHT_BOOST,
+            title: 'Boost your thinking',
+            description: 'Instead of thinking once when you click, you gain a production multiplier temporarily.',
+            tooltipText: '"I dont want to spam click a gazillion times to play ur game"',
+            cost: 50,
+            resource: 'knowledge',
+            type: 'Mechanic',
+            availableAt: UnlockName.THINK_PASSIVELY
+        },
+        {
+            name: UnlockName.THOUGHT_BOOST_STACK,
+            title: 'Extended Focus',
+            description: 'Gain the ability to stack Thought Boosts.',
+            tooltipText: 'Viagra for the brain',
+            cost: 1e6,
+            resource: 'knowledge',
+            type: 'Mechanic',
+            availableAt: UnlockName.CHEESE_QUEUE
         }
     ],
     insight: [],
@@ -281,7 +281,7 @@ export const unlocks: Record<string, IUnlock[]> = {
             tooltipText: 'Is this good... or bad?',
             cost: 100,
             resource: 'moldyCheese',
-            type: 'Mechanic'
+            type: 'Effect'
         },
         {
             name: UnlockName.CHEESEYARD,
@@ -351,7 +351,7 @@ export const unlocks: Record<string, IUnlock[]> = {
             tooltipText: 'Completely harmless.',
             cost: 1e5,
             resource: 'cheeseBrains',
-            type: 'Mechanic'
+            type: 'Effect'
         },
         {
             name: UnlockName.CHEESE_MONSTER_TOTAL_DEATHS_BOOST,

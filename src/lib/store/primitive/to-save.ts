@@ -1,6 +1,6 @@
 export { resource } from './resources'
 
-export { upgrades } from './upgrades'
+export { upgradeCount, upgradeCost } from './upgrades'
 
 export { unlocked } from './unlocks'
 

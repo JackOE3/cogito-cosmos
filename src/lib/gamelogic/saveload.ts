@@ -1,7 +1,7 @@
 import { get } from 'svelte/store'
 import { sendMessage } from './notifications'
 import * as store from '$lib/store/primitive/to-save'
-import { upgradesInitial } from '$lib/store'
+import type { IUpgrade, UpgradeName } from '$lib/store'
 // import {compress, decompress} from 'lz-string'
 
 const CURRENT_SAVE_VERSION = '0.1.1'
@@ -60,6 +60,11 @@ export function loadSaveGame(): void {
         console.error(error) // log the error so at least we can see it
     }
 }
+
+/* function recomputeUpgradeCosts(upgrades: Record<UpgradeName, IUpgrade>): void {
+    // if upgrade cost gets corrupted or wrong number
+    // MAYBE
+} */
 
 /**
  * Loads the data from localStorage into the stores.
@@ -203,7 +208,8 @@ function resetStores(): void {
  * this function will recalculate the current price for the upgrade
  * Also can be utilized for possible upgrades where the base cost or multiplier of another upgrade changes.
  */
-export function recalculateStores(): void {
+/* export function recalculateStores(): void {
+    // DEPRECATED: SHOULD BE DELETED ONCE I HAVE OVERHAULED UPGRADES
     let upgrades: object = {}
     // maybe change to store.upgrades.update() instead?
     const unsubscribe = store.upgrades.subscribe($store => {
@@ -220,7 +226,7 @@ export function recalculateStores(): void {
     store.upgrades.refresh()
     store.windowLocations.reset()
     unsubscribe()
-}
+} */
 
 /**
  * This is where all the important game data to be saved is stored.

@@ -23,7 +23,7 @@
         totalCheeseMonsterDeaths,
         approxCheeseBrainsPerSec,
         resource,
-        upgrades,
+        upgradeCount,
         unlocked,
         WindowId
     } from '$lib/store'
@@ -125,7 +125,7 @@
             </span>
             <br />
             <span>
-                {#if $upgrades.cheeseMonsterMoldiness.bought > 0}
+                {#if $upgradeCount.cheeseMonsterMoldiness > 0}
                     ⮞ MC gain is boosted by {formatNumber($monsterMoldyCheeseMult, 2)}x
                 {:else}
                     ⮞ ...???

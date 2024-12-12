@@ -1,13 +1,11 @@
 <script lang="ts">
     import { devToolsEnabled, resource } from '$lib/store'
-    import { recalculateStores } from '$lib/gamelogic/saveload'
 </script>
 
 {#if $devToolsEnabled}
     <div id="devTools">
         <div id="devControls">
             <strong>Developer Tools</strong>
-            <button on:click={recalculateStores}>Recalc Stores</button>
 
             <span>thoughts</span>
             <div style="display:flex;">

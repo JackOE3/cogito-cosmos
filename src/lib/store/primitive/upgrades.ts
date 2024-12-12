@@ -1,37 +1,33 @@
 import { makeStore } from '../customStore'
-import { Resource } from './resources'
+import { Resource, type ResourceType } from './resources'
 
 export interface IUpgrade {
-    id: number
-    resource: string
+    resource: ResourceType
     cost: number
     costMultiplier: number
     maxBuy: number | null
-    bought: number
 }
 
 class Upgrade implements IUpgrade {
-    static #id = 0
-    public id: number
-
     constructor(
-        public resource: Resource,
+        public resource: ResourceType,
         public cost: number,
         public costMultiplier: number,
-        public maxBuy: number | null = null,
-        public bought = 0
-    ) {
-        this.id = Upgrade.#id++
-    }
+        public maxBuy: number | null = null
+    ) {}
 }
 
-export const upgradesInitial: Record<string, IUpgrade> = {
+export const upgrades = {
     // Cogito Ergo Sum
+    // thoughts
     thoughtAcceleration: new Upgrade(Resource.THOUGHTS, 10, 1.15),
     thoughtJerk: new Upgrade(Resource.THOUGHTS, 1e8, 1.3),
-    thoughtBoostStrength: new Upgrade(Resource.THOUGHTS, 100, 2),
-    thoughtBoostDuration: new Upgrade(Resource.THOUGHTS, 150, 4, 11),
-    thoughtBoostStack: new Upgrade(Resource.THOUGHTS, 5e7, 5, 8),
+
+    // knowledge
+    thoughtBoost: new Upgrade(Resource.KNOWLEDGE, 100, 2),
+    //thoughtBoostStrength: new Upgrade(Resource.KNOWLEDGE, 100, 2),
+    //thoughtBoostDuration: new Upgrade(Resource.KNOWLEDGE, 150, 4, 11),
+    //thoughtBoostStack: new Upgrade(Resource.KNOWLEDGE, 5e7, 5, 8),
 
     // Switzerland Simulator
     cheeseQueueLength: new Upgrade(Resource.CHEESE, 5, 2),
@@ -65,4 +61,14 @@ export const upgradesInitial: Record<string, IUpgrade> = {
     milkCheeseBrainsGain: new Upgrade(Resource.MILK, 1, 1.5)
 }
 
-export const upgrades = makeStore(upgradesInitial)
+export type UpgradeName = keyof typeof upgrades
+
+// only save this:
+// object with each upgrade names as keys and #upgrades bought as values
+// type is inferred here
+export const upgradeCount = makeStore(Object.fromEntries(Object.keys(upgrades).map(key => [key, 0])) as Record<UpgradeName, number>)
+
+// double space requirement for localStorage, but ill deal with that when (if ever) it becomes a problem...
+export const upgradeCost = makeStore(Object.fromEntries(Object.entries(upgrades).map(([key, upgrade]) => [key, upgrade.cost])) as Record<UpgradeName, number>)
+
+console.log('upgrades array:', Object.entries(upgrades))

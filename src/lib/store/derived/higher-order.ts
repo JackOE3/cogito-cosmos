@@ -1,5 +1,5 @@
 import { derived } from 'svelte/store'
-import { cheeseFactoryMode, currentThoughtBoost, resource, unlocked, upgrades } from '../primitive'
+import { cheeseFactoryMode, currentThoughtBoost, resource, unlocked, upgradeCount } from '../primitive'
 import {
     cheeseBoostFactorYield,
     cheeseCycleAcceleratorFactor,
@@ -29,8 +29,8 @@ import { checkBoolForNum } from '$lib/gamelogic/utils'
 
 const baseCost = 10
 export const cheeseCycleBase = {
-    duration: derived(upgrades, $upgrades => 1000 + cheeseYieldDeltaDuration * $upgrades.cheeseYield.bought), // milliseconds
-    yield: derived(upgrades, $upgrades => 1 + 0.5 * ($upgrades.cheeseYield.bought + $upgrades.cheeseYield.bought * $upgrades.cheeseYield.bought)),
+    duration: derived(upgradeCount, $upgradeCount => 1000 + cheeseYieldDeltaDuration * $upgradeCount.cheeseYield), // milliseconds
+    yield: derived(upgradeCount, $upgradeCount => 1 + 0.5 * ($upgradeCount.cheeseYield + $upgradeCount.cheeseYield * $upgradeCount.cheeseYield)),
     cost: derived([cheeseQueueOverclockCostMult, cheeseQueueCostDivideBy], ([$cheeseQueueOverclockCostMult, $cheeseQueueCostDivideBy]) => {
         return (baseCost * $cheeseQueueOverclockCostMult) / $cheeseQueueCostDivideBy
     })
@@ -66,8 +66,8 @@ export const cheeseCycleCost = derived(
 export const mcCycleDurationBoostFactor = derived(cheeseModeFactor, $cheeseModeFactor => Math.pow($cheeseModeFactor.duration, 1.5))
 
 export const cheeseMonsterCapacity = derived(
-    [upgrades, cheeseMonsterCapacityPerUpgrade],
-    ([$upgrades, $cheeseMonsterCapacityPerUpgrade]) => $cheeseMonsterCapacityPerUpgrade * (1 + $upgrades.cheeseMonsterCapacity.bought)
+    [upgradeCount, cheeseMonsterCapacityPerUpgrade],
+    ([$upgradeCount, $cheeseMonsterCapacityPerUpgrade]) => $cheeseMonsterCapacityPerUpgrade * (1 + $upgradeCount.cheeseMonsterCapacity)
 )
 
 export const cheeseMonsterDeathsPerSec = derived(
@@ -80,8 +80,8 @@ export const cheeseMonsterMassacreMultiplier = derived([unlocked, cheeseMonsterD
 )
 
 export const cheeseMonsterLootAmount = derived(
-    [upgrades, cheeseMonsterMassacreMultiplier],
-    ([$upgrades, $cheeseMonsterMassacreMultiplier]) => (1 + $upgrades.cheeseMonsterLoot.bought) * $cheeseMonsterMassacreMultiplier
+    [upgradeCount, cheeseMonsterMassacreMultiplier],
+    ([$upgradeCount, $cheeseMonsterMassacreMultiplier]) => (1 + $upgradeCount.cheeseMonsterLoot) * $cheeseMonsterMassacreMultiplier
 )
 
 export const approxCheeseBrainsPerSec = derived(

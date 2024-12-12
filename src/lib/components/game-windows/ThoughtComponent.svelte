@@ -8,17 +8,16 @@
         LORCA_OVERRIDE,
         resource,
         unlocked,
-        upgrades,
         currentThoughtBoost,
         currentThoughtBoostTime,
-        thoughtBoostMax,
+        thoughtBoostMultiplier,
         thoughtBoostDuration,
-        thoughtBoostMaxStacks,
         thoughtsPerSec,
         thoughtsPerSecBase,
         UnlockName,
         WindowId,
-        mood
+        mood,
+        upgradeCount
     } from '$lib/store'
 
     export let windowId: WindowId
@@ -28,16 +27,14 @@
     import EffectComponent from '../EffectComponent.svelte'
     import Effect from '../Effect.svelte'
     import Image from '../Image.svelte'
-    import { insightPerSec, knowledgePerSec } from '$lib/store/derived/thoughts'
+    import { insightPerSec, knowledgePerSec } from '$lib/store'
 
     let buyMaxUpgrades = false
-    let thoughtBoostCurrentStacks = 0
     const thoughtBoostDecay = 2000
     let lastTime: number | null = null
     let myReq: number
 
-    $: thoughtAccelDisplay =
-        $upgrades.thoughtAcceleration.bought > 0 ? ($thoughtsPerSec / $upgrades.thoughtAcceleration.bought) * (1 - 1 / $thoughtsPerSecBase) : 1
+    $: thoughtAccelDisplay = $upgradeCount.thoughtAcceleration > 0 ? ($thoughtsPerSec / $upgradeCount.thoughtAcceleration) * (1 - 1 / $thoughtsPerSecBase) : 1
     $: thoughtJerkDisplay = $thoughtsPerSec / $thoughtsPerSecBase
 
     function handleThink(): void {
@@ -46,14 +43,9 @@
             return
         }
         // set multiplier, which expires after a time and starts decaying
-        $currentThoughtBoost = $thoughtBoostMax
+        $currentThoughtBoost = $thoughtBoostMultiplier
 
-        if ($unlocked.thoughtBoostStack) {
-            if (thoughtBoostCurrentStacks < $thoughtBoostMaxStacks) {
-                $currentThoughtBoostTime += $thoughtBoostDuration
-                thoughtBoostCurrentStacks++
-            } else $currentThoughtBoostTime = $thoughtBoostDuration * $thoughtBoostMaxStacks
-        } else $currentThoughtBoostTime = $thoughtBoostDuration
+        $currentThoughtBoostTime = $thoughtBoostDuration
 
         cancelAnimationFrame(myReq)
         myReq = requestAnimationFrame(animateThoughtBoost)
@@ -70,13 +62,10 @@
 
         if ($currentThoughtBoostTime > 0) {
             $currentThoughtBoostTime -= deltaT
-            thoughtBoostCurrentStacks = Math.ceil($currentThoughtBoostTime / $thoughtBoostDuration)
-
             if ($currentThoughtBoostTime < 0) $currentThoughtBoostTime = 0
         } else {
-            thoughtBoostCurrentStacks = 0
             // decrement evenly over {thoughtBoostDecay} milliseconds
-            $currentThoughtBoost -= (($thoughtBoostMax - 1) / thoughtBoostDecay) * deltaT
+            $currentThoughtBoost -= (($thoughtBoostMultiplier - 1) / thoughtBoostDecay) * deltaT
             if ($currentThoughtBoost <= 1) {
                 $currentThoughtBoost = 1
             }
@@ -84,9 +73,9 @@
         if ($currentThoughtBoost > 1) myReq = requestAnimationFrame(animateThoughtBoost)
     }
 
-    const thoughtBoostStrengthBought = derived(upgrades, $upgrades => $upgrades.thoughtBoostStrength.bought)
+    const thoughtBoostBought = derived(upgradeCount, $upgradeCount => $upgradeCount.thoughtBoost)
     // handle currentThoughtBoost being updated automatically when its strength is changed
-    $: if ($thoughtBoostStrengthBought && get(currentThoughtBoostTime) > 0) currentThoughtBoost.set(get(thoughtBoostMax))
+    $: if ($thoughtBoostBought && get(currentThoughtBoostTime) > 0) currentThoughtBoost.set(get(thoughtBoostMultiplier))
 
     onMount(() => {
         myReq = requestAnimationFrame(animateThoughtBoost)
@@ -110,9 +99,6 @@
                         - {formatNumber($currentThoughtBoost, 2)}x
                         {#if $currentThoughtBoostTime >= 100}
                             for {formatTime($currentThoughtBoostTime / 1000, 1)}
-                            {#if $unlocked.thoughtBoostStack}
-                                - {thoughtBoostCurrentStacks}/{$thoughtBoostMaxStacks} Stack{$thoughtBoostMaxStacks > 1 ? 's' : ''}
-                            {/if}
                         {/if}
                     {/if}
                 {/if}
@@ -208,7 +194,7 @@
         {#if $unlocked.thoughtBoost}
             <button on:click={handleThink}>
                 Thought Boost <span class="iconify" data-icon="icon-park-outline:brain"></span><br />
-                x{formatNumber($thoughtBoostMax, 2)} thoughts/s for {formatTime($thoughtBoostDuration / 1000)}
+                x{formatNumber($thoughtBoostMultiplier, 2)} thoughts/s for {formatTime($thoughtBoostDuration / 1000)}
             </button>
         {:else}
             <button on:click={handleThink}>
@@ -218,14 +204,11 @@
         {/if}
     </div>
 
-    <div style="display: flex; flex-direction: row; justify-content: center; gap: 16px;">
-        <UnlockDrawer unlocks={unlocks.thoughts} folderName="Swordsman_Skill_Icons_Pack" themeId="thoughts" />
-        <UnlockDrawer unlocks={unlocks.knowledge} folderName="Swordsman_Skill_Icons_Pack" themeId="knowledge" />
-        <UnlockDrawer unlocks={unlocks.insight} folderName="Swordsman_Skill_Icons_Pack" themeId="insight" />
-    </div>
+    <div style="flexRowContainer"></div>
 
     <div class="flexRowContainer">
         <div class="gridColumn">
+            <UnlockDrawer unlocks={unlocks.thoughts} folderName="Swordsman_Skill_Icons_Pack" themeId="thoughts" />
             <UpgradeButton
                 upgradeName="thoughtAcceleration"
                 {buyMaxUpgrades}
@@ -241,12 +224,14 @@
                 tooltipText={`+${formatNumber(thoughtJerkDisplay, 2)} to Effect of Thought Acceleration `}>
                 Thought Jerk
             </UpgradeButton>
-
-            <UpgradeButton upgradeName="thoughtBoostStrength" {buyMaxUpgrades} btnUnlocked={$unlocked.thoughtBoost} tooltipText="Scales ^1.5 with #upgrades">
+        </div>
+        <div class="gridColumn">
+            <UnlockDrawer unlocks={unlocks.knowledge} folderName="Swordsman_Skill_Icons_Pack" themeId="knowledge" />
+            <UpgradeButton upgradeName="thoughtBoost" {buyMaxUpgrades} btnUnlocked={$unlocked.thoughtBoost} tooltipText="Scales ^1.5 with #upgrades">
                 Increase the strength of Thought Boosts
             </UpgradeButton>
 
-            <UpgradeButton upgradeName="thoughtBoostDuration" {buyMaxUpgrades} btnUnlocked={$unlocked.thoughtBoost} tooltipText="Duration +5s">
+            <!-- <UpgradeButton upgradeName="thoughtBoostDuration" {buyMaxUpgrades} btnUnlocked={$unlocked.thoughtBoost} tooltipText="Duration +5s">
                 Increase the duration of Thought Boosts
             </UpgradeButton>
 
@@ -256,11 +241,14 @@
                 btnUnlocked={$unlocked.thoughtBoostStack}
                 tooltipText="Max stacks +1 <br> Each stack increases the time by <br>  the duration shown on the button.">
                 Increase the maximum stack size of Thought Boosts <br />
-            </UpgradeButton>
+            </UpgradeButton> -->
+        </div>
+        <div class="gridColumn">
+            <UnlockDrawer unlocks={unlocks.insight} folderName="Swordsman_Skill_Icons_Pack" themeId="insight" />
         </div>
 
         <!-- <div class="gridColumn" style="height:332px;">
-            <EffectComponent title={$upgrades.cheeseThoughtMult.bought > 0 || $unlocked.cheeseQueueLengthBoost ? 'Effects' : '???'}>
+            <EffectComponent title={$upgradeCount.cheeseThoughtMult > 0 || $unlocked.cheeseQueueLengthBoost ? 'Effects' : '???'}>
                 <Effect factor={$currentThoughtBoost} unlocked={$unlocked.cheeseBoost} tooltipText="Effect is 1:1">
                     {unlocks.cheese.find(v => v.name === UnlockName.CHEESE_BOOST)?.description}
                 </Effect>
