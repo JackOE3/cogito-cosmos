@@ -77,6 +77,15 @@ body {
     --themeColor1: rgb(129, 0, 204);
     --themeColor2: rgb(182, 122, 255);
 }
+[data-theme-colors='knowledge'] {
+    --themeColor1: rgb(38, 59, 248);
+    --themeColor2: rgb(173, 216, 230);
+}
+[data-theme-colors='insight'] {
+    --themeColor1: rgb(122, 1, 57);
+    --themeColor2: rgb(255, 0, 255);
+}
+
 [data-theme-colors='cheese'] {
     --themeColor1: rgb(168, 143, 2);
     --themeColor2: rgb(244, 255, 33);

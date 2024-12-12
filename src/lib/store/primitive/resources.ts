@@ -2,6 +2,8 @@ import { makeStore } from '../customStore'
 
 export enum Resource {
     THOUGHTS = 'thoughts',
+    KNOWLEDGE = 'knowledge',
+    INSIGHT = 'insight',
     CHEESE = 'cheese',
     MOLDY_CHEESE = 'moldyCheese',
     CHEESE_MONSTER = 'cheeseMonster',
@@ -10,10 +12,14 @@ export enum Resource {
     BACTERIA = 'bacteria',
     MILK_POINTS = 'milkPoints'
 }
+export type ResourceType = `${Resource}`
+
 export type Resources = Record<Resource, number>
 
 export const resource = makeStore<Resources>({
     thoughts: 0,
+    knowledge: 0,
+    insight: 0,
     cheese: 0,
     moldyCheese: 0,
     cheeseMonster: 0,

@@ -8,6 +8,9 @@ export const totalTimePlayed = makeStore(0)
 
 export const lastSaved = makeStore(Date.now())
 
+export type Mood = 'happy' | 'neutral' | 'sad'
+export const mood = makeStore<Mood>('happy')
+
 export const currentThoughtBoost = makeStore(1)
 export const currentThoughtBoostTime = makeStore(0)
 

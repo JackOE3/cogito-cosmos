@@ -25,7 +25,7 @@
     import MilkTreeComponent from '$lib/components/game-windows/MilkTreeComponent.svelte'
     import BacteriaComponent from '$lib/components/game-windows/BacteriaComponent.svelte'
 
-    import { startGameLoop } from '$lib/gamelogic/gameloop'
+    import { startGameLoop, stopGameLoop } from '$lib/gamelogic/gameloop'
 
     import backgroundImage from '$lib/images/endless-constellation.svg'
     import Image from '$lib/components/Image.svelte'
@@ -35,6 +35,7 @@
      * 	This also calculates the offline progress
      */
     startGameLoop()
+    onDestroy(() => stopGameLoop())
 
     let unlockTogglesShown = false
 
@@ -364,7 +365,7 @@
                 role="none">
                 <ThoughtComponent windowId={WindowId.thoughtComponent} />
             </div>
-            {#if $unlocked.switzerland || $LORCA_OVERRIDE}
+            <!-- {#if $unlocked.switzerland || $LORCA_OVERRIDE}
                 <div
                     id={WindowId.cheeseComponent}
                     class="window"
@@ -423,7 +424,7 @@
                     role="none">
                     <BacteriaComponent windowId={WindowId.bacteriaComponent} />
                 </div>
-            {/if}
+            {/if} -->
         </div>
     </div>
 </main>

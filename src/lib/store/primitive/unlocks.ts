@@ -1,10 +1,12 @@
 import { makeStore } from '../customStore'
+import type { ResourceType } from './resources'
 
 export enum UnlockName {
     // Thoughts
     START = 'start',
     THINK_PASSIVELY = 'thinkPassively',
     THINK_FASTER = 'thinkFaster',
+    NEUTRAL_MOOD = 'neutralMood',
     THOUGHT_BOOST = 'thoughtBoost',
     THOUGHTS_50_PERCENT = 'thoughts50Percent',
     SWITZERLAND = 'switzerland',
@@ -12,6 +14,8 @@ export enum UnlockName {
     MOLDY_CHEESE = 'moldyCheese',
     MILK = 'milk',
     MILK_TREE = 'milkTree',
+    // Knowledge
+    PONDER_PASSIVELY = 'ponderPassively',
     // Cheese
     CHEESE_QUEUE = 'cheeseQueue',
     CHEESE_QUEUE_OVERCLOCKING = 'cheeseQueueOverclocking',
@@ -55,15 +59,15 @@ export enum UnlockName {
     FREE_PRE_MILK_UPGRADES = 'freePreMilkUpgrades'
 }
 
-export type unlockType = 'Unlock' | 'Mechanic' | 'Boost' | 'Effect'
+export type UnlockType = 'Unlock' | 'Mechanic' | 'Boost' | 'Effect'
 export interface IUnlock {
     name: UnlockName
-    type: unlockType
-    resource: string
-    cost: number
     title: string
     description: string
     tooltipText?: string
+    cost: number
+    resource: ResourceType
+    type: UnlockType
     availableAt?: UnlockName
 }
 
@@ -72,175 +76,198 @@ export const unlocks: Record<string, IUnlock[]> = {
     thoughts: [
         {
             name: UnlockName.THINK_PASSIVELY,
-            type: 'Boost',
-            resource: 'thoughts',
-            cost: 10,
             title: 'Learn to think',
             description: 'You think <strong>once</strong> per second.',
-            tooltipText: '"I think, therefore I am."'
+            tooltipText: '"I think, therefore I am."',
+            cost: 10,
+            resource: 'thoughts',
+            type: 'Boost'
         },
         {
             name: UnlockName.THINK_FASTER,
-            type: 'Unlock',
-            resource: 'thoughts',
-            cost: 30,
             title: 'Accelerate your thinking',
             description: 'Unlock the upgrade <strong>Thought Acceleration</strong>',
             tooltipText: 'Really makes you think...',
+            cost: 30,
+            resource: 'thoughts',
+            type: 'Unlock',
+            availableAt: UnlockName.THINK_PASSIVELY
+        },
+        {
+            name: UnlockName.NEUTRAL_MOOD,
+            title: 'True Neutral',
+            description: 'Let go of all earthly desires and transcend emotions.',
+            tooltipText: 'TBD',
+            cost: 100,
+            resource: 'thoughts',
+            type: 'Mechanic',
             availableAt: UnlockName.THINK_PASSIVELY
         },
         {
             name: UnlockName.THOUGHT_BOOST,
-            type: 'Mechanic',
-            resource: 'thoughts',
-            cost: 50,
             title: 'Boost your thinking',
             description: 'Instead of thinking once when you click, you gain a production multiplier temporarily.',
             tooltipText: '"I dont want to spam click a gazillion times to play ur game"',
+            cost: 50,
+            resource: 'thoughts',
+            type: 'Mechanic',
             availableAt: UnlockName.THINK_PASSIVELY
         },
         {
             name: UnlockName.THOUGHTS_50_PERCENT,
-            type: 'Boost',
-            resource: 'thoughts',
-            cost: 500,
             title: 'Simple Maths',
             description: 'Your thinking is boosted by 50%.',
             tooltipText: '"If you no longer go for a production multiplier that exists, you\'re no longer an incrementalist."',
+            cost: 500,
+            resource: 'thoughts',
+            type: 'Boost',
             availableAt: UnlockName.THINK_PASSIVELY
         },
         {
             name: UnlockName.SWITZERLAND,
-            type: 'Unlock',
-            resource: 'thoughts',
-            cost: 3000,
             title: 'Travel to Switzerland',
             description: 'You can start producing <strong style="color:yellow">Cheese</strong>.',
             tooltipText: 'The land of cheese',
+            cost: 3000,
+            resource: 'thoughts',
+            type: 'Unlock',
             availableAt: UnlockName.THINK_PASSIVELY
         },
         {
             name: UnlockName.THOUGHT_BOOST_STACK,
-            type: 'Unlock',
-            resource: 'thoughts',
-            cost: 1e6,
             title: 'Extended Focus',
             description: 'Gain the ability to stack Thought Boosts.',
             tooltipText: 'Viagra for the brain',
+            cost: 1e6,
+            resource: 'thoughts',
+            type: 'Unlock',
             availableAt: UnlockName.CHEESE_QUEUE
         },
         {
             name: UnlockName.MOLDY_CHEESE,
-            type: 'Unlock',
-            resource: 'thoughts',
-            cost: 100e9,
             title: 'Derivative Cheese',
             description:
                 'You can convert <strong style="color:yellow">Cheese</strong> into <strong style="color:rgb(60, 255, 0)">Moldy Cheese</strong>, if you think it tastes better.',
             tooltipText: 'Is it okay to eat?',
+            cost: 100e9,
+            resource: 'thoughts',
+            type: 'Unlock',
             availableAt: UnlockName.CHEESE_QUEUE
         },
         {
             name: UnlockName.MILK,
-            type: 'Unlock',
-            resource: 'thoughts',
-            cost: 1e22,
             title: 'Prestige?',
             description:
                 'You can trade your progress so far for a glass of calcium-rich <strong>Milk</strong>. Buying this will NOT reset your progress, but only unlock the next layer.',
             tooltipText: 'From cheese you get milk...I think.',
+            cost: 1e22,
+            resource: 'thoughts',
+            type: 'Unlock',
             availableAt: UnlockName.THOUGHT_JERK
         }
     ],
+    knowledge: [
+        {
+            name: UnlockName.PONDER_PASSIVELY,
+            title: 'Deeper Learning',
+            description: 'You acquire <strong style="color:lightblue">Knowledge</strong> passively at a reduced rate while in a neutral mood. ',
+            tooltipText: 'TBD',
+            cost: 10,
+            resource: 'knowledge',
+            type: 'Unlock',
+            availableAt: UnlockName.NEUTRAL_MOOD
+        }
+    ],
+    insight: [],
 
     // Switzerland Simulator
     cheese: [
         {
             name: UnlockName.CHEESE_QUEUE,
-            type: 'Mechanic',
-            resource: 'cheese',
-            cost: 8,
             title: 'Cheese Queue',
             description: 'You can queue up the production of <strong style="color:yellow">Cheese</strong>.',
-            tooltipText: 'Cheese-o-mation lets you cheese clicking a button.'
+            tooltipText: 'Cheese-o-mation lets you cheese clicking a button.',
+            cost: 8,
+            resource: 'cheese',
+            type: 'Mechanic'
         },
         {
             name: UnlockName.CHEESE_QUEUE_OVERCLOCKING,
-            type: 'Mechanic',
-            resource: 'cheese',
-            cost: 50,
             title: 'Cheese Overclocking',
             description: 'You can increase the speed of your workers producing cheese by forcing them to think faster.',
-            tooltipText: 'Thinking about how to cheese faster...'
+            tooltipText: 'Thinking about how to cheese faster...',
+            cost: 50,
+            resource: 'cheese',
+            type: 'Mechanic'
         },
         {
             name: UnlockName.CHEESE_QUEUE_LENGTH_BOOST,
-            type: 'Effect',
-            resource: 'cheese',
-            cost: 500,
             title: 'Length Boost',
             description: 'The capacity of the Cheese Queue boosts cheese production.',
             tooltipText: 'Give your employees more work like a good boss.',
+            cost: 500,
+            resource: 'cheese',
+            type: 'Effect',
             availableAt: UnlockName.CHEESE_QUEUE
         },
         {
             name: UnlockName.CHEESE_BOOST,
-            type: 'Effect',
-            resource: 'cheese',
-            cost: 50_000,
             title: 'Cheese Boost',
             description: 'Thought Boost also affects cheese production.',
             tooltipText: 'If you think hard enough, you can create cheese out of nothing.',
+            cost: 50_000,
+            resource: 'cheese',
+            type: 'Effect',
             availableAt: UnlockName.CHEESE_QUEUE
         },
         {
             name: UnlockName.CHEESE_QUEUE_COST_DIVIDE,
-            type: 'Unlock',
-            resource: 'cheese',
-            cost: 1e6,
             title: 'Cheepse',
             description: 'Unlock an additional upgrade to make cheese production more cost-efficient.',
             tooltipText: 'How much does a thought weigh?',
+            cost: 1e6,
+            resource: 'cheese',
+            type: 'Unlock',
             availableAt: UnlockName.CHEESE_QUEUE
         },
         {
             name: UnlockName.CHEESE_CYCLE_ACCELERATOR,
-            type: 'Effect',
-            resource: 'cheese',
-            cost: 5e6,
             title: 'Experience is key',
             description: 'Cheese production speeds up based on the amount of cheese cycles completed.',
             tooltipText: 'The mastery of cheese, a very important life skill to have.',
+            cost: 5e6,
+            resource: 'cheese',
+            type: 'Effect',
             availableAt: UnlockName.CHEESE_QUEUE_LENGTH_BOOST
         },
         {
             name: UnlockName.THOUGHT_JERK,
-            type: 'Unlock',
-            resource: 'cheese',
-            cost: 3e7,
             title: 'More to think about',
             description: 'Jerk(?) your thinking.',
             tooltipText: 'something something per second cubed',
+            cost: 3e7,
+            resource: 'cheese',
+            type: 'Unlock',
             availableAt: UnlockName.CHEESE_QUEUE_LENGTH_BOOST
         },
         {
             name: UnlockName.CHEESE_MODES,
-            type: 'Mechanic',
-            resource: 'cheese',
-            cost: 5e7,
             title: 'Cheese Factory Protocol',
             description: 'Gain access to 3 modes to help manage your cheese production',
             tooltipText: 'Micromanaging your employees will lead to universal happiness.',
+            cost: 5e7,
+            resource: 'cheese',
+            type: 'Mechanic',
             availableAt: UnlockName.CHEESE_QUEUE_LENGTH_BOOST
         },
         {
             name: UnlockName.CHEESE_CYCLES_BOOST_THOUGHTS,
-            type: 'Effect',
-            resource: 'cheese',
-            cost: 1e8,
             title: 'Return on Investment',
             description: 'Total cheese cycles give a boost (multiplier) to your thinking.',
             tooltipText: 'I like cycling. My favorite is cheese.',
+            cost: 1e8,
+            resource: 'cheese',
+            type: 'Effect',
             availableAt: UnlockName.CHEESE_CYCLE_ACCELERATOR
         }
     ],
@@ -249,59 +276,59 @@ export const unlocks: Record<string, IUnlock[]> = {
     moldyCheese: [
         {
             name: UnlockName.MOLDY_CHEESE_BYPRODUCT,
-            type: 'Mechanic',
-            resource: 'moldyCheese',
-            cost: 100,
             title: 'Moldomation',
             description: 'Sometimes the cheese factory will produce moldy cheese as a byproduct.',
-            tooltipText: 'Is this good... or bad?'
+            tooltipText: 'Is this good... or bad?',
+            cost: 100,
+            resource: 'moldyCheese',
+            type: 'Mechanic'
         },
         {
             name: UnlockName.CHEESEYARD,
-            type: 'Unlock',
-            resource: 'moldyCheese',
-            cost: 2000,
             title: 'End Times',
             description: 'Construct the <strong style="color:crimson">Cheeseyard</strong>, a place where abominations made of cheese reside.',
-            tooltipText: 'What happens after cheese dies?'
+            tooltipText: 'What happens after cheese dies?',
+            cost: 2000,
+            resource: 'moldyCheese',
+            type: 'Unlock'
         },
         {
             name: UnlockName.MANUAL_MOLDY_CHEESE_CONVERSION_BOOST,
-            type: 'Boost',
-            resource: 'moldyCheese',
-            cost: 4000,
             title: 'Passiveness',
             description: 'Cheese sacrifice produces 10x more moldy cheese, but its cooldown is also increased by 10x.',
-            tooltipText: 'Mr. Gorgonzola loves penicillium roqueforti, but proper love-making needs time.'
+            tooltipText: 'Mr. Gorgonzola loves penicillium roqueforti, but proper love-making needs time.',
+            cost: 4000,
+            resource: 'moldyCheese',
+            type: 'Boost'
         },
         {
             name: UnlockName.CHEESEYARD_MOLD_UPGRADE,
-            type: 'Unlock',
-            resource: 'moldyCheese',
-            cost: 8000,
             title: 'Em(b)olden',
             description: 'Your cheese monsters can get moldy. <br> Unlock an additional upgrade in the Cheeseyard.',
             tooltipText: 'This smells...',
+            cost: 8000,
+            resource: 'moldyCheese',
+            type: 'Unlock',
             availableAt: UnlockName.MONSTER_BRAIN_WAVE_CONTROLLER
         },
         {
             name: UnlockName.MOLDY_CHEESE_CYCLE_DURATION_BOOST,
-            type: 'Effect',
-            resource: 'moldyCheese',
-            cost: 16000,
             title: 'Slow and Steady',
             description: 'Moldy cheese byproduct gain is boosted by the relative duration of the cheese cycle (which depends on the cheese factory protocol).',
             tooltipText: 'The most meticulously crafted cheese is the moldiest.',
+            cost: 16000,
+            resource: 'moldyCheese',
+            type: 'Effect',
             availableAt: UnlockName.MONSTER_BRAIN_WAVE_CONTROLLER
         },
         {
             name: UnlockName.MOLDY_CHEESE_HALFLIFE_BOOST,
-            type: 'Effect',
-            resource: 'moldyCheese',
-            cost: 1e6,
             title: 'Half-important Upgrade',
             description: 'Cheese gain is additionally boosted by MC half-life.',
             tooltipText: 'How much are 2 half-lives? They drop your braincells by 75%.',
+            cost: 1e6,
+            resource: 'moldyCheese',
+            type: 'Effect',
             availableAt: UnlockName.CHEESEYARD_MOLD_UPGRADE
         }
     ],
@@ -310,51 +337,51 @@ export const unlocks: Record<string, IUnlock[]> = {
     cheeseBrains: [
         {
             name: UnlockName.CHEESE_MONSTER_MASSACRE,
-            type: 'Mechanic',
-            resource: 'cheeseBrains',
-            cost: 200,
             title: 'No Morals',
             description: 'When killing many cheese monsters at once, the loot is massively boosted.',
-            tooltipText: 'Rewarding genocide! <br /> (only applies in this game and NOT in real life)'
+            tooltipText: 'Rewarding genocide! <br /> (only applies in this game and NOT in real life)',
+            cost: 200,
+            resource: 'cheeseBrains',
+            type: 'Mechanic'
         },
         {
             name: UnlockName.CHEESE_MONSTER_COLLECTIVE_SENTIENCE,
-            type: 'Mechanic',
-            resource: 'cheeseBrains',
-            cost: 1e5,
             title: 'Collective Sentience',
             description: 'Bigger populations give a (much) bigger global boost to thinking due to emergence.',
-            tooltipText: 'Completely harmless.'
+            tooltipText: 'Completely harmless.',
+            cost: 1e5,
+            resource: 'cheeseBrains',
+            type: 'Mechanic'
         },
         {
             name: UnlockName.CHEESE_MONSTER_TOTAL_DEATHS_BOOST,
-            type: 'Effect',
-            resource: 'cheeseBrains',
-            cost: 1e6,
             title: 'Mass Murder',
             description: 'Total cheese monster deaths boost dropped monster loot.',
-            tooltipText: 'You have to perfect to art of killing to extract the most out of corpses.'
+            tooltipText: 'You have to perfect the art of killing to extract the most out of corpses.',
+            cost: 1e6,
+            resource: 'cheeseBrains',
+            type: 'Effect'
         }
     ],
 
     milk: [
         {
             name: UnlockName.BACTERIA,
-            type: 'Unlock',
-            resource: 'milk',
-            cost: 1e6,
             title: 'Escherichia coli',
             description: 'You can infest your milk reserves with bacteria.',
-            tooltipText: 'No Description yet.'
+            tooltipText: 'No Description yet.',
+            cost: 1e6,
+            resource: 'milk',
+            type: 'Unlock'
         },
         {
             name: UnlockName.BACTERIA,
-            type: 'Unlock',
-            resource: 'milk',
-            cost: 1e6,
             title: 'Escherichia coli',
             description: 'You can infest your milk reserves with bacteria.',
-            tooltipText: 'No Description yet.'
+            tooltipText: 'No Description yet.',
+            cost: 1e6,
+            resource: 'milk',
+            type: 'Unlock'
         }
     ]
 }

@@ -1,7 +1,7 @@
 <script lang="ts">
     import { formatResourceName, formatWhole } from '$lib/gamelogic/utils'
     import { resource } from '$lib/store'
-    import type { IUnlock, unlockType } from '$lib/store'
+    import type { IUnlock, UnlockType } from '$lib/store'
 
     export let data: IUnlock
     export let top: number
@@ -11,7 +11,7 @@
 
     $: costColor = $resource[data.resource] > data.cost ? 'rgb(102, 255, 102)' : 'rgb(255, 102, 102)'
 
-    const background: Record<unlockType, string> = {
+    const background: Record<UnlockType, string> = {
         Boost: 'linear-gradient(to top, var(--Gray400) 20%, white 80%)',
         Unlock: 'linear-gradient(0deg, yellow 20%, rgba(255,251,125,1) 80%',
         Mechanic: 'green',

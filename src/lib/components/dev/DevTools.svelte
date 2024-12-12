@@ -10,7 +10,6 @@
             <button on:click={recalculateStores}>Recalc Stores</button>
 
             <span>thoughts</span>
-            <input type="number" bind:value={$resource.thoughts} />
             <div style="display:flex;">
                 <button on:click={() => ($resource.thoughts += 1000)}>+1K</button>
                 <button on:click={() => ($resource.thoughts += 100000)}>+100K</button>
@@ -18,9 +17,24 @@
                 <button on:click={() => ($resource.thoughts *= 10)}>*10</button>
                 <button on:click={() => ($resource.thoughts /= 10)}>/10</button>
             </div>
+            <span>knowledge</span>
+            <div style="display:flex;">
+                <button on:click={() => ($resource.knowledge += 1000)}>+1K</button>
+                <button on:click={() => ($resource.knowledge += 100000)}>+100K</button>
+                <button on:click={() => ($resource.knowledge += 1000000)}>+1M</button>
+                <button on:click={() => ($resource.knowledge *= 10)}>*10</button>
+                <button on:click={() => ($resource.knowledge /= 10)}>/10</button>
+            </div>
+            <span>insight</span>
+            <div style="display:flex;">
+                <button on:click={() => ($resource.insight += 1000)}>+1K</button>
+                <button on:click={() => ($resource.insight += 100000)}>+100K</button>
+                <button on:click={() => ($resource.insight += 1000000)}>+1M</button>
+                <button on:click={() => ($resource.insight *= 10)}>*10</button>
+                <button on:click={() => ($resource.insight /= 10)}>/10</button>
+            </div>
 
             <span>cheese</span>
-            <input type="number" bind:value={$resource.cheese} />
             <div style="display:flex;">
                 <button on:click={() => ($resource.cheese += 1000)}>+1K</button>
                 <button on:click={() => ($resource.cheese += 100000)}>+100K</button>
@@ -30,7 +44,6 @@
             </div>
 
             <span>moldy cheese</span>
-            <input type="number" bind:value={$resource.moldyCheese} />
             <div style="display:flex;">
                 <button on:click={() => ($resource.moldyCheese += 1000)}>+1K</button>
                 <button on:click={() => ($resource.moldyCheese += 100000)}>+100K</button>

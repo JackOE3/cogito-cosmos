@@ -47,7 +47,7 @@
         width: 62.7px;
         height: 62.7px;
         background-color: var(--Gray800);
-        border: 1px var(--Gray500) solid;
+        border: 1px var(--themeColor2) solid;
         border-radius: 0px;
         outline: 2px solid rgba(0, 0, 0, 0.6);
         padding: 2px;

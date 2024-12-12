@@ -1,7 +1,8 @@
 import { get } from 'svelte/store'
 import { handleCheeseMonster } from './cheeseMonster'
-import { lastSaved, resource, highestMilk, mcHalfLifeSeconds, thoughtsPerSec, totalTimePlayed, bacteriaPerSec } from '$lib/store'
+import { lastSaved, resource, highestMilk, mcHalfLifeSeconds, thoughtsPerSec, totalTimePlayed, bacteriaPerSec, mood } from '$lib/store'
 import { saveSaveGame } from './saveload'
+import { insightPerSec, knowledgePerSec } from '$lib/store/derived/thoughts'
 
 // natural log of 2
 const LN2 = 0.69314718056
@@ -10,7 +11,7 @@ const LN2 = 0.69314718056
  * how often to run the loop. 200ms = 5 times per second
  * 200ms or 100ms is usually fast enough to feel responsive without wasting too much CPU time
  */
-const GAME_INTERVAL = 200
+const GAME_INTERVAL = 100
 const fastFowardFactor = 1
 
 /**
@@ -79,9 +80,16 @@ function gameLoop(): void {
  */
 function gameUpdate(deltaTimeSeconds: number): void {
     deltaTimeSeconds *= fastFowardFactor
-
     resource.update($resource => {
-        $resource.thoughts += get(thoughtsPerSec) * deltaTimeSeconds
+        if (get(mood) === 'happy') {
+            $resource.thoughts += get(thoughtsPerSec) * deltaTimeSeconds
+        } else if (get(mood) === 'neutral') {
+            $resource.knowledge += get(knowledgePerSec) * deltaTimeSeconds
+            $resource.thoughts *= 1 - 0.25 * deltaTimeSeconds
+        } else if (get(mood) === 'sad') {
+            $resource.insight += get(insightPerSec) * deltaTimeSeconds
+        }
+
         // moldy cheese decay (linear extrapolation)
         // moldyCheese.update(value => value * (1 - LN2/get(mcHalfLifeSeconds) * deltaTimeSeconds))
         // OR: moldy cheese decay (exact)

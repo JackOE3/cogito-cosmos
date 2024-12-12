@@ -4,9 +4,10 @@
 
     export let unlocks: IUnlock[]
     export let folderName = ''
+    export let themeId = ''
 </script>
 
-<div style="position:relative; width: max-content; height: max-content">
+<div style="position:relative; width: max-content; height: max-content; display: flex; justify-content: center" data-theme-colors={themeId}>
     <div class="unlock-drawer theme-border">
         {#each unlocks as unlock, tempCount}
             {#if !$unlocked[unlock.name] && $unlocked[unlock.availableAt ?? 'start']}
@@ -35,6 +36,7 @@
         gap: 2px;
         overflow: hidden;
         justify-items: center;
+        outline: 1px solid rgba(0, 0, 0, 0.6);
     }
     /* .unlock-drawer:hover {
     --hover-slots: 5;

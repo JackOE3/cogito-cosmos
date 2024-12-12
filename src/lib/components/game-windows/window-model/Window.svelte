@@ -74,9 +74,9 @@
         border-width: 2px;
         border-style: solid;
         border-radius: 4px;
-        box-shadow:
+        /* box-shadow:
             0 0 5px 1px var(--themeColor1),
-            inset 0 0 1px 2px rgba(0, 0, 0, 0.4);
+            inset 0 0 1px 2px rgba(0, 0, 0, 0.4); */
     }
 
     .content {

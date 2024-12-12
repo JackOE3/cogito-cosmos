@@ -17,7 +17,8 @@
         thoughtsPerSec,
         thoughtsPerSecBase,
         UnlockName,
-        WindowId
+        WindowId,
+        mood
     } from '$lib/store'
 
     export let windowId: WindowId
@@ -26,8 +27,10 @@
     import { derived, get } from 'svelte/store'
     import EffectComponent from '../EffectComponent.svelte'
     import Effect from '../Effect.svelte'
+    import Image from '../Image.svelte'
+    import { insightPerSec, knowledgePerSec } from '$lib/store/derived/thoughts'
 
-    const buyMaxUpgrades = false
+    let buyMaxUpgrades = false
     let thoughtBoostCurrentStacks = 0
     const thoughtBoostDecay = 2000
     let lastTime: number | null = null
@@ -54,6 +57,10 @@
 
         cancelAnimationFrame(myReq)
         myReq = requestAnimationFrame(animateThoughtBoost)
+    }
+
+    function handlePonder(): void {
+        $resource.knowledge += 1
     }
 
     function animateThoughtBoost(currentTime: number): void {
@@ -116,10 +123,38 @@
 
     <div>
         <!-- <div style="position: absolute; right: 8px; top: 8px;">
-        <input type="checkbox" name="buyMax" bind:checked={buyMaxUpgrades} />
-        <label for="buyMax">Buy Max</label>
-      </div> -->
-        <span class="resourceDisplay">
+            <input type="checkbox" name="buyMax" bind:checked={buyMaxUpgrades} />
+            <label for="buyMax">Buy Max</label>
+        </div> -->
+        <span style="display: flex; justify-content: center; font-size: 1rem; margin-bottom: 8px;">You have</span>
+        <div class="resources">
+            <div class="resource">
+                <span>{formatNumber($resource.thoughts, 2)}</span>
+                <span style="color: var(--themeColor2); font-weight:bold">Thoughts</span>
+            </div>
+            <div class="resource">
+                <span>{formatNumber($resource.knowledge, 2)}</span>
+                <span style="color: lightblue; font-weight:bold">Knowledge</span>
+            </div>
+            <div class="resource">
+                <span>{formatNumber($resource.insight, 2)}</span>
+                <span style="color: magenta; font-weight:bold">Insight</span>
+            </div>
+        </div>
+        <div style="display: flex; justify-content: center; font-size: .75rem;">
+            <span>
+                You are gaining
+                {#if $mood === 'happy'}
+                    {formatNumber($thoughtsPerSec, 2)} <span style="color: var(--themeColor2); font-weight:bold"> thoughts</span>
+                {:else if $mood === 'neutral'}
+                    {formatNumber($knowledgePerSec, 2)} <span style="color: lightblue; font-weight:bold">knowledge</span>
+                {:else if $mood === 'sad'}
+                    {formatNumber($insightPerSec, 2)} <span style="color: magenta; font-weight:bold">insight</span>
+                {/if}
+                per second.
+            </span>
+        </div>
+        <!-- <span class="resourceDisplay">
             You <span style="color:var(--themeColor2); font-weight:bold">thought</span>
             {formatNumber($resource.thoughts, 2)} times<br />
         </span>
@@ -136,7 +171,37 @@
                     {/if}
                 {/if}
             {/if}
-        </span>
+        </span> -->
+    </div>
+
+    <div style="display:flex; flex-direction:column; align-items: center;">
+        <div class="flexRowContainer">
+            <div style="display:flex; flex-direction:row; align-items: center;">
+                <div style="font-size: 3rem;">
+                    {#if $mood === 'happy'}
+                        🙂
+                    {:else if $mood === 'neutral'}
+                        😐
+                    {:else if $mood === 'sad'}
+                        🙁
+                    {/if}
+                </div>
+                <button on:click={() => ($mood = 'happy')}>Happy</button>
+                <button on:click={() => ($mood = 'neutral')}>Neutral</button>
+                <button on:click={() => ($mood = 'sad')}>Sad</button>
+            </div>
+
+            <div style="display:flex; flex-direction:column; align-items: start; gap: 8px;">
+                <div>You are {$mood}.</div>
+                {#if $mood === 'happy'}
+                    <button on:click={handleThink}>Happy Thoughts</button>
+                {:else if $mood === 'neutral'}
+                    <button on:click={handlePonder}>Ponder</button>
+                {:else}
+                    <button>Cry</button>
+                {/if}
+            </div>
+        </div>
     </div>
 
     <div class="flexRowContainer">
@@ -153,7 +218,11 @@
         {/if}
     </div>
 
-    <UnlockDrawer unlocks={unlocks.thoughts} folderName="Swordsman_Skill_Icons_Pack" />
+    <div style="display: flex; flex-direction: row; justify-content: center; gap: 16px;">
+        <UnlockDrawer unlocks={unlocks.thoughts} folderName="Swordsman_Skill_Icons_Pack" themeId="thoughts" />
+        <UnlockDrawer unlocks={unlocks.knowledge} folderName="Swordsman_Skill_Icons_Pack" themeId="knowledge" />
+        <UnlockDrawer unlocks={unlocks.insight} folderName="Swordsman_Skill_Icons_Pack" themeId="insight" />
+    </div>
 
     <div class="flexRowContainer">
         <div class="gridColumn">
@@ -190,17 +259,31 @@
             </UpgradeButton>
         </div>
 
-        <div class="gridColumn" style="height:332px;">
+        <!-- <div class="gridColumn" style="height:332px;">
             <EffectComponent title={$upgrades.cheeseThoughtMult.bought > 0 || $unlocked.cheeseQueueLengthBoost ? 'Effects' : '???'}>
                 <Effect factor={$currentThoughtBoost} unlocked={$unlocked.cheeseBoost} tooltipText="Effect is 1:1">
                     {unlocks.cheese.find(v => v.name === UnlockName.CHEESE_BOOST)?.description}
                 </Effect>
             </EffectComponent>
-        </div>
+        </div> -->
     </div>
 </Window>
 
 <style>
+    .resources {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        gap: 48px;
+        margin-bottom: 8px;
+    }
+    .resource {
+        display: flex;
+        flex-direction: column;
+        justify-content: start;
+        align-items: center;
+        font-size: 1rem;
+    }
     .green {
         color: rgb(0, 216, 0);
         font-weight: bold;

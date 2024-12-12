@@ -33,3 +33,11 @@ export const thoughtsPerSec = derived(
     [thoughtsPerSecBase, thoughtMultFromUnlocks, currentThoughtBoost, cheeseThoughtMult, cheeseCyclesThoughtMult, monsterThoughtMult],
     $factors => $factors.reduce((prev, curr) => prev * curr, 1)
 )
+
+export const knowledgePerSec = derived([unlocked, resource], ([$unlocked, $resource]) => {
+    return +$unlocked.ponderPassively * 0.1 * Math.pow($resource.thoughts, 0.25)
+})
+
+export const insightPerSec = derived([resource], ([$resource]) => {
+    return 0.1 * Math.pow($resource.knowledge, 0.25)
+})
