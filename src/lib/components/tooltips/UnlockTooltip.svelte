@@ -3,13 +3,18 @@
     import { resource } from '$lib/store'
     import type { IUnlock, UnlockType } from '$lib/store'
 
-    export let data: IUnlock
-    export let top: number
-    export let left: number
+    type Props = {
+        data: IUnlock
+        top: number
+        left: number
+    }
+    const { data, top, left }: Props = $props()
+
     // export let rect: DOMRect
     const style = `top: ${top}px; left: ${left}px;`
 
-    $: costColor = $resource[data.resource] > data.cost ? 'rgb(102, 255, 102)' : 'rgb(255, 102, 102)'
+    const costColor = $derived(resource.value[data.resource] > data.cost ? 'rgb(102, 255, 102)' : 'rgb(255, 102, 102)')
+    //$: costColor = $resource[data.resource] > data.cost ? 'rgb(102, 255, 102)' : 'rgb(255, 102, 102)'
 
     const background: Record<UnlockType, string> = {
         Boost: 'linear-gradient(to top, var(--Gray400) 20%, white 80%)',

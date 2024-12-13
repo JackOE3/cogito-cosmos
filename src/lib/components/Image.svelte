@@ -2,8 +2,13 @@
     import { onMount } from 'svelte'
     import loadingSpinner from '$lib/images/loading-spinner.svg'
 
-    export let name: string = ''
-    export let alt: string = name
+    interface Props {
+        name: string
+        alt: string
+    }
+
+    let { name = '', alt = 'Untitled' }: Props = $props()
+
     const images = import.meta.glob(`/src/lib/images/**/*.{png,jpg,svg}`)
     let image: HTMLImageElement
 

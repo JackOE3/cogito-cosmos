@@ -1,4 +1,4 @@
-import { currentNotation, type Notation } from '$lib/store/primitive/misc'
+import { currentNotation } from '$lib/store'
 
 // prettier-ignore
 const suffixesDefault = [
@@ -13,16 +13,12 @@ const suffixesLetters = [
 // prettier-ignore
 const suffixesEngineering = ['K', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y', 'R', 'Q']
 
-let currNotation: Notation
-currentNotation.subscribe($currentNotation => {
-    currNotation = $currentNotation
-})
 /**
  * Function to format a number for display on screen.
  * @param input Number to format
  * @param decimals How many decimals do you want
  */
-export function formatNumber(input: number, decimals: number, notation = currNotation): string {
+export function formatNumber(input: number, decimals: number, notation = currentNotation.value): string {
     if (typeof input !== 'number') input = 0
     if (input === 0) return input.toFixed(decimals)
     if (input < 0) return '-' + formatNumber(-1 * input, decimals)
@@ -49,7 +45,7 @@ export function formatNumber(input: number, decimals: number, notation = currNot
  * Will only show decimal places when the number is abbreviated.
  * @param input Number to format
  */
-export function formatWhole(input: number, notation = currNotation): string {
+export function formatWhole(input: number, notation = currentNotation.value): string {
     if (typeof input !== 'number') input = 0
     if (input < 0) return '-' + formatWhole(-1 * input)
     if (input < 1e3) return formatNumber(input, 0, notation)

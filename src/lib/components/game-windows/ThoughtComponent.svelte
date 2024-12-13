@@ -10,49 +10,52 @@
         unlocked,
         currentThoughtBoost,
         currentThoughtBoostTime,
-        thoughtBoostMultiplier,
-        thoughtBoostDuration,
-        thoughtsPerSec,
-        thoughtsPerSecBase,
-        UnlockName,
+        //thoughtBoostMultiplier,
+        //thoughtBoostDuration,
+        //thoughtsPerSec,
+        //thoughtsPerSecBase,
+        fromPrimitive,
+        higherOrder,
         WindowId,
         mood,
         upgradeCount
     } from '$lib/store'
 
-    export let windowId: WindowId
+    let { windowId }: { windowId: WindowId } = $props()
 
     import { onDestroy, onMount } from 'svelte'
-    import { derived, get } from 'svelte/store'
-    import EffectComponent from '../EffectComponent.svelte'
+    /* import EffectComponent from '../EffectComponent.svelte'
     import Effect from '../Effect.svelte'
-    import Image from '../Image.svelte'
-    import { insightPerSec, knowledgePerSec } from '$lib/store'
+    import Image from '../Image.svelte' */
+    //import { insightPerSec, knowledgePerSec } from '$lib/store'
 
     let buyMaxUpgrades = false
     const thoughtBoostDecay = 2000
     let lastTime: number | null = null
     let myReq: number
 
-    $: thoughtAccelDisplay = $upgradeCount.thoughtAcceleration > 0 ? ($thoughtsPerSec / $upgradeCount.thoughtAcceleration) * (1 - 1 / $thoughtsPerSecBase) : 1
-    $: thoughtJerkDisplay = $thoughtsPerSec / $thoughtsPerSecBase
+    let thoughtAccelDisplay = $derived(
+        upgradeCount.value.thoughtAcceleration > 0
+            ? (higherOrder.thoughtsPerSec / upgradeCount.value.thoughtAcceleration) * (1 - 1 / fromPrimitive.thoughtsPerSecBase)
+            : 1
+    )
+    let thoughtJerkDisplay = $derived(higherOrder.thoughtsPerSec / fromPrimitive.thoughtsPerSecBase)
 
     function handleThink(): void {
-        if (!$unlocked.thoughtBoost) {
-            $resource.thoughts += 1
+        if (!unlocked.value.thoughtBoost) {
+            resource.value.thoughts += 1
             return
         }
         // set multiplier, which expires after a time and starts decaying
-        $currentThoughtBoost = $thoughtBoostMultiplier
-
-        $currentThoughtBoostTime = $thoughtBoostDuration
+        currentThoughtBoost.value = fromPrimitive.thoughtBoostMultiplier
+        currentThoughtBoostTime.value = fromPrimitive.thoughtBoostDuration
 
         cancelAnimationFrame(myReq)
         myReq = requestAnimationFrame(animateThoughtBoost)
     }
 
     function handlePonder(): void {
-        $resource.knowledge += 1
+        resource.value.knowledge += 1
     }
 
     function animateThoughtBoost(currentTime: number): void {
@@ -60,22 +63,26 @@
         const deltaT = Math.max(Math.min(currentTime - lastTime, 1000), 0)
         lastTime = currentTime
 
-        if ($currentThoughtBoostTime > 0) {
-            $currentThoughtBoostTime -= deltaT
-            if ($currentThoughtBoostTime < 0) $currentThoughtBoostTime = 0
+        if (currentThoughtBoostTime.value > 0) {
+            currentThoughtBoostTime.value -= deltaT
+            if (currentThoughtBoostTime.value < 0) currentThoughtBoostTime.value = 0
         } else {
             // decrement evenly over {thoughtBoostDecay} milliseconds
-            $currentThoughtBoost -= (($thoughtBoostMultiplier - 1) / thoughtBoostDecay) * deltaT
-            if ($currentThoughtBoost <= 1) {
-                $currentThoughtBoost = 1
+            currentThoughtBoost.value -= ((fromPrimitive.thoughtBoostMultiplier - 1) / thoughtBoostDecay) * deltaT
+            if (currentThoughtBoost.value <= 1) {
+                currentThoughtBoost.value = 1
             }
         }
-        if ($currentThoughtBoost > 1) myReq = requestAnimationFrame(animateThoughtBoost)
+        if (currentThoughtBoost.value > 1) myReq = requestAnimationFrame(animateThoughtBoost)
     }
 
-    const thoughtBoostBought = derived(upgradeCount, $upgradeCount => $upgradeCount.thoughtBoost)
+    const thoughtBoostBought = $derived(upgradeCount.value.thoughtBoost)
     // handle currentThoughtBoost being updated automatically when its strength is changed
-    $: if ($thoughtBoostBought && get(currentThoughtBoostTime) > 0) currentThoughtBoost.set(get(thoughtBoostMultiplier))
+    //$: if ($thoughtBoostBought && get(currentThoughtBoostTime) > 0) currentThoughtBoost.set(get(thoughtBoostMultiplier))
+    const thoughtBoostActive = $derived(currentThoughtBoostTime.value > 0)
+    $effect(() => {
+        if (thoughtBoostActive) currentThoughtBoost.value = fromPrimitive.thoughtBoostMultiplier
+    })
 
     onMount(() => {
         myReq = requestAnimationFrame(animateThoughtBoost)
@@ -90,15 +97,15 @@
         <div style="width: 250px">
             <span class="resourceDisplay">
                 You <span style="color:var(--themeColor2); font-weight:bold">thought</span>
-                {formatNumber($resource.thoughts, 2)} times<br />
+                {formatNumber(resource.value.thoughts, 2)} times<br />
             </span>
             <span>
-                {#if $unlocked.thinkPassively || LORCA_OVERRIDE}
-                    <span class:green={$currentThoughtBoost > 1}>{formatNumber($thoughtsPerSec, 2)}/s</span>
-                    {#if $currentThoughtBoost > 1}
-                        - {formatNumber($currentThoughtBoost, 2)}x
-                        {#if $currentThoughtBoostTime >= 100}
-                            for {formatTime($currentThoughtBoostTime / 1000, 1)}
+                {#if unlocked.value.thinkPassively || LORCA_OVERRIDE.value}
+                    <span class:green={currentThoughtBoost.value > 1}>{formatNumber(higherOrder.thoughtsPerSec, 2)}/s</span>
+                    {#if currentThoughtBoost.value > 1}
+                        - {formatNumber(currentThoughtBoost.value, 2)}x
+                        {#if currentThoughtBoostTime.value >= 100}
+                            for {formatTime(currentThoughtBoostTime.value / 1000, 1)}
                         {/if}
                     {/if}
                 {/if}
@@ -115,43 +122,43 @@
         <span style="display: flex; justify-content: center; font-size: 1rem; margin-bottom: 8px;">You have</span>
         <div class="resources">
             <div class="resource">
-                <span>{formatNumber($resource.thoughts, 2)}</span>
+                <span>{formatNumber(resource.value.thoughts, 2)}</span>
                 <span style="color: var(--themeColor2); font-weight:bold">Thoughts</span>
             </div>
             <div class="resource">
-                <span>{formatNumber($resource.knowledge, 2)}</span>
+                <span>{formatNumber(resource.value.knowledge, 2)}</span>
                 <span style="color: lightblue; font-weight:bold">Knowledge</span>
             </div>
             <div class="resource">
-                <span>{formatNumber($resource.insight, 2)}</span>
+                <span>{formatNumber(resource.value.insight, 2)}</span>
                 <span style="color: magenta; font-weight:bold">Insight</span>
             </div>
         </div>
         <div style="display: flex; justify-content: center; font-size: .75rem;">
             <span>
                 You are gaining
-                {#if $mood === 'happy'}
-                    {formatNumber($thoughtsPerSec, 2)} <span style="color: var(--themeColor2); font-weight:bold"> thoughts</span>
-                {:else if $mood === 'neutral'}
-                    {formatNumber($knowledgePerSec, 2)} <span style="color: lightblue; font-weight:bold">knowledge</span>
-                {:else if $mood === 'sad'}
-                    {formatNumber($insightPerSec, 2)} <span style="color: magenta; font-weight:bold">insight</span>
+                {#if mood.value === 'happy'}
+                    {formatNumber(higherOrder.thoughtsPerSec, 2)} <span style="color: var(--themeColor2); font-weight:bold"> thoughts</span>
+                {:else if mood.value === 'neutral'}
+                    {formatNumber(fromPrimitive.knowledgePerSec, 2)} <span style="color: lightblue; font-weight:bold">knowledge</span>
+                {:else if mood.value === 'sad'}
+                    {formatNumber(fromPrimitive.insightPerSec, 2)} <span style="color: magenta; font-weight:bold">insight</span>
                 {/if}
                 per second.
             </span>
         </div>
         <!-- <span class="resourceDisplay">
             You <span style="color:var(--themeColor2); font-weight:bold">thought</span>
-            {formatNumber($resource.thoughts, 2)} times<br />
+            {formatNumber(resource.value.thoughts, 2)} times<br />
         </span>
         <span>
-            {#if $unlocked.thinkPassively || LORCA_OVERRIDE}
+            {#if unlocked.value.thinkPassively || LORCA_OVERRIDE.value}
                 <span class:green={$currentThoughtBoost > 1}>{formatNumber($thoughtsPerSec, 2)}/s</span>
                 {#if $currentThoughtBoost > 1}
                     - {formatNumber($currentThoughtBoost, 2)}x
                     {#if $currentThoughtBoostTime >= 100}
                         for {formatTime($currentThoughtBoostTime / 1000, 1)}
-                        {#if $unlocked.thoughtBoostStack}
+                        {#if unlocked.value.thoughtBoostStack}
                             - {thoughtBoostCurrentStacks}/{$thoughtBoostMaxStacks} Stack{$thoughtBoostMaxStacks > 1 ? 's' : ''}
                         {/if}
                     {/if}
@@ -164,25 +171,25 @@
         <div class="flexRowContainer">
             <div style="display:flex; flex-direction:row; align-items: center;">
                 <div style="font-size: 3rem;">
-                    {#if $mood === 'happy'}
+                    {#if mood.value === 'happy'}
                         🙂
-                    {:else if $mood === 'neutral'}
+                    {:else if mood.value === 'neutral'}
                         😐
-                    {:else if $mood === 'sad'}
+                    {:else if mood.value === 'sad'}
                         🙁
                     {/if}
                 </div>
-                <button on:click={() => ($mood = 'happy')}>Happy</button>
-                <button on:click={() => ($mood = 'neutral')}>Neutral</button>
-                <button on:click={() => ($mood = 'sad')}>Sad</button>
+                <button onclick={() => (mood.value = 'happy')}>Happy</button>
+                <button onclick={() => (mood.value = 'neutral')}>Neutral</button>
+                <button onclick={() => (mood.value = 'sad')}>Sad</button>
             </div>
 
             <div style="display:flex; flex-direction:column; align-items: start; gap: 8px;">
-                <div>You are {$mood}.</div>
-                {#if $mood === 'happy'}
-                    <button on:click={handleThink}>Happy Thoughts</button>
-                {:else if $mood === 'neutral'}
-                    <button on:click={handlePonder}>Ponder</button>
+                <div>You are {mood.value}.</div>
+                {#if mood.value === 'happy'}
+                    <button onclick={handleThink}>Happy Thoughts</button>
+                {:else if mood.value === 'neutral'}
+                    <button onclick={handlePonder}>Ponder</button>
                 {:else}
                     <button>Cry</button>
                 {/if}
@@ -191,13 +198,13 @@
     </div>
 
     <div class="flexRowContainer">
-        {#if $unlocked.thoughtBoost}
-            <button on:click={handleThink}>
+        {#if unlocked.value.thoughtBoost}
+            <button onclick={handleThink}>
                 Thought Boost <span class="iconify" data-icon="icon-park-outline:brain"></span><br />
-                x{formatNumber($thoughtBoostMultiplier, 2)} thoughts/s for {formatTime($thoughtBoostDuration / 1000)}
+                x{formatNumber(fromPrimitive.thoughtBoostMultiplier, 2)} thoughts/s for {formatTime(fromPrimitive.thoughtBoostDuration / 1000)}
             </button>
         {:else}
-            <button on:click={handleThink}>
+            <button onclick={handleThink}>
                 Think <br />
                 (+1 thought)
             </button>
@@ -212,7 +219,7 @@
             <UpgradeButton
                 upgradeName="thoughtAcceleration"
                 {buyMaxUpgrades}
-                btnUnlocked={$unlocked.thinkFaster}
+                btnUnlocked={unlocked.value.thinkFaster}
                 tooltipText={`+${formatNumber(thoughtAccelDisplay, 2)} thought${thoughtAccelDisplay > 1 ? 's' : ''}/s`}>
                 Thought Acceleration
             </UpgradeButton>
@@ -220,25 +227,25 @@
             <UpgradeButton
                 upgradeName="thoughtJerk"
                 {buyMaxUpgrades}
-                btnUnlocked={$unlocked.thoughtJerk}
+                btnUnlocked={unlocked.value.thoughtJerk}
                 tooltipText={`+${formatNumber(thoughtJerkDisplay, 2)} to Effect of Thought Acceleration `}>
                 Thought Jerk
             </UpgradeButton>
         </div>
         <div class="gridColumn">
             <UnlockDrawer unlocks={unlocks.knowledge} folderName="Swordsman_Skill_Icons_Pack" themeId="knowledge" />
-            <UpgradeButton upgradeName="thoughtBoost" {buyMaxUpgrades} btnUnlocked={$unlocked.thoughtBoost} tooltipText="Scales ^1.5 with #upgrades">
+            <UpgradeButton upgradeName="thoughtBoost" {buyMaxUpgrades} btnUnlocked={unlocked.value.thoughtBoost} tooltipText="Scales ^1.5 with #upgrades">
                 Increase the strength of Thought Boosts
             </UpgradeButton>
 
-            <!-- <UpgradeButton upgradeName="thoughtBoostDuration" {buyMaxUpgrades} btnUnlocked={$unlocked.thoughtBoost} tooltipText="Duration +5s">
+            <!-- <UpgradeButton upgradeName="thoughtBoostDuration" {buyMaxUpgrades} btnUnlocked={unlocked.value.thoughtBoost} tooltipText="Duration +5s">
                 Increase the duration of Thought Boosts
             </UpgradeButton>
 
             <UpgradeButton
                 upgradeName="thoughtBoostStack"
                 {buyMaxUpgrades}
-                btnUnlocked={$unlocked.thoughtBoostStack}
+                btnUnlocked={unlocked.value.thoughtBoostStack}
                 tooltipText="Max stacks +1 <br> Each stack increases the time by <br>  the duration shown on the button.">
                 Increase the maximum stack size of Thought Boosts <br />
             </UpgradeButton> -->
@@ -248,8 +255,8 @@
         </div>
 
         <!-- <div class="gridColumn" style="height:332px;">
-            <EffectComponent title={$upgradeCount.cheeseThoughtMult > 0 || $unlocked.cheeseQueueLengthBoost ? 'Effects' : '???'}>
-                <Effect factor={$currentThoughtBoost} unlocked={$unlocked.cheeseBoost} tooltipText="Effect is 1:1">
+            <EffectComponent title={$upgradeCount.cheeseThoughtMult > 0 || unlocked.value.cheeseQueueLengthBoost ? 'Effects' : '???'}>
+                <Effect factor={$currentThoughtBoost} unlocked={unlocked.value.cheeseBoost} tooltipText="Effect is 1:1">
                     {unlocks.cheese.find(v => v.name === UnlockName.CHEESE_BOOST)?.description}
                 </Effect>
             </EffectComponent>

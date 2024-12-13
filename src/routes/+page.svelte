@@ -13,17 +13,17 @@
         updateWindowLocation,
         updateWindowStacking
     } from '$lib/gamelogic/window-manager'
-    import { ADMIN_MODE, devToolsEnabled, isDarkMode, LORCA_OVERRIDE, unlocked, WindowId, currentNotation } from '$lib/store'
+    import { ADMIN_MODE, devToolsEnabled, isDarkMode, LORCA_OVERRIDE, WindowId, currentNotation } from '$lib/store'
     import DevTools from '$lib/components/dev/DevTools.svelte'
     import ToggleUnlocks from '$lib/components/dev/ToggleUnlocks.svelte'
 
     import ThoughtComponent from '$lib/components/game-windows/ThoughtComponent.svelte'
-    import CheeseComponent from '$lib/components/game-windows/CheeseComponent.svelte'
+    /*  import CheeseComponent from '$lib/components/game-windows/CheeseComponent.svelte'
     import MoldyCheeseComponent from '$lib/components/game-windows/MoldyCheeseComponent.svelte'
     import CheeseyardComponent from '$lib/components/game-windows/CheeseyardComponent.svelte'
     import MilkComponent from '$lib/components/game-windows/MilkComponent.svelte'
     import MilkTreeComponent from '$lib/components/game-windows/MilkTreeComponent.svelte'
-    import BacteriaComponent from '$lib/components/game-windows/BacteriaComponent.svelte'
+    import BacteriaComponent from '$lib/components/game-windows/BacteriaComponent.svelte' */
 
     import { startGameLoop, stopGameLoop } from '$lib/gamelogic/gameloop'
 
@@ -37,7 +37,7 @@
     startGameLoop()
     onDestroy(() => stopGameLoop())
 
-    let unlockTogglesShown = false
+    let unlockTogglesShown = $state(false)
 
     let secretImage: HTMLElement
     let background: HTMLElement
@@ -87,13 +87,13 @@
     }
 
     function onKeyPress(e: KeyboardEvent): void {
-        if (!$ADMIN_MODE) return
-        if (e.key === 'f') $LORCA_OVERRIDE = !$LORCA_OVERRIDE
-        if (e.key === 'g') $devToolsEnabled = !$devToolsEnabled
+        if (!ADMIN_MODE.value) return
+        if (e.key === 'f') LORCA_OVERRIDE.value = !LORCA_OVERRIDE.value
+        if (e.key === 'g') devToolsEnabled.value = !devToolsEnabled.value
         if (e.key === 'u') unlockTogglesShown = !unlockTogglesShown
     }
     function onKeyDown(e: KeyboardEvent): void {
-        if ($keysDisabled) return
+        if (keysDisabled.value) return
         if (e.key === 'ArrowRight' && !movingTo.right) movingTo.right = true
         if (e.key === 'ArrowLeft' && !movingTo.left) movingTo.left = true
         if (e.key === 'ArrowUp' && !movingTo.top) movingTo.top = true
@@ -109,7 +109,7 @@
         }
     }
     function onKeyUp(e: KeyboardEvent): void {
-        if ($keysDisabled) return
+        if (keysDisabled.value) return
         if (e.key === 'ArrowRight' && movingTo.right) movingTo.right = false
         if (e.key === 'ArrowLeft' && movingTo.left) movingTo.left = false
         if (e.key === 'ArrowUp' && movingTo.top) movingTo.top = false
@@ -195,8 +195,8 @@
         background.style.background = `url("${backgroundImage}")`
 
         // checks if dark mode is enabled in the browser:
-        if ($isDarkMode === 'notChecked') {
-            $isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (isDarkMode.value === 'notChecked') {
+            isDarkMode.value = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
         }
         applyTheme()
 
@@ -301,15 +301,15 @@
     }
 
     function switchTheme(): void {
-        $isDarkMode = !$isDarkMode
+        isDarkMode.value = !isDarkMode.value
         applyTheme()
     }
     /**  Sets the correct theme on the root (html) tag. */
     function applyTheme(): void {
-        window.document.documentElement.setAttribute('data-theme', $isDarkMode ? 'dark' : 'light')
+        window.document.documentElement.setAttribute('data-theme', isDarkMode.value ? 'dark' : 'light')
     }
 
-    let saveDataString: string
+    let saveDataString = $state('')
     function handleExport(): void {
         saveDataString = exportSaveGame()
     }
@@ -324,9 +324,9 @@
     }
 
     function changeNotation(): void {
-        if ($currentNotation === 'scientific') $currentNotation = 'default'
-        else if ($currentNotation === 'default') $currentNotation = 'letters'
-        else $currentNotation = 'scientific'
+        if (currentNotation.value === 'scientific') currentNotation.value = 'default'
+        else if (currentNotation.value === 'default') currentNotation.value = 'letters'
+        else currentNotation.value = 'scientific'
     }
 </script>
 
@@ -339,28 +339,28 @@
     <Notifications />
 
     <div id="saveload">
-        <button on:click={changeNotation}>Notation: {$currentNotation}</button>
-        <button on:click={resetWindowLayout}>Layout Reset</button>
-        <button on:click={switchTheme}>Theme: {$isDarkMode ? 'Dark' : 'Light'}</button>
-        <button on:click={() => panToWindow(WindowId.thoughtComponent, true)}>Home</button>
+        <button onclick={changeNotation}>Notation: {currentNotation.value}</button>
+        <button onclick={resetWindowLayout}>Layout Reset</button>
+        <button onclick={switchTheme}>Theme: {isDarkMode.value ? 'Dark' : 'Light'}</button>
+        <button onclick={() => panToWindow(WindowId.thoughtComponent, true)}>Home</button>
         <input type="string" bind:value={saveDataString} />
-        <button on:click={handleExport}>Export</button>
-        <button on:click={handleImport}>Import</button>
-        <button on:click={saveSaveGame}>Save</button>
-        <button on:click={resetSaveGame}>Reset</button>
-        <!-- <button on:click={showCredits}>Credits</button> -->
+        <button onclick={handleExport}>Export</button>
+        <button onclick={handleImport}>Import</button>
+        <button onclick={saveSaveGame}>Save</button>
+        <button onclick={resetSaveGame}>Reset</button>
+        <!-- <button onclick={showCredits}>Credits</button> -->
     </div>
 
     <div id="display" bind:this={background}>
         <div id="secretImage" style="position: absolute; left: -800px; top: -500px; scale: 0.25" bind:this={secretImage}>
-            <Image name="thonk" />
+            <Image name="thonk" alt="secret" />
         </div>
 
         <div id="game" bind:this={gameWindow}>
             <div
                 id={WindowId.thoughtComponent}
                 class="window"
-                on:mousedown={() => selectWindow(WindowId.thoughtComponent, gameWindow)}
+                onmousedown={() => selectWindow(WindowId.thoughtComponent, gameWindow)}
                 use:initWindow
                 role="none">
                 <ThoughtComponent windowId={WindowId.thoughtComponent} />

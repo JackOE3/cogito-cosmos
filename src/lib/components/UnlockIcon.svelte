@@ -3,34 +3,34 @@
     import { unlocked, resource, type IUnlock, Resource } from '$lib/store'
     import { Direction, tooltip } from './tooltips/tooltip.svelte'
     import UnlockTooltip from './tooltips/UnlockTooltip.svelte'
-    import { derived } from 'svelte/store'
     import Image from './Image.svelte'
 
-    export let unlock: IUnlock
-    export let tempCount: number
-    export let folderName: string
+    interface Props {
+        unlock: IUnlock
+        tempCount: number
+        folderName: string
+    }
 
-    const canAfford = derived(resource, $resource => $resource[unlock.resource as Resource] >= unlock.cost)
-    const isUnlocked = derived(unlocked, $unlocked => $unlocked[unlock.name])
+    let { unlock, tempCount, folderName }: Props = $props()
+
+    const canAfford = $derived(resource.value[unlock.resource as Resource] >= unlock.cost)
+    const isUnlocked = $derived(unlocked.value[unlock.name])
 
     function unlockFeature(): void {
         const cost: number = unlock.cost
-        if ($resource[unlock.resource as Resource] < cost || $unlocked[unlock.name]) return
-        $resource[unlock.resource as Resource] -= cost
-        unlocked.update($unlocked => {
-            $unlocked[unlock.name] = true
-            return $unlocked
-        })
+        if (resource.value[unlock.resource as Resource] < cost || unlocked.value[unlock.name]) return
+        resource.value[unlock.resource as Resource] -= cost
+        unlocked.value[unlock.name] = true
     }
 </script>
 
 <div style="height:max-content; width: max-content">
     <button
-        on:click={unlockFeature}
+        onclick={unlockFeature}
         data-cost={formatWhole(unlock.cost)}
         data-unlockType={unlock.type}
-        class:disabled={!$canAfford && !$isUnlocked}
-        class:unlocked={$isUnlocked}
+        class:disabled={!canAfford && !isUnlocked}
+        class:unlocked={isUnlocked}
         use:tooltip={{ data: unlock, Component: UnlockTooltip, direction: Direction.RIGHT, anchor: 'offsetParent' }}>
         <Image name={`${folderName}/PNG/${tempCount + 1}`} alt="upgrade icon" />
     </button>

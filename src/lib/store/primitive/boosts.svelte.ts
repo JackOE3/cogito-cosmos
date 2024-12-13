@@ -1,4 +1,4 @@
-import { makeStore } from '../customStore'
+import { makeState, makeStore } from '../customStore.svelte'
 
 export enum MilkBoost {
     ThoughtAccelBoostsItself = 'thoughtAccelBoostsItself',
@@ -19,7 +19,7 @@ export enum MilkBoost {
     UnspentCheeseBrainsBoostMonsterResourceGeneration = 'unspentCheeseBrainsBoostMonsterResourceGeneration'
 }
 
-export const milkBoostActive = makeStore<Record<MilkBoost, boolean>>({
+export const milkBoostActiveInitial = {
     thoughtAccelBoostsItself: false,
     improveFormulaCheeseBoostsThoughts: false,
     improveFormulaCheeseQueueLengthBoostsCheese: false,
@@ -36,7 +36,8 @@ export const milkBoostActive = makeStore<Record<MilkBoost, boolean>>({
     collectiveSentienceBoosted: false,
     betterScalingTotalCheeseMonsterDeathsLootBoost: false,
     unspentCheeseBrainsBoostMonsterResourceGeneration: false
-})
+}
+export const milkBoostActive = makeState(milkBoostActiveInitial)
 
 interface Boost {
     label: string

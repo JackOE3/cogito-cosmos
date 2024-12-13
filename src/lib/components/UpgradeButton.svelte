@@ -3,46 +3,45 @@
     import { buyUpgrade } from '$lib/gamelogic/buy-upgrade'
     import { upgrades, upgradeCount, resource, LORCA_OVERRIDE, currentNotation, Resource, type UpgradeName, upgradeCost } from '$lib/store'
     import { tooltip } from './tooltips/tooltip.svelte'
-    import { derived } from 'svelte/store'
     import { fade } from 'svelte/transition'
-    /* import { buyUpgradeMilk } from '@gamelogic/buy-upgrade-milk' */
 
-    export let upgradeName: UpgradeName
-    export let tooltipText: string | null = null
-    export let buyMaxUpgrades = false // setContext/getContext better?
-    export let btnUnlocked = true
+    type Props = {
+        upgradeName: UpgradeName
+        tooltipText: string | null
+        buyMaxUpgrades: boolean // setContext/getContext better?
+        btnUnlocked: boolean
+    }
+
+    let { upgradeName, tooltipText = null, buyMaxUpgrades = false, btnUnlocked = true, children }: Props = $props()
 
     const resourceName = upgrades[upgradeName].resource
-    let cost = derived(upgradeCost, $upgradeCost => $upgradeCost[upgradeName])
-    const canAfford = derived(resource, $resource => $resource[resourceName as Resource] >= $cost)
+    let cost = $derived(upgradeCost.value[upgradeName])
+    const canAfford = $derived(resource.value[resourceName as Resource] >= cost)
     const maxBuy = upgrades[upgradeName].maxBuy
-    const isMaxed = derived(upgradeCount, $upgradeCount => {
-        return maxBuy !== null && $upgradeCount[upgradeName] >= maxBuy
-    })
-    const upgradesBought = derived(upgradeCount, $upgradeCount => $upgradeCount[upgradeName])
+    const isMaxed = $derived(maxBuy !== null && upgradeCount.value[upgradeName] >= maxBuy)
+    const upgradesBought = $derived(upgradeCount.value[upgradeName])
 
     // beforeUpdate(() => console.log('beforeUpdate'))
 
     function handleUpgradeClicked(): void {
-        buyUpgrade(upgrades, upgradeCount, upgradeCost)(upgradeName, buyMaxUpgrades)
+        buyUpgrade(upgrades, resource.value, upgradeCount.value, upgradeCost.value)(upgradeName, buyMaxUpgrades)
     }
 </script>
 
-{#if btnUnlocked || $LORCA_OVERRIDE}
+{#if btnUnlocked || LORCA_OVERRIDE.value}
     <button
-        on:click={handleUpgradeClicked}
-        on:click
-        class:disabled={!$canAfford && !$isMaxed}
+        onclick={handleUpgradeClicked}
+        class:disabled={!canAfford && !isMaxed}
         use:tooltip={{ data: tooltipText }}
-        class:maxed={$isMaxed}
+        class:maxed={isMaxed}
         transition:fade|local={{ duration: 1000 }}>
         <div style="display:grid; grid-template-rows: auto 14px; height: 100%">
             <div id="text">
-                <slot />
+                {@render children()}
             </div>
             <div id="cost">
-                {#if !$isMaxed}
-                    {formatNumber($cost, 2, $currentNotation)}
+                {#if !isMaxed}
+                    {formatNumber(cost, 2, currentNotation.value)}
                     {formatResourceName(resourceName)}
                 {/if}
             </div>
@@ -50,13 +49,13 @@
 
         <div id="boughtContainer">
             {#if maxBuy !== null}
-                {#if $isMaxed}
+                {#if isMaxed}
                     MAX
                 {:else}
-                    {$upgradesBought}/{maxBuy}
+                    {upgradesBought}/{maxBuy}
                 {/if}
             {:else}
-                {$upgradesBought}
+                {upgradesBought}
             {/if}
         </div>
     </button>

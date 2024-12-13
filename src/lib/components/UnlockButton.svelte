@@ -4,31 +4,30 @@
     import { tooltip } from './tooltips/tooltip.svelte'
     import type { IUnlock, Resource } from '$lib/store'
 
-    export let unlock: IUnlock
-    // export let tooltipText: string | null = null
-    export let btnUnlocked = true
-    export let btnHidden = false
+    interface Props {
+        unlock: IUnlock
+        btnUnlocked: boolean
+        btnHidden: boolean
+    }
+
+    let { unlock, btnUnlocked = true, btnHidden = false }: Props = $props()
 
     function unlockFeature(): void {
         const cost: number = unlock.cost
-        if ($resource[unlock.resource as Resource] < cost) return
-        $resource[unlock.resource as Resource] -= cost
-        unlocked.update($unlocked => {
-            $unlocked[unlock.name] = true
-            return $unlocked
-        })
-        // $unlocked[unlock.name] = true
+        if (resource.value[unlock.resource as Resource] < cost) return
+        resource.value[unlock.resource as Resource] -= cost
+        unlocked.value[unlock.name] = true
     }
 </script>
 
 {#if !btnHidden}
-    {#if btnUnlocked || $LORCA_OVERRIDE}
+    {#if btnUnlocked || LORCA_OVERRIDE.value}
         <button
-            on:click={unlockFeature}
-            class:disabled={$unlocked[unlock.name] || $resource[unlock.resource as Resource] < unlock.cost}
+            onclick={unlockFeature}
+            class:disabled={unlocked.value[unlock.name] || resource.value[unlock.resource as Resource] < unlock.cost}
             use:tooltip={{ data: unlock.tooltipText }}
-            class:unlocked={$unlocked[unlock.name]}>
-            <slot />
+            class:unlocked={unlocked.value[unlock.name]}>
+            Slot Content
             <br />
             <span>Costs {formatWhole(unlock.cost)} {formatResourceName(unlock.resource)}</span>
         </button>

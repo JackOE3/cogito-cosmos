@@ -1,4 +1,4 @@
-import { makeStore } from '../customStore'
+import { makeState, makeStore } from '../customStore.svelte'
 
 export enum Resource {
     THOUGHTS = 'thoughts',
@@ -16,7 +16,7 @@ export type ResourceType = `${Resource}`
 
 export type Resources = Record<Resource, number>
 
-export const resource = makeStore<Resources>({
+export const resource = makeState({
     thoughts: 0,
     knowledge: 0,
     insight: 0,

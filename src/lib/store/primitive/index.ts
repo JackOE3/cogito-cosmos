@@ -1,15 +1,15 @@
-export * from './resources'
+export * from './resources.svelte'
 
-export * from './upgrades'
+export * from './upgrades.svelte'
 
-export * from './unlocks'
+export * from './unlocks.svelte'
 
-export * from './boosts'
+export * from './boosts.svelte'
 
-export * from './misc'
+export * from './misc.svelte'
 
-export * from './window'
+export * from './window.svelte'
 
-export * from './upgradesTiered'
+//export * from './upgradesTiered'
 
-export * from './transient'
+export * from './transient.svelte'

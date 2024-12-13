@@ -2,13 +2,13 @@
     import { unlocked, UnlockName } from '$lib/store'
 
     function toggleUnlock(name: UnlockName): void {
-        $unlocked[name] = !$unlocked[name]
+        unlocked.value[name] = !unlocked.value[name]
     }
 </script>
 
 <div>
-    {#each Object.entries($unlocked) as [name, isUnlocked], id}
-        <button on:click={() => toggleUnlock(name as UnlockName)}>
+    {#each Object.entries(unlocked.value) as [name, isUnlocked], id}
+        <button onclick={() => toggleUnlock(name as UnlockName)}>
             {id}
             {name}
             {isUnlocked ? '✅' : '❌'}

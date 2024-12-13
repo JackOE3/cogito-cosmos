@@ -1,8 +1,6 @@
-import { get } from 'svelte/store'
-import { handleCheeseMonster } from './cheeseMonster'
-import { lastSaved, resource, highestMilk, mcHalfLifeSeconds, thoughtsPerSec, totalTimePlayed, bacteriaPerSec, mood } from '$lib/store'
+//import { handleCheeseMonster } from './cheeseMonster'
+import { lastSaved, resource, highestMilk, totalTimePlayed, mood, fromPrimitive, higherOrder } from '$lib/store'
 import { saveSaveGame } from './saveload'
-import { insightPerSec, knowledgePerSec } from '$lib/store'
 
 // natural log of 2
 const LN2 = 0.69314718056
@@ -32,7 +30,7 @@ export function startGameLoop(): void {
   repopulateValues() */
 
     // calculateOfflineProgress()
-    lastSaved.set(Date.now())
+    lastSaved.value = Date.now()
 
     console.log('Starting the game loop...')
     interval = setInterval(gameLoop, GAME_INTERVAL)
@@ -56,8 +54,8 @@ function gameLoop(): void {
     const currentTime = Date.now()
 
     // if lastSaved was more than 60 seconds ago we should save the game DEACTIVATED!!!!
-    if (currentTime - get(lastSaved) > autoSaveTime) {
-        lastSaved.set(currentTime)
+    if (currentTime - lastSaved.value > autoSaveTime) {
+        lastSaved.value = currentTime
         // saveSaveGame()
         // sendMessage('Game auto-saved')
     }
@@ -80,31 +78,27 @@ function gameLoop(): void {
  */
 function gameUpdate(deltaTimeSeconds: number): void {
     deltaTimeSeconds *= fastFowardFactor
-    resource.update($resource => {
-        if (get(mood) === 'happy') {
-            $resource.thoughts += get(thoughtsPerSec) * deltaTimeSeconds
-        } else if (get(mood) === 'neutral') {
-            $resource.knowledge += get(knowledgePerSec) * deltaTimeSeconds
-            $resource.thoughts *= 1 - 0.05 * deltaTimeSeconds
-        } else if (get(mood) === 'sad') {
-            $resource.insight += get(insightPerSec) * deltaTimeSeconds
-        }
 
-        // moldy cheese decay (linear extrapolation)
-        // moldyCheese.update(value => value * (1 - LN2/get(mcHalfLifeSeconds) * deltaTimeSeconds))
-        // OR: moldy cheese decay (exact)
-        // if statement so while offline for longer than 10s you dont lose moldy cheese (?)
-        $resource.moldyCheese *= Math.exp((-LN2 * deltaTimeSeconds) / get(mcHalfLifeSeconds))
+    if (mood.value === 'happy') {
+        resource.value.thoughts += higherOrder.thoughtsPerSec * deltaTimeSeconds
+    } else if (mood.value === 'neutral') {
+        resource.value.knowledge += fromPrimitive.knowledgePerSec * deltaTimeSeconds
+        resource.value.thoughts *= 1 - 0.05 * deltaTimeSeconds
+    } else if (mood.value === 'sad') {
+        resource.value.insight += fromPrimitive.insightPerSec * deltaTimeSeconds
+    }
 
-        handleCheeseMonster($resource, deltaTimeSeconds)
+    // moldy cheese decay (linear extrapolation)
+    // moldyCheese.update(value => value * (1 - LN2/mcHalfLifeSeconds) * deltaTimeSeconds))
+    // OR: moldy cheese decay (exact)
+    // if statement so while offline for longer than 10s you dont lose moldy cheese (?)
+    resource.value.moldyCheese *= Math.exp((-LN2 * deltaTimeSeconds) / fromPrimitive.mcHalfLifeSeconds)
 
-        if ($resource.milk > get(highestMilk)) highestMilk.set($resource.milk)
-        $resource.bacteria += get(bacteriaPerSec) * deltaTimeSeconds
+    //handleCheeseMonster(resource.value, deltaTimeSeconds)
 
-        return $resource
-    })
+    if (resource.value.milk > highestMilk.value) highestMilk.value = resource.value.milk
 
-    totalTimePlayed.update($value => $value + deltaTimeSeconds)
+    totalTimePlayed.value += deltaTimeSeconds
 }
 
 /**
@@ -116,7 +110,7 @@ function calculateOfflineProgress(): void {
     // calculate time in seconds since last saved
     const currentTime = Date.now()
 
-    const offlineDeltaTimeSeconds = Math.max((currentTime - get(lastSaved)) / 1000, 0)
+    const offlineDeltaTimeSeconds = Math.max((currentTime - lastSaved.value) / 1000, 0)
 
     console.log(`Offline for ${offlineDeltaTimeSeconds} seconds`)
 
@@ -126,6 +120,6 @@ function calculateOfflineProgress(): void {
 
 /* function repopulateValues() {
   for (let id in upgrades) {
-    upgrades[id].cost *= Math.pow(upgrades[id].costMultiplier, get(upgradesBought)[id])
+    upgrades[id].cost *= Math.pow(upgrades[id].costMultiplier, upgradesBought)[id])
   }
 } */

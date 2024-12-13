@@ -4,9 +4,13 @@
     import { WindowId, windowMinimized, windowStack } from '$lib/store'
     import Image from '$lib/components/Image.svelte'
 
-    export let title = ''
-    export let windowId: WindowId
-    export let themeId: string
+    type Props = {
+        title: string
+        windowId: WindowId
+        themeId: string
+    }
+    let { title = '', windowId, themeId }: Props = $props()
+
     let windowBar: HTMLElement
 
     onMount(() => {
@@ -17,20 +21,20 @@
     onDestroy(() => {
         console.log(windowId)
         // remove windowId from windowStack:
-        $windowStack.splice($windowStack.indexOf(windowId), 1)
+        windowStack.splice(windowStack.indexOf(windowId), 1)
     })
 
-    $: minimized = $windowMinimized[windowId]
+    const minimized = $derived(windowMinimized.value[windowId])
 
     function minimizeWindow(id: WindowId): void {
-        $windowMinimized[id] = !$windowMinimized[id]
+        windowMinimized.value[id] = !windowMinimized.value[id]
     }
 </script>
 
 <div class="window-container" transition:fade|local={{ duration: 1000 }} data-theme-colors={themeId}>
     <div class="window-bar draggable" bind:this={windowBar}>
         {title}
-        <button class="window-bar-min-max" on:click={() => minimizeWindow(windowId)}>
+        <button class="window-bar-min-max" onclick={() => minimizeWindow(windowId)}>
             {#if minimized}
                 <div style="scale: 0.5">
                     <Image name="maximize" alt="maximize window" />

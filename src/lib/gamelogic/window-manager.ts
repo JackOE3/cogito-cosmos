@@ -1,27 +1,23 @@
 import { WindowId, windowStack, windowLocations, windowMinimized } from '$lib/store'
-import { get, writable } from 'svelte/store'
+import { makeState } from '$lib/store/customStore.svelte'
 
-export const keysDisabled = writable(false)
+export const keysDisabled = makeState(false)
 
 export function updateWindowStacking(gameWindow: HTMLElement): void {
     if (gameWindow === undefined) return
     Object.values(gameWindow.children).forEach((window: HTMLElement) => {
-        window.style.zIndex = get(windowStack)
-            .indexOf(window.id as WindowId)
-            .toString()
+        window.style.zIndex = windowStack.indexOf(window.id as WindowId).toString()
     })
 }
 
 /** Updates the stacking (z-index) of the windows when selecting/dragging one */
 export function selectWindow(id: WindowId | undefined, gameWindow: HTMLElement): void {
     if (id === undefined) return
-    const selectedIndex = get(windowStack).indexOf(id)
-    if (selectedIndex === get(windowStack).length - 1) return
-    windowStack.update($windowStack => {
-        $windowStack.push(id)
-        $windowStack.splice(selectedIndex, 1)
-        return $windowStack
-    })
+    const selectedIndex = windowStack.indexOf(id)
+    if (selectedIndex === windowStack.length - 1) return
+
+    windowStack.push(id)
+    windowStack.splice(selectedIndex, 1)
 
     updateWindowStacking(gameWindow)
 }
@@ -34,7 +30,7 @@ export function setAllWindowLocations(): void {
     })
 }
 export function setWindowLocation(window: HTMLElement): void {
-    const { x, y } = get(windowLocations)[window.id]
+    const { x, y } = windowLocations.value[window.id as WindowId]
     if (x === undefined || y === undefined) return
     window.style.left = `${x as number}px`
     window.style.top = `${y as number}px`
@@ -43,16 +39,11 @@ export function initWindow(window: HTMLElement): void {
     /* console.log('init', window.id) */
     setWindowLocation(window)
     // if new window, it gets pushed to the top of the stack:
-    if (!get(windowStack).includes(window.id as WindowId)) {
-        windowStack.update($windowStack => {
-            $windowStack.push(window.id as WindowId)
-            return $windowStack
-        })
+    if (!windowStack.includes(window.id as WindowId)) {
+        windowStack.push(window.id as WindowId)
         panToWindow(window.id as WindowId, false)
     }
-    window.style.zIndex = get(windowStack)
-        .indexOf(window.id as WindowId)
-        .toString()
+    window.style.zIndex = windowStack.indexOf(window.id as WindowId).toString()
 }
 export function resetWindowLayout(): void {
     windowLocations.reset()
@@ -61,20 +52,15 @@ export function resetWindowLayout(): void {
     panToWindow(WindowId.thoughtComponent)
 }
 export function maximizeAllWindows(): void {
-    windowMinimized.update($windowMinimized => {
-        Object.keys($windowMinimized).forEach((id: WindowId) => {
-            $windowMinimized[id] = false
-        })
-        return $windowMinimized
+    Object.keys(windowMinimized.value).forEach((id: WindowId) => {
+        windowMinimized.value[id] = false
     })
 }
 export function updateWindowLocation(window: HTMLElement | null): void {
     if (window === null) return
     if (window.id === undefined) return
-    windowLocations.update($windowLocations => {
-        $windowLocations[window.id] = { x: window.offsetLeft, y: window.offsetTop }
-        return $windowLocations
-    })
+
+    windowLocations.value[window.id as WindowId] = { x: window.offsetLeft, y: window.offsetTop }
 }
 
 let panToWindowAnimId: number
@@ -132,7 +118,7 @@ export function panToWindow(windowId: WindowId, jump = true): void {
 
     cancelAnimationFrame(panToWindowAnimId)
 
-    keysDisabled.set(true)
+    keysDisabled.value = true
 
     panToWindowAnimId = requestAnimationFrame((currentTime: number) => {
         animatePanningToWindow(
@@ -197,7 +183,7 @@ function animatePanningToWindow(
     } else {
         lastTimePanning = null
         panningDistance = 0
-        keysDisabled.set(false)
+        keysDisabled.value = false
         // panning isnt exact because of the if condition above, this makes it exact:
         const translationX = eX * translationDistance
         const translationY = eY * translationDistance

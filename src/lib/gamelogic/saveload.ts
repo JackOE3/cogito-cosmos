@@ -1,7 +1,5 @@
-import { get } from 'svelte/store'
 import { sendMessage } from './notifications'
 import * as store from '$lib/store/primitive/to-save'
-import type { IUpgrade, UpgradeName } from '$lib/store'
 // import {compress, decompress} from 'lz-string'
 
 const CURRENT_SAVE_VERSION = '0.1.1'
@@ -19,7 +17,8 @@ export class SaveData {
     public data: object = {} // ALL STORE-RELATED DATA
 
     public updateFromStores(): void {
-        for (const key in store) this.data[key] = get(store[key])
+        //for (const key in store) this.data[key] = get(store[key])
+        for (const key in store) this.data[key] = store[key].value
     }
 
     constructor() {
@@ -71,7 +70,7 @@ export function loadSaveGame(): void {
  */
 function hydrateStores(fromStorage: SaveData): void {
     for (const key in store) {
-        if (fromStorage.data[key] !== undefined) store[key].set(fromStorage.data[key])
+        if (fromStorage.data[key] !== undefined) store[key].value = fromStorage.data[key]
     }
     console.log('Stores hydrated.')
 }
@@ -82,7 +81,7 @@ function hydrateStores(fromStorage: SaveData): void {
  */
 export function saveSaveGame(): void {
     if (saveData !== null) {
-        store.lastSaved.set(Date.now())
+        store.lastSaved.value = Date.now()
 
         // update the saveData object with all the current values of all the necessary stores
         saveData.updateFromStores()

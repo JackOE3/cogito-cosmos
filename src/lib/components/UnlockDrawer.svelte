@@ -2,15 +2,18 @@
     import { unlocked, type IUnlock } from '$lib/store'
     import UnlockIcon from './UnlockIcon.svelte'
 
-    export let unlocks: IUnlock[]
-    export let folderName = ''
-    export let themeId = ''
+    type Props = {
+        unlocks: IUnlock[]
+        folderName: string
+        themeId: string
+    }
+    let { unlocks, folderName = '', themeId = '' }: Props = $props()
 </script>
 
 <div style="position:relative; width: max-content; height: max-content; display: flex; justify-content: center" data-theme-colors={themeId}>
     <div class="unlock-drawer theme-border">
         {#each unlocks as unlock, tempCount}
-            {#if !$unlocked[unlock.name] && $unlocked[unlock.availableAt ?? 'start']}
+            {#if !unlocked.value[unlock.name] && unlocked.value[unlock.availableAt ?? 'start']}
                 <UnlockIcon {unlock} {tempCount} {folderName} />
             {/if}
         {/each}

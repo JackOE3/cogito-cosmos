@@ -1,5 +1,5 @@
-import { makeStore } from '../customStore'
-import { Resource, type ResourceType } from './resources'
+import { makeState } from '../customStore.svelte'
+import { Resource, type ResourceType } from './resources.svelte'
 
 export interface IUpgrade {
     resource: ResourceType
@@ -66,9 +66,11 @@ export type UpgradeName = keyof typeof upgrades
 // only save this:
 // object with each upgrade names as keys and #upgrades bought as values
 // type is inferred here
-export const upgradeCount = makeStore(Object.fromEntries(Object.keys(upgrades).map(key => [key, 0])) as Record<UpgradeName, number>)
+export const upgradeCountInitial = Object.fromEntries(Object.keys(upgrades).map(key => [key, 0])) as Record<UpgradeName, number>
+export const upgradeCount = makeState(upgradeCountInitial)
 
 // double space requirement for localStorage, but ill deal with that when (if ever) it becomes a problem...
-export const upgradeCost = makeStore(Object.fromEntries(Object.entries(upgrades).map(([key, upgrade]) => [key, upgrade.cost])) as Record<UpgradeName, number>)
+export const upgradeCostInitial = Object.fromEntries(Object.entries(upgrades).map(([key, upgrade]) => [key, upgrade.cost])) as Record<UpgradeName, number>
+export const upgradeCost = makeState(upgradeCostInitial)
 
-console.log('upgrades array:', Object.entries(upgrades))
+//console.log('upgrades array:', Object.entries(upgrades))

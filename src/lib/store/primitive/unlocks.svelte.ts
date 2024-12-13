@@ -1,5 +1,5 @@
-import { makeStore } from '../customStore'
-import type { ResourceType } from './resources'
+import { makeState, makeStore } from '../customStore.svelte'
+import type { ResourceType } from './resources.svelte'
 
 export enum UnlockName {
     // Thoughts
@@ -386,7 +386,8 @@ export const unlocks: Record<string, IUnlock[]> = {
     ]
 }
 
-export const unlocked = makeStore<Record<UnlockName, boolean>>(convertEnumToFlagObject(UnlockName))
+export const unlockedInitial = convertEnumToFlagObject(UnlockName)
+export const unlocked = makeState(unlockedInitial)
 
 function convertEnumToFlagObject(enumme: typeof UnlockName): Record<UnlockName, boolean> {
     const obj = Object.values(enumme)

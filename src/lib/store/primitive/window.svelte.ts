@@ -1,4 +1,4 @@
-import { makeStore } from '../customStore'
+import { makeState } from '../customStore.svelte'
 
 export enum WindowId {
     thoughtComponent = 'thoughtComponent',
@@ -14,8 +14,11 @@ interface Coordinate {
     x: number
     y: number
 }
-export const windowStack = makeStore<WindowId[]>([WindowId.thoughtComponent])
-export const windowLocations = makeStore<Record<WindowId, Coordinate>>({
+
+export const windowStackInitial = [WindowId.thoughtComponent]
+export const windowStack = windowStackInitial
+
+export const windowLocationsInitial: Record<WindowId, Coordinate> = {
     thoughtComponent: { x: 0, y: 0 },
     cheeseComponent: { x: 580, y: 0 },
     moldyCheeseComponent: { x: 580, y: 670 },
@@ -23,8 +26,10 @@ export const windowLocations = makeStore<Record<WindowId, Coordinate>>({
     milkComponent: { x: 0, y: -500 },
     milkTreeComponent: { x: 400, y: -300 },
     bacteriaComponent: { x: -300, y: -300 }
-})
-export const windowMinimized = makeStore<Record<WindowId, boolean>>({
+}
+export const windowLocations = makeState(windowLocationsInitial)
+
+export const windowMinimizedInitial: Record<WindowId, boolean> = {
     thoughtComponent: false,
     cheeseComponent: false,
     moldyCheeseComponent: false,
@@ -32,4 +37,5 @@ export const windowMinimized = makeStore<Record<WindowId, boolean>>({
     milkComponent: false,
     milkTreeComponent: false,
     bacteriaComponent: false
-})
+}
+export const windowMinimized = makeState(windowMinimizedInitial)
