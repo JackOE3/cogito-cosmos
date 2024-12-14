@@ -23,6 +23,7 @@
         right: 1rem;
         display: grid;
         justify-items: end;
+        z-index: 99;
     }
 
     span {

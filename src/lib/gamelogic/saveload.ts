@@ -22,7 +22,6 @@ export class SaveData {
     public data: Record<string, unknown> = {} // ALL STORE-RELATED DATA
 
     public updateFromStores(): void {
-        //for (const key in state) this.data[key] = get(state[key])
         for (const key in state) this.data[key] = stateTyped[key].value
     }
 
@@ -51,6 +50,8 @@ export function loadSaveGame(): void {
             dataMigrate(saveDataFromLocalStorage)
 
             hydrateStores(saveDataFromLocalStorage)
+
+            setTimeout(() => sendMessage('Save loaded.'), 250)
 
             // update the saveData object with the freshly hydrated stores
             // saveData.updateFromStores()
@@ -95,6 +96,7 @@ export function saveSaveGame(): void {
             // Use JSON.stringify to turn the object into a string, then compress with lz-string,
             // before setting it in localstorage
             localStorage.setItem(storageName, JSON.stringify(saveData))
+            sendMessage('Game saved.')
             /* console.log('saveData saved:')
       console.log(saveData) */
         } catch (error) {

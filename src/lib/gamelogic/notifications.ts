@@ -8,7 +8,7 @@ export const messageQueue = writable([] as Message[])
 /**
  * How long should each message be displayed in ms
  */
-const messageTime = 4000
+const messageTime = 3000
 
 /**
  * Used to get a unique id for each message
