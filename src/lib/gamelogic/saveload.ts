@@ -1,5 +1,6 @@
 import { sendMessage } from './notifications'
-import * as store from '$lib/store/primitive/to-save'
+import * as state from '$lib/store/primitive/to-save'
+import type { State } from '$lib/store/customStore.svelte'
 // import {compress, decompress} from 'lz-string'
 
 const CURRENT_SAVE_VERSION = '0.1.1'
@@ -8,17 +9,21 @@ const CURRENT_SAVE_VERSION = '0.1.1'
  */
 const storageName = 'cogitoErgoSum'
 
+// so TS doesnt complain
+type StateObject = Record<string, State>
+const stateTyped = state as StateObject
+
 /**
  * This class holds any data that needs to be saved when the player saves their game.
  * It should only be used for values that must be saved. Anything transient should go directly on the GameModel.
  */
 export class SaveData {
     public version: string = CURRENT_SAVE_VERSION
-    public data: object = {} // ALL STORE-RELATED DATA
+    public data: Record<string, unknown> = {} // ALL STORE-RELATED DATA
 
     public updateFromStores(): void {
-        //for (const key in store) this.data[key] = get(store[key])
-        for (const key in store) this.data[key] = store[key].value
+        //for (const key in state) this.data[key] = get(state[key])
+        for (const key in state) this.data[key] = stateTyped[key].value
     }
 
     constructor() {
@@ -69,8 +74,8 @@ export function loadSaveGame(): void {
  * Loads the data from localStorage into the stores.
  */
 function hydrateStores(fromStorage: SaveData): void {
-    for (const key in store) {
-        if (fromStorage.data[key] !== undefined) store[key].value = fromStorage.data[key]
+    for (const key in state) {
+        if (fromStorage.data[key] !== undefined) stateTyped[key].value = fromStorage.data[key]
     }
     console.log('Stores hydrated.')
 }
@@ -81,7 +86,7 @@ function hydrateStores(fromStorage: SaveData): void {
  */
 export function saveSaveGame(): void {
     if (saveData !== null) {
-        store.lastSaved.value = Date.now()
+        state.lastSaved.value = Date.now()
 
         // update the saveData object with all the current values of all the necessary stores
         saveData.updateFromStores()
@@ -190,7 +195,7 @@ function upgradeVersion(save: SaveData): void {
  */
 export function resetSaveGame(): void {
     // update the stored gameModel with a new one
-    resetStores()
+    resetState()
     if (saveData !== null) saveData.updateFromStores()
     sendMessage('Game reset.')
 }
@@ -198,8 +203,10 @@ export function resetSaveGame(): void {
 /**
  * Resets all the stores to their default starting values. (NewGame)
  */
-function resetStores(): void {
-    for (const key in store) store[key].reset()
+function resetState(): void {
+    for (const key in state) {
+        stateTyped[key].reset()
+    }
 }
 
 /**
@@ -210,8 +217,8 @@ function resetStores(): void {
 /* export function recalculateStores(): void {
     // DEPRECATED: SHOULD BE DELETED ONCE I HAVE OVERHAULED UPGRADES
     let upgrades: object = {}
-    // maybe change to store.upgrades.update() instead?
-    const unsubscribe = store.upgrades.subscribe($store => {
+    // maybe change to state.upgrades.update() instead?
+    const unsubscribe = state.upgrades.subscribe($store => {
         upgrades = $store
     })
 
@@ -222,8 +229,8 @@ function resetStores(): void {
         value.cost = upgradesInitial[key].cost * Math.pow(upgradesInitial[key].costMultiplier, value.bought)
         value.resource = upgradesInitial[key].resource
     }
-    store.upgrades.refresh()
-    store.windowLocations.reset()
+    state.upgrades.refresh()
+    state.windowLocations.reset()
     unsubscribe()
 } */
 
