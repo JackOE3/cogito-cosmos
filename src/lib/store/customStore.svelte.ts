@@ -33,6 +33,8 @@ export function makeState<T>(initialState: T) {
         }
     }
 }
+export type State = ReturnType<typeof makeState>
+
 /* const test = makeState({ a: 1, c: 2 })
 
 console.log($state.snapshot(test.value.a))
