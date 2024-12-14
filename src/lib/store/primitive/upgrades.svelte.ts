@@ -2,64 +2,194 @@ import { makeState } from '../customStore.svelte'
 import { Resource, type ResourceType } from './resources.svelte'
 
 export interface IUpgrade {
-    resource: ResourceType
+    title: string
     cost: number
+    resource: ResourceType
     costMultiplier: number
-    maxBuy: number | null
-}
-
-class Upgrade implements IUpgrade {
-    constructor(
-        public resource: ResourceType,
-        public cost: number,
-        public costMultiplier: number,
-        public maxBuy: number | null = null
-    ) {}
+    maxBuy?: number
 }
 
 export const upgrades = {
-    // Cogito Ergo Sum
-    // thoughts
-    thoughtAcceleration: new Upgrade(Resource.THOUGHTS, 10, 1.15),
-    thoughtJerk: new Upgrade(Resource.THOUGHTS, 1e8, 1.3),
+    //thoughts
+    thoughtAcceleration: {
+        title: 'Thought Acceleration',
+        cost: 10,
+        resource: Resource.THOUGHTS,
+        costMultiplier: 1.15,
+        maxBuy: undefined
+    },
+    thoughtJerk: {
+        title: 'Thought Jerk',
+        cost: 1e8,
+        resource: Resource.THOUGHTS,
+        costMultiplier: 1.3,
+        maxBuy: undefined
+    },
+    //knowledge
+    thoughtBoost: {
+        title: 'Improve the Thought Boost',
+        cost: 20,
+        resource: Resource.KNOWLEDGE,
+        costMultiplier: 2,
+        maxBuy: undefined
+    },
+    //cheese
+    cheeseQueueLength: {
+        title: 'Placeholder Title',
+        cost: 5,
+        resource: Resource.CHEESE,
+        costMultiplier: 2,
+        maxBuy: undefined
+    },
+    cheeseYield: {
+        title: 'Placeholder Title',
+        cost: 15,
+        resource: Resource.CHEESE,
+        costMultiplier: 1.3,
+        maxBuy: undefined
+    },
+    cheeseThoughtMult: {
+        title: 'Placeholder Title',
+        cost: 300,
+        resource: Resource.CHEESE,
+        costMultiplier: 2,
+        maxBuy: undefined
+    },
+    cheeseQueueOverclockingCost: {
+        title: 'Placeholder Title',
+        cost: 5e3,
+        resource: Resource.CHEESE,
+        costMultiplier: 1.5,
+        maxBuy: undefined
+    },
 
-    // knowledge
-    thoughtBoost: new Upgrade(Resource.KNOWLEDGE, 100, 2),
-    //thoughtBoostStrength: new Upgrade(Resource.KNOWLEDGE, 100, 2),
-    //thoughtBoostDuration: new Upgrade(Resource.KNOWLEDGE, 150, 4, 11),
-    //thoughtBoostStack: new Upgrade(Resource.KNOWLEDGE, 5e7, 5, 8),
+    //moldy cheese
+    moldyCheeseConversionExponent: {
+        title: 'Placeholder Title',
+        cost: 5,
+        resource: Resource.MOLDY_CHEESE,
+        costMultiplier: 1.5,
+        maxBuy: undefined
+    },
+    moldyCheeseHalfLife: {
+        title: 'Placeholder Title',
+        cost: 20,
+        resource: Resource.MOLDY_CHEESE,
+        costMultiplier: 1.3,
+        maxBuy: undefined
+    },
+    moldyCheeseChance: {
+        title: 'Placeholder Title',
+        cost: 200,
+        resource: Resource.MOLDY_CHEESE,
+        costMultiplier: 2.5,
+        maxBuy: 9
+    },
+    cheeseMonsterSpawnrate: {
+        title: 'Placeholder Title',
+        cost: 250,
+        resource: Resource.MOLDY_CHEESE,
+        costMultiplier: 2.0,
+        maxBuy: undefined
+    },
+    cheeseMonsterCapacity: {
+        title: 'Placeholder Title',
+        cost: 500,
+        resource: Resource.MOLDY_CHEESE,
+        costMultiplier: 1.3,
+        maxBuy: undefined
+    },
 
-    // Switzerland Simulator
-    cheeseQueueLength: new Upgrade(Resource.CHEESE, 5, 2),
-    cheeseYield: new Upgrade(Resource.CHEESE, 15, 1.3),
-    cheeseThoughtMult: new Upgrade(Resource.CHEESE, 300, 2),
-    cheeseQueueOverclockingCost: new Upgrade(Resource.CHEESE, 5e3, 1.5),
+    //cheese brains
+    cheeseMonsterDropRate: {
+        title: 'Placeholder Title',
+        cost: 5,
+        resource: Resource.CHEESE_BRAINS,
+        costMultiplier: 2,
+        maxBuy: 18
+    },
+    cheeseMonsterLoot: {
+        title: 'Placeholder Title',
+        cost: 10,
+        resource: Resource.CHEESE_BRAINS,
+        costMultiplier: 1.15,
+        maxBuy: undefined
+    },
+    cheeseMonsterSentience: {
+        title: 'Placeholder Title',
+        cost: 20,
+        resource: Resource.CHEESE_BRAINS,
+        costMultiplier: 1.2,
+        maxBuy: undefined
+    },
+    cheeseMonsterMoldiness: {
+        title: 'Placeholder Title',
+        cost: 100,
+        resource: Resource.CHEESE_BRAINS,
+        costMultiplier: 1.25,
+        maxBuy: undefined
+    },
 
-    // Moldy Cheese
-    moldyCheeseConversionExponent: new Upgrade(Resource.MOLDY_CHEESE, 5, 1.5),
-    moldyCheeseHalfLife: new Upgrade(Resource.MOLDY_CHEESE, 20, 1.3),
-    moldyCheeseChance: new Upgrade(Resource.MOLDY_CHEESE, 200, 2.5, 9),
-    cheeseMonsterSpawnrate: new Upgrade(Resource.MOLDY_CHEESE, 250, 2.0),
-    cheeseMonsterCapacity: new Upgrade(Resource.MOLDY_CHEESE, 500, 1.3), // multipler for cap should be smaller than for spawnrate, so neutral brainMode doesnt fill up 100% capacity
+    //bacteria
+    bacteriaGrowth: {
+        title: 'Placeholder Title',
+        cost: 100,
+        resource: Resource.BACTERIA,
+        costMultiplier: 1.3,
+        maxBuy: undefined
+    },
+    cheeseMonsterCapacityPerUpgrade: {
+        title: 'Placeholder Title',
+        cost: 1000,
+        resource: Resource.BACTERIA,
+        costMultiplier: 1.5,
+        maxBuy: undefined
+    },
+    multipleCheeseCycles: {
+        title: 'Placeholder Title',
+        cost: 1000,
+        resource: Resource.BACTERIA,
+        costMultiplier: 1.5,
+        maxBuy: undefined
+    },
+    multipleMonsterDeaths: {
+        title: 'Placeholder Title',
+        cost: 1000,
+        resource: Resource.BACTERIA,
+        costMultiplier: 1.5,
+        maxBuy: undefined
+    },
 
-    // Loot
-    cheeseMonsterDropRate: new Upgrade(Resource.CHEESE_BRAINS, 5, 2, 18),
-    cheeseMonsterLoot: new Upgrade(Resource.CHEESE_BRAINS, 10, 1.15),
-    cheeseMonsterSentience: new Upgrade(Resource.CHEESE_BRAINS, 20, 1.2),
-    cheeseMonsterMoldiness: new Upgrade(Resource.CHEESE_BRAINS, 100, 1.25),
-
-    // Bacteria
-    bacteriaGrowth: new Upgrade(Resource.BACTERIA, 100, 1.3),
-    cheeseMonsterCapacityPerUpgrade: new Upgrade(Resource.BACTERIA, 1000, 1.5),
-    multipleCheeseCycles: new Upgrade(Resource.BACTERIA, 1000, 1.5),
-    multipleMonsterDeaths: new Upgrade(Resource.BACTERIA, 1000, 1.5),
-
-    // Milk
-    milkThoughtsGain: new Upgrade(Resource.MILK, 1, 1.5),
-    milkCheeseGain: new Upgrade(Resource.MILK, 1, 2),
-    milkMoldyCheeseGain: new Upgrade(Resource.MILK, 1, 2),
-    milkCheeseBrainsGain: new Upgrade(Resource.MILK, 1, 1.5)
-}
+    //milk
+    milkThoughtsGain: {
+        title: 'Placeholder Title',
+        cost: 1,
+        resource: Resource.MILK,
+        costMultiplier: 1.5,
+        maxBuy: undefined
+    },
+    milkCheeseGain: {
+        title: 'Placeholder Title',
+        cost: 1,
+        resource: Resource.MILK,
+        costMultiplier: 2,
+        maxBuy: undefined
+    },
+    milkMoldyCheeseGain: {
+        title: 'Placeholder Title',
+        cost: 1,
+        resource: Resource.MILK,
+        costMultiplier: 2,
+        maxBuy: undefined
+    },
+    milkCheeseBrainsGain: {
+        title: 'Placeholder Title',
+        cost: 1,
+        resource: Resource.MILK,
+        costMultiplier: 1.5,
+        maxBuy: undefined
+    }
+} as const satisfies Record<string, IUpgrade>
 
 export type UpgradeName = keyof typeof upgrades
 

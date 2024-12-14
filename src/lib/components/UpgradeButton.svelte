@@ -18,7 +18,7 @@
     let cost = $derived(upgradeCost.value[upgradeName])
     const canAfford = $derived(resource.value[resourceName as Resource] >= cost)
     const maxBuy = upgrades[upgradeName].maxBuy
-    const isMaxed = $derived(maxBuy !== null && upgradeCount.value[upgradeName] >= maxBuy)
+    const isMaxed = $derived(maxBuy !== undefined && upgradeCount.value[upgradeName] >= maxBuy)
     const upgradesBought = $derived(upgradeCount.value[upgradeName])
 
     // beforeUpdate(() => console.log('beforeUpdate'))
@@ -48,7 +48,7 @@
         </div>
 
         <div id="boughtContainer">
-            {#if maxBuy !== null}
+            {#if maxBuy !== undefined}
                 {#if isMaxed}
                     MAX
                 {:else}
