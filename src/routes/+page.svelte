@@ -94,6 +94,9 @@
     }
     function onKeyDown(e: KeyboardEvent): void {
         if (keysDisabled.value) return
+        // this would prevent spamming buttons with 'Enter':
+        //if (e.key === 'Enter') e.preventDefault()
+
         if (e.key === 'ArrowRight' && !movingTo.right) movingTo.right = true
         if (e.key === 'ArrowLeft' && !movingTo.left) movingTo.left = true
         if (e.key === 'ArrowUp' && !movingTo.top) movingTo.top = true
@@ -202,25 +205,6 @@
 
         // return false if key is 'Enter'
         // window.document.onkeydown = (e: KeyboardEvent) => e.key !== 'Enter'
-
-        window.document.addEventListener('keypress', onKeyPress)
-        window.document.addEventListener('keydown', onKeyDown)
-        window.document.addEventListener('keyup', onKeyUp)
-
-        window.document.addEventListener('mousedown', onMouseDown)
-        window.document.addEventListener('mousemove', onMouseMove)
-        window.document.addEventListener('mouseup', onMouseUp)
-    })
-
-    onDestroy(() => {
-        // idk if this is neccessary...
-        window.document.removeEventListener('keypress', onKeyPress)
-        window.document.removeEventListener('keydown', onKeyDown)
-        window.document.removeEventListener('keyup', onKeyUp)
-
-        window.document.removeEventListener('mousedown', onMouseDown)
-        window.document.removeEventListener('mousemove', onMouseMove)
-        window.document.removeEventListener('mouseup', onMouseUp)
     })
 
     function resetInitialPositionsX(): void {
@@ -329,6 +313,13 @@
         else currentNotation.value = 'scientific'
     }
 </script>
+
+<svelte:head>
+    <title>Cogito Cosmos</title>
+    <meta name="description" content="Play Cogito Cosmos!" />
+</svelte:head>
+
+<svelte:window onkeypress={onKeyPress} onkeydown={onKeyDown} onkeyup={onKeyUp} onmousedown={onMouseDown} onmouseup={onMouseUp} onmousemove={onMouseMove} />
 
 <main>
     <DevTools />
