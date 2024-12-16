@@ -19,7 +19,7 @@ html[data-theme='dark'] {
     --color: white;
     --text-high-emphasis: rgba(255, 255, 255, 0.87);
     --text-medium-emphasis: rgba(255, 255, 255, 0.6);
-    --text-disabled: rgba(255, 255, 255, s 0.38);
+    --text-disabled: rgba(255, 255, 255, 0.38);
 
     --Gray300: #e0e0e0;
     --Gray400: #bdbdbd;
@@ -128,23 +128,32 @@ select,
 textarea {
     font-family: inherit;
     font-size: inherit;
-    -webkit-padding: 4px;
-    padding: 4px;
+    -webkit-padding: 8px;
+    padding: 8px;
     margin: 0;
     box-sizing: border-box;
-}
 
-button,
-.button-border {
     background-color: var(--dp08);
     width: max-content;
     color: var(--text-high-emphasis);
 
     outline: 1px solid rgba(0, 0, 0, 0.6);
-    border-left: rgba(255, 255, 255, 0.5);
-    border-right: rgba(0, 0, 0, 0.6);
-    border-top: rgba(255, 255, 255, 0.5);
-    border-bottom: rgba(0, 0, 0, 0.6);
+
+    border-left: rgba(255, 255, 255, 0.2);
+    border-right: rgba(0, 0, 0, 0.4);
+    border-top: rgba(255, 255, 255, 0.2);
+    border-bottom: rgba(0, 0, 0, 0.4);
+    border-width: 1px;
+    border-radius: 0px;
+    border-style: solid;
+}
+
+.border {
+    outline: 1px solid rgba(0, 0, 0, 0.6);
+    border-left: rgba(255, 255, 255, 0.2);
+    border-right: rgba(0, 0, 0, 0.4);
+    border-top: rgba(255, 255, 255, 0.2);
+    border-bottom: rgba(0, 0, 0, 0.4);
     border-width: 1px;
     border-style: solid;
 }
@@ -162,7 +171,7 @@ button:hover {
     cursor: pointer;
 }
 button.disabled {
-    opacity: var(--medium-emphasis);
+    opacity: var(--disabled);
     cursor: move;
 }
 button:disabled {

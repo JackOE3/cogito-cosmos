@@ -35,10 +35,10 @@
         use:tooltip={{ data: tooltipText }}
         class:maxed={isMaxed}
         transition:fade|local={{ duration: 1000 }}>
-        <div style="display:grid; grid-template-rows: auto 14px; height: 100%">
-            <div id="text">
+        <div style="display:flex; flex-direction: column; justify-content: end; height: 100%">
+            <span id="text">
                 {upgrades[upgradeName].title}
-            </div>
+            </span>
             <div id="cost">
                 {#if !isMaxed}
                     {formatNumber(cost, 2, currentNotation.value)}
@@ -47,7 +47,7 @@
             </div>
         </div>
 
-        <div id="boughtContainer">
+        <div id="upgradeCount" class="border">
             {#if maxBuy !== undefined}
                 {#if isMaxed}
                     MAX
@@ -60,22 +60,23 @@
         </div>
     </button>
 {:else}
-    <button disabled>???</button>
+    <button class="disabled">???</button>
 {/if}
 
-<!-- <UpgradeButton
-    upgradeName="thoughtAcceleration"
-    {buyMaxUpgrades}
-    btnUnlocked={$unlocked.thinkFaster}
-    tooltipText={`+${formatNumber(thoughtAccelDisplay, 2)} thought${thoughtAccelDisplay > 1 ? 's' : ''}/s`}>
-    Thought Acceleration
-</UpgradeButton>
- -->
 <style>
+    button {
+        min-height: 50px;
+        /* height: 60px; */
+        width: 200px;
+        position: relative;
+        padding: 0px;
+    }
+
     #text {
-        height: 100%;
-        padding-left: 4px;
-        padding-right: 4px;
+        /* height: 100%; */
+        height: 2rem; /* ~ 2 lines of text */
+        flex-grow: 1;
+        padding: 8px;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -83,47 +84,30 @@
     }
     #cost {
         z-index: 0;
-        height: max-content;
+        height: 1rem;
+        padding: 2px;
+        /* box-sizing: border-box; */
         display: flex;
         flex-direction: row;
         justify-content: center;
-        border-top: 1px solid rgba(255, 255, 255, 0.2);
-        background-color: var(--dp08);
+        align-items: center;
+        border-top: 1px solid var(--dp08);
+        background-color: var(--dp04);
     }
-    #boughtContainer {
+    #upgradeCount {
         position: absolute;
-        right: -2px;
-        bottom: -2px;
-        height: max-content;
+        right: 0px;
+        bottom: 0px;
+        height: 1rem;
         min-width: 24px;
         width: max-content;
         padding: 2px;
         display: flex;
         justify-content: center;
         align-items: center;
-        border-radius: 0%;
         background-color: var(--themeColor1);
-        outline: 1px solid rgba(0, 0, 0, 0.6);
-        border-top: 1px solid rgba(255, 255, 255, 0.6);
-        border-left: 1px solid rgba(255, 255, 255, 0.6);
-        border-bottom: 1px solid rgba(0, 0, 0, 0.6);
-        border-right: 1px solid rgba(0, 0, 0, 0.6);
-        border-top-left-radius: 8px;
-    }
-    button {
-        min-height: 50px;
-        height: 60px;
-        width: 200px;
-        position: relative;
-        padding: 0px;
-    }
-
-    button.disabled {
-        opacity: var(--disabled); /* override */
-    }
-    button:not(.disabled):hover {
-        /*  outline: 1px solid white; */
-        /* background-color: var(--Gray600); */
+        border-radius: 0px;
+        /* border-top-left-radius: 8px; */
     }
 
     .maxed {
