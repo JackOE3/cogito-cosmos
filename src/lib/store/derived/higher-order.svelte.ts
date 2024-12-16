@@ -1,4 +1,11 @@
-import { cheeseFactoryMode, currentThoughtBoost, unlocked as unlockedState, upgradeCount as upgradeCountState, resource as resourceState } from '../primitive'
+import {
+    cheeseFactoryMode,
+    currentThoughtBoost,
+    unlocked as unlockedState,
+    upgradeCount as upgradeCountState,
+    resource as resourceState,
+    mood
+} from '../primitive'
 import {
     /* cheeseBoostFactorYield,
     cheeseCycleAcceleratorFactor,
@@ -102,14 +109,22 @@ class HigherOrder {
         Math.pow(resource.cheese, fromPrimitive.mcConversionExponent) * this.monsterMoldyCheeseMult * (unlocked.manualMoldyCheeseConversionBoost ? 10 : 1)
     )
 
-    thoughtsPerSec = $derived(
-        fromPrimitive.thoughtsPerSecBase *
-            fromPrimitive.thoughtMultFromUnlocks *
-            currentThoughtBoost.value *
-            fromPrimitive.cheeseThoughtMult *
-            fromPrimitive.cheeseCyclesThoughtMult *
-            this.monsterThoughtMult
-    )
+    thoughtsPerSecKnowledgeConversion = $derived(fromPrimitive.knowledgeConversionFactor * resource.thoughts) // 5% decay every sec
+
+    thoughtsPerSec = $derived.by(() => {
+        if (mood.value === 'happy') {
+            return (
+                fromPrimitive.thoughtsPerSecBase *
+                fromPrimitive.thoughtMultFromUnlocks *
+                currentThoughtBoost.value *
+                fromPrimitive.cheeseThoughtMult *
+                fromPrimitive.cheeseCyclesThoughtMult *
+                this.monsterThoughtMult
+            )
+        } else if (mood.value === 'neutral') {
+            return +unlocked.ponderPassively * -this.thoughtsPerSecKnowledgeConversion
+        } else return 0
+    })
 }
 
 export const higherOrder = new HigherOrder()

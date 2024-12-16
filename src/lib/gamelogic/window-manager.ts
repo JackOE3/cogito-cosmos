@@ -1,5 +1,6 @@
-import { WindowId, windowStack, windowLocations, windowMinimized } from '$lib/store'
+import { WindowId, windowStack, windowLocations } from '$lib/store'
 import { makeState } from '$lib/store/customStore.svelte'
+import { tick } from 'svelte'
 
 export const keysDisabled = makeState(false)
 
@@ -48,14 +49,9 @@ export function initWindow(window: HTMLElement): void {
 export function resetWindowLayout(): void {
     windowLocations.reset()
     setAllWindowLocations()
-    maximizeAllWindows()
     panToWindow(WindowId.thoughtComponent)
 }
-export function maximizeAllWindows(): void {
-    Object.keys(windowMinimized.value).forEach((id: WindowId) => {
-        windowMinimized.value[id] = false
-    })
-}
+
 export function updateWindowLocation(window: HTMLElement | null): void {
     if (window === null) return
     if (window.id === undefined) return
@@ -64,7 +60,8 @@ export function updateWindowLocation(window: HTMLElement | null): void {
 }
 
 let panToWindowAnimId: number
-export function panToWindow(windowId: WindowId, jump = true): void {
+export async function panToWindow(windowId: WindowId, jump = false): Promise<void> {
+    await tick() // this is here so the DOM is rendered and we can read .style properties
     const gameWindow = window.document.querySelector(`#game`)
     if (!(gameWindow instanceof HTMLElement)) return
 

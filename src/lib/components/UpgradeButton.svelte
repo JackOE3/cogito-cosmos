@@ -7,12 +7,12 @@
 
     type Props = {
         upgradeName: UpgradeName
-        tooltipText: string | null
-        buyMaxUpgrades: boolean // setContext/getContext better?
-        btnUnlocked: boolean
+        tooltipText?: string | null
+        buyMaxUpgrades?: boolean // setContext/getContext better?
+        btnUnlocked?: boolean
     }
 
-    let { upgradeName, tooltipText = null, buyMaxUpgrades = false, btnUnlocked = true, children }: Props = $props()
+    let { upgradeName, tooltipText = null, buyMaxUpgrades = false, btnUnlocked = true }: Props = $props()
 
     const resourceName = upgrades[upgradeName].resource
     let cost = $derived(upgradeCost.value[upgradeName])
@@ -37,7 +37,7 @@
         transition:fade|local={{ duration: 1000 }}>
         <div style="display:grid; grid-template-rows: auto 14px; height: 100%">
             <div id="text">
-                {@render children()}
+                {upgrades[upgradeName].title}
             </div>
             <div id="cost">
                 {#if !isMaxed}
@@ -88,10 +88,7 @@
         flex-direction: row;
         justify-content: center;
         border-top: 1px solid rgba(255, 255, 255, 0.2);
-        background-color: rgba(0, 0, 0, 0.2);
-
-        /* background-color: rgba(8, 248, 0, 0.4);
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4) 0%, transparent 40%); */
+        background-color: var(--dp08);
     }
     #boughtContainer {
         position: absolute;
@@ -107,10 +104,10 @@
         border-radius: 0%;
         background-color: var(--themeColor1);
         outline: 1px solid rgba(0, 0, 0, 0.6);
-        border-top: 2px solid rgba(255, 255, 255, 0.6);
-        border-left: 2px solid rgba(255, 255, 255, 0.6);
-        border-bottom: 2px solid rgba(0, 0, 0, 0.6);
-        border-right: 2px solid rgba(0, 0, 0, 0.6);
+        border-top: 1px solid rgba(255, 255, 255, 0.6);
+        border-left: 1px solid rgba(255, 255, 255, 0.6);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.6);
+        border-right: 1px solid rgba(0, 0, 0, 0.6);
         border-top-left-radius: 8px;
     }
     button {
@@ -126,7 +123,7 @@
     }
     button:not(.disabled):hover {
         /*  outline: 1px solid white; */
-        background-color: var(--Gray600);
+        /* background-color: var(--Gray600); */
     }
 
     .maxed {

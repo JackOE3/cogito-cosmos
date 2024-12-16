@@ -1,4 +1,4 @@
-import { makeState, makeStore } from '../customStore.svelte'
+import { makeState } from '../customStore.svelte'
 
 export enum Resource {
     THOUGHTS = 'thoughts',
@@ -7,24 +7,15 @@ export enum Resource {
     CHEESE = 'cheese',
     MOLDY_CHEESE = 'moldyCheese',
     CHEESE_MONSTER = 'cheeseMonster',
-    CHEESE_BRAINS = 'cheeseBrains',
-    MILK = 'milk',
+    CHEESE_BRAINS = 'cheeseBrains'
+    /* MILK = 'milk',
     BACTERIA = 'bacteria',
-    MILK_POINTS = 'milkPoints'
+    MILK_POINTS = 'milkPoints' */
 }
 export type ResourceType = `${Resource}`
 
 export type Resources = Record<Resource, number>
 
-export const resource = makeState({
-    thoughts: 0,
-    knowledge: 0,
-    insight: 0,
-    cheese: 0,
-    moldyCheese: 0,
-    cheeseMonster: 0,
-    cheeseBrains: 0,
-    milk: 0,
-    bacteria: 0,
-    milkPoints: 0
-})
+const resourcesInitial = Object.fromEntries(Object.values(Resource).map(resource => [resource, 0]))
+
+export const resource = makeState(resourcesInitial as Resources)

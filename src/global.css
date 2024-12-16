@@ -1,8 +1,26 @@
+@font-face {
+    font-family: 'Pixelated MS Sans Serif';
+    src: url('fonts/ms_sans_serif.woff') format('woff');
+    src: url('fonts/ms_sans_serif.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Pixelated MS Sans Serif';
+    src: url('fonts/ms_sans_serif_bold.woff') format('woff');
+    src: url('fonts/ms_sans_serif_bold.woff2') format('woff2');
+    font-weight: bold;
+    font-style: normal;
+}
+
 html[data-theme='dark'] {
-    --background-color: #0c0c0c;
+    --background-color: #121212;
     --color: white;
-    --anti-color: black;
-    --color-rgb: 255, 255, 255;
+    --text-high-emphasis: rgba(255, 255, 255, 0.87);
+    --text-medium-emphasis: rgba(255, 255, 255, 0.6);
+    --text-disabled: rgba(255, 255, 255, s 0.38);
+
     --Gray300: #e0e0e0;
     --Gray400: #bdbdbd;
     --Gray500: #9e9e9e;
@@ -11,6 +29,18 @@ html[data-theme='dark'] {
     --Gray800: #424242;
     --Gray900: #212121;
 
+    --btn-bg: #3a3a3a;
+
+    --dp00: rgba(255, 255, 255, 0);
+    --dp01: rgba(255, 255, 255, 0.05);
+    --dp02: rgba(255, 255, 255, 0.07);
+    --dp03: rgba(255, 255, 255, 0.08);
+    --dp04: rgba(255, 255, 255, 0.09);
+    --dp06: rgba(255, 255, 255, 0.11);
+    --dp08: rgba(255, 255, 255, 0.12);
+    --dp12: rgba(255, 255, 255, 0.14);
+    --dp16: rgba(255, 255, 255, 0.15);
+    --dp24: rgba(255, 255, 255, 0.16);
     /* --Gray50: #F9FAFB;
   --Gray100: #F3F4F6;
   --Gray200: #E5E7EB;
@@ -25,8 +55,6 @@ html[data-theme='dark'] {
 html[data-theme='light'] {
     --background-color: rgb(187, 187, 187);
     --color: black;
-    --anti-color: white;
-    --color-rgb: 0, 0, 0;
     --Gray900: #e0e0e0;
     --Gray800: #bdbdbd;
     --Gray700: #9e9e9e;
@@ -37,7 +65,7 @@ html[data-theme='light'] {
 }
 
 html {
-    --primary: #bb86fc;
+    --primary: #ce93d8;
     --primary-variant: #3700b3;
     --secondary: #03dac6;
     --secondary-variant: #018786;
@@ -64,47 +92,13 @@ body {
     font-family: monospace, Arial, sans-serif;
     font-size: calc(11rem / 16); /* = 11px */
     font-weight: normal;
-    background-color: #0c0c0c; /* needs to be hardcoded to load instantly, else flash of white*/
-    color: var(--color);
+    background-color: var(--background-color); /* needs to be hardcoded to load instantly, else flash of white*/
+    color: var(--text-high-emphasis);
     margin: 0px;
     padding: 0px;
     box-sizing: border-box;
     cursor: move;
     user-select: none;
-}
-
-[data-theme-colors='thoughts'] {
-    --themeColor1: rgb(129, 0, 204);
-    --themeColor2: rgb(182, 122, 255);
-}
-[data-theme-colors='knowledge'] {
-    --themeColor1: rgb(38, 59, 248);
-    --themeColor2: rgb(173, 216, 230);
-}
-[data-theme-colors='insight'] {
-    --themeColor1: rgb(122, 1, 57);
-    --themeColor2: rgb(255, 0, 255);
-}
-
-[data-theme-colors='cheese'] {
-    --themeColor1: rgb(168, 143, 2);
-    --themeColor2: rgb(244, 255, 33);
-}
-[data-theme-colors='moldyCheese'] {
-    --themeColor1: rgb(75, 121, 0);
-    --themeColor2: rgb(136, 255, 0);
-}
-[data-theme-colors='cheeseyard'] {
-    --themeColor1: rgb(82, 0, 18);
-    --themeColor2: rgb(255, 0, 98);
-}
-[data-theme-colors='milk'] {
-    --themeColor1: #bdbdbd;
-    --themeColor2: #ffffff;
-}
-[data-theme-colors='bacteria'] {
-    --themeColor1: #00b2be;
-    --themeColor2: #81efff;
 }
 
 a {
@@ -142,17 +136,16 @@ textarea {
 
 button,
 .button-border {
-    --background-color: var(--Gray800);
-    background-color: var(--background-color);
+    background-color: var(--dp08);
     width: max-content;
-    color: var(--color);
+    color: var(--text-high-emphasis);
 
-    outline: 1px solid rgba(0, 0, 0, 1);
+    outline: 1px solid rgba(0, 0, 0, 0.6);
     border-left: rgba(255, 255, 255, 0.5);
     border-right: rgba(0, 0, 0, 0.6);
     border-top: rgba(255, 255, 255, 0.5);
     border-bottom: rgba(0, 0, 0, 0.6);
-    border-width: 2px;
+    border-width: 1px;
     border-style: solid;
 }
 
@@ -161,7 +154,7 @@ button:not(.disabled):active {
     border-left: rgba(0, 0, 0, 0.6);
     border-bottom: rgba(255, 255, 255, 0.5);
     border-top: rgba(0, 0, 0, 0.6);
-    border-width: 2px;
+    border-width: 1px;
     border-style: solid;
 }
 
@@ -246,4 +239,42 @@ button:disabled {
 .bg-on-hover:hover {
     background-color: rgba(255, 255, 255, 0.2);
     border-radius: 4px;
+}
+
+[data-theme-colors='cogitoErgoSum'] {
+    --themeColor1: #616161;
+    --themeColor2: #eeeeee;
+}
+[data-theme-colors='thoughts'] {
+    --themeColor1: #7b1fa2; /* primary700 */ /*old: rgb(129, 0, 204); */
+    --themeColor2: #ce93d8; /* primary200 */ /*old: rgb(182, 122, 255); */
+}
+[data-theme-colors='knowledge'] {
+    --themeColor1: #0288d1; /* rgb(38, 59, 248); */
+    --themeColor2: #81d4fa; /* rgb(173, 216, 230); */
+}
+[data-theme-colors='insight'] {
+    --themeColor1: #5d4037;
+    --themeColor2: #ffab91;
+}
+
+[data-theme-colors='cheese'] {
+    --themeColor1: rgb(168, 143, 2);
+    --themeColor2: rgb(244, 255, 33);
+}
+[data-theme-colors='moldyCheese'] {
+    --themeColor1: rgb(75, 121, 0);
+    --themeColor2: rgb(136, 255, 0);
+}
+[data-theme-colors='cheeseyard'] {
+    --themeColor1: rgb(82, 0, 18);
+    --themeColor2: rgb(255, 0, 98);
+}
+[data-theme-colors='milk'] {
+    --themeColor1: #bdbdbd;
+    --themeColor2: #ffffff;
+}
+[data-theme-colors='bacteria'] {
+    --themeColor1: #00b2be;
+    --themeColor2: #81efff;
 }

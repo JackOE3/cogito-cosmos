@@ -1,4 +1,4 @@
-import { makeState, makeStore } from '../customStore.svelte'
+import { makeState } from '../customStore.svelte'
 import type { ResourceType } from './resources.svelte'
 
 export enum UnlockName {
@@ -16,6 +16,7 @@ export enum UnlockName {
     MILK_TREE = 'milkTree',
     // Knowledge
     PONDER_PASSIVELY = 'ponderPassively',
+    SAD_MOOD = 'sadMood',
     // Cheese
     CHEESE_QUEUE = 'cheeseQueue',
     CHEESE_QUEUE_OVERCLOCKING = 'cheeseQueueOverclocking',
@@ -71,7 +72,7 @@ export interface IUnlock {
     availableAt?: UnlockName
 }
 
-export const unlocks: Record<string, IUnlock[]> = {
+export const unlocks: { [key in ResourceType]: IUnlock[] } = {
     // Cogito Ergo Sum
     thoughts: [
         {
@@ -96,7 +97,7 @@ export const unlocks: Record<string, IUnlock[]> = {
         {
             name: UnlockName.NEUTRAL_MOOD,
             title: 'True Neutral',
-            description: 'Let go of all earthly desires and transcend emotions.',
+            description: 'Let go of all earthly desires and transcend emotions. You can enter into a neutral mood.',
             tooltipText: 'TBD',
             cost: 100,
             resource: 'thoughts',
@@ -152,9 +153,19 @@ export const unlocks: Record<string, IUnlock[]> = {
             title: 'Deeper Learning',
             description: 'You acquire <strong style="color:lightblue">Knowledge</strong> passively at a reduced rate while in a neutral mood. ',
             tooltipText: 'TBD',
-            cost: 10,
+            cost: 3,
             resource: 'knowledge',
             type: 'Effect',
+            availableAt: UnlockName.NEUTRAL_MOOD
+        },
+        {
+            name: UnlockName.SAD_MOOD,
+            title: 'Sadge',
+            description: 'TBD',
+            tooltipText: 'TBD',
+            cost: 1e3,
+            resource: 'knowledge',
+            type: 'Mechanic',
             availableAt: UnlockName.NEUTRAL_MOOD
         },
         {

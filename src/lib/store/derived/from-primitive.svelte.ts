@@ -9,7 +9,8 @@ import {
     brainMode,
     totalCheeseMonsterDeaths,
     type CheeseFactoryMode,
-    type BrainMode
+    type BrainMode,
+    mood
 } from '../primitive'
 import { checkBoolForNum } from '$lib/gamelogic/utils'
 
@@ -19,8 +20,23 @@ const upgradeCount = $derived(upgradeCountState.value)
 const resource = $derived(resourceState.value)
 
 class FromPrimitive {
-    knowledgePerSec = $derived(+unlocked.ponderPassively * 0.1 * Math.pow(resource.thoughts, 0.25))
-    insightPerSec = $derived(0.1 * Math.pow(resource.knowledge, 0.25))
+    knowledgePerSec = $derived.by(() => {
+        if (mood.value === 'neutral') {
+            return +unlocked.ponderPassively * 0.1 * Math.pow(resource.thoughts, 0.25) * this.knowledgeMultiplier
+        } else return 0
+    })
+
+    insightPerSec = $derived.by(() => {
+        if (mood.value === 'sad') {
+            return 0.1 * Math.pow(resource.knowledge, 0.25)
+        } else return 0
+    })
+
+    knowledgeMultiplier = $derived(1 + upgradeCount.knowledgeMultiplier)
+
+    knowledgeConversionFactorFormula = (upgradeCount: number) => 0.05 / (1 + upgradeCount)
+    knowledgeConversionFactor = $derived(this.knowledgeConversionFactorFormula(upgradeCount.knowledgeConversion))
+
     thoughtBoostMultiplier = $derived(1.5 + 0.2 * Math.pow(upgradeCount.thoughtBoost, 1.5))
 
     thoughtBoostDuration = $derived(5000 + 5000 * upgradeCount.thoughtBoost)

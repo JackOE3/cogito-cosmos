@@ -79,14 +79,9 @@ function gameLoop(): void {
 function gameUpdate(deltaTimeSeconds: number): void {
     deltaTimeSeconds *= fastFowardFactor
 
-    if (mood.value === 'happy') {
-        resource.value.thoughts += higherOrder.thoughtsPerSec * deltaTimeSeconds
-    } else if (mood.value === 'neutral') {
-        resource.value.knowledge += fromPrimitive.knowledgePerSec * deltaTimeSeconds
-        resource.value.thoughts *= 1 - 0.05 * deltaTimeSeconds
-    } else if (mood.value === 'sad') {
-        resource.value.insight += fromPrimitive.insightPerSec * deltaTimeSeconds
-    }
+    resource.value.thoughts += higherOrder.thoughtsPerSec * deltaTimeSeconds
+    resource.value.knowledge += fromPrimitive.knowledgePerSec * deltaTimeSeconds
+    resource.value.insight += fromPrimitive.insightPerSec * deltaTimeSeconds
 
     // moldy cheese decay (linear extrapolation)
     // moldyCheese.update(value => value * (1 - LN2/mcHalfLifeSeconds) * deltaTimeSeconds))
@@ -96,7 +91,7 @@ function gameUpdate(deltaTimeSeconds: number): void {
 
     //handleCheeseMonster(resource.value, deltaTimeSeconds)
 
-    if (resource.value.milk > highestMilk.value) highestMilk.value = resource.value.milk
+    //if (resource.value.milk > highestMilk.value) highestMilk.value = resource.value.milk
 
     totalTimePlayed.value += deltaTimeSeconds
 }

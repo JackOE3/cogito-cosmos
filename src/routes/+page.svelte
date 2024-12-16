@@ -1,8 +1,8 @@
 <script lang="ts">
     import '../global.css'
     import { onDestroy, onMount } from 'svelte'
-    import Notifications from '$lib/components/misc/Notifications.svelte'
     import { saveSaveGame, resetSaveGame, exportSaveGame, importSaveGame } from '$lib/gamelogic/saveload'
+    import { startGameLoop, stopGameLoop } from '$lib/gamelogic/gameloop'
     import {
         initWindow,
         keysDisabled,
@@ -13,28 +13,28 @@
         updateWindowLocation,
         updateWindowStacking
     } from '$lib/gamelogic/window-manager'
-    import { ADMIN_MODE, devToolsEnabled, isDarkMode, LORCA_OVERRIDE, WindowId, currentNotation } from '$lib/store'
+    import { ADMIN_MODE, devToolsEnabled, isDarkMode, LORCA_OVERRIDE, WindowId, currentNotation, unlocked } from '$lib/store'
+
+    import Notifications from '$lib/components/misc/Notifications.svelte'
     import DevTools from '$lib/components/dev/DevTools.svelte'
     import ToggleUnlocks from '$lib/components/dev/ToggleUnlocks.svelte'
 
-    import ThoughtComponent from '$lib/components/game-windows/ThoughtComponent.svelte'
     /*  import CheeseComponent from '$lib/components/game-windows/CheeseComponent.svelte'
     import MoldyCheeseComponent from '$lib/components/game-windows/MoldyCheeseComponent.svelte'
     import CheeseyardComponent from '$lib/components/game-windows/CheeseyardComponent.svelte'
     import MilkComponent from '$lib/components/game-windows/MilkComponent.svelte'
     import MilkTreeComponent from '$lib/components/game-windows/MilkTreeComponent.svelte'
     import BacteriaComponent from '$lib/components/game-windows/BacteriaComponent.svelte' */
-
-    import { startGameLoop, stopGameLoop } from '$lib/gamelogic/gameloop'
-
     import backgroundImage from '$lib/images/endless-constellation.svg'
     import Image from '$lib/components/Image.svelte'
+    import Thoughts from '$lib/components/game-windows/Thoughts.svelte'
+    import Knowledge from '../lib/components/game-windows/Knowledge.svelte'
+    import Insight from '$lib/components/game-windows/Insight.svelte'
+    import CogitoErgoSum from '$lib/components/game-windows/CogitoErgoSum.svelte'
 
-    /**
-     *  Start the game loop in the background
-     * 	This also calculates the offline progress
-     */
+    // Start the game loop in the background.
     startGameLoop()
+    // When doing HMR, this will prevent the game loop from running multiple times in parallel.
     onDestroy(() => stopGameLoop())
 
     let unlockTogglesShown = $state(false)
@@ -125,7 +125,10 @@
 
         // handle individual windows able to be dragged over the screen:
         if (e.target.classList.contains('window-bar')) {
-            windowContainer = e.target.parentElement?.parentElement ?? null // ugly...
+            windowContainer = e.target.closest('.window')
+            // if flex or grid layout before and then you want users to drag the windows,
+            // you'd need to make all windows absolutely positioned and compute their current location
+            /* if (windowContainer) windowContainer.style.position = 'absolute' */
             e.target.style.cursor = 'grab'
             return
         }
@@ -193,7 +196,7 @@
         setAllWindowLocations()
         background.style.backgroundPositionX = '0px'
         background.style.backgroundPositionY = '0px'
-        panToWindow(WindowId.thoughtComponent)
+        panToWindow(WindowId.COGITO_ERGO_SUM, true)
 
         background.style.background = `url("${backgroundImage}")`
 
@@ -333,7 +336,7 @@
         <button onclick={changeNotation}>Notation: {currentNotation.value}</button>
         <button onclick={resetWindowLayout}>Layout Reset</button>
         <button onclick={switchTheme}>Theme: {isDarkMode.value ? 'Dark' : 'Light'}</button>
-        <button onclick={() => panToWindow(WindowId.thoughtComponent, true)}>Home</button>
+        <button onclick={() => panToWindow(WindowId.COGITO_ERGO_SUM, true)}>Home</button>
         <input type="string" bind:value={saveDataString} />
         <button onclick={handleExport}>Export</button>
         <button onclick={handleImport}>Import</button>
@@ -348,14 +351,25 @@
         </div>
 
         <div id="game" bind:this={gameWindow}>
-            <div
-                id={WindowId.thoughtComponent}
-                class="window"
-                onmousedown={() => selectWindow(WindowId.thoughtComponent, gameWindow)}
-                use:initWindow
-                role="none">
-                <ThoughtComponent windowId={WindowId.thoughtComponent} />
+            <div id={WindowId.COGITO_ERGO_SUM} class="window" onmousedown={() => selectWindow(WindowId.COGITO_ERGO_SUM, gameWindow)} use:initWindow role="none">
+                <CogitoErgoSum></CogitoErgoSum>
             </div>
+
+            <div id={WindowId.THOUGHTS} class="window" onmousedown={() => selectWindow(WindowId.THOUGHTS, gameWindow)} use:initWindow role="none">
+                <Thoughts></Thoughts>
+            </div>
+
+            {#if unlocked.value.neutralMood || LORCA_OVERRIDE.value}
+                <div id={WindowId.KNOWLEDGE} class="window" onmousedown={() => selectWindow(WindowId.KNOWLEDGE, gameWindow)} use:initWindow role="none">
+                    <Knowledge></Knowledge>
+                </div>
+            {/if}
+
+            {#if unlocked.value.sadMood || LORCA_OVERRIDE.value}
+                <div id={WindowId.INSIGHT} class="window" onmousedown={() => selectWindow(WindowId.INSIGHT, gameWindow)} use:initWindow role="none">
+                    <Insight></Insight>
+                </div>
+            {/if}
             <!-- {#if $unlocked.switzerland || $LORCA_OVERRIDE}
                 <div
                     id={WindowId.cheeseComponent}
@@ -442,8 +456,13 @@
     #game {
         position: absolute; /** also resets positioning of child elements just like relative! */
         transform: translateZ(0);
-        /* display: grid;
-      gap: var(--window-gap); */
+
+        /* width: 1000px;
+        height: 1000px;
+        border: 1px solid red;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--window-gap); */
     }
     .window {
         position: absolute;

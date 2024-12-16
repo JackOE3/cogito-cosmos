@@ -94,3 +94,63 @@ export function nameof<T extends object>(obj: T, expression: (x: { [Property in 
 
     return expression(res)()
 }
+
+type RGBA = [number, number, number, number]
+type RGB = [number, number, number]
+
+function hexToRgb(hex: string): RGB {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+    if (!result) return [0, 0, 0]
+    return [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)]
+}
+
+function relative_luminance(color: RGB): number {
+    // https://www.w3.org/TR/WCAG20/#relativeluminancedef
+    let R, G, B
+    const R_sRGB = color[0] / 255
+    const G_sRGB = color[1] / 255
+    const B_sRGB = color[2] / 255
+
+    if (R_sRGB <= 0.03928) R = R_sRGB / 12.92
+    else R = Math.pow((R_sRGB + 0.055) / 1.055, 2.4)
+    if (G_sRGB <= 0.03928) G = G_sRGB / 12.92
+    else G = Math.pow((G_sRGB + 0.055) / 1.055, 2.4)
+    if (B_sRGB <= 0.03928) B = B_sRGB / 12.92
+    else B = Math.pow((B_sRGB + 0.055) / 1.055, 2.4)
+
+    return 0.2126 * R + 0.7152 * G + 0.0722 * B
+}
+
+function color_from_overlay(background: RGB, overlay: RGBA): RGB {
+    const R = overlay[0] * overlay[3] + background[0] * (1 - overlay[3])
+    const G = overlay[1] * overlay[3] + background[1] * (1 - overlay[3])
+    const B = overlay[2] * overlay[3] + background[2] * (1 - overlay[3])
+    return [R, G, B]
+}
+
+function contrast_ratio(L1: number, L2: number): number {
+    // https://m2.material.io/design/color/dark-theme.html#properties
+    return (L1 + 0.05) / (L2 + 0.05)
+}
+// highest overlay: 24dp = rgba(255,255,255,0.16)
+
+/* const yellow200: RGB = hexToRgb('#FFF59D')
+const defaultBGColor: RGB = hexToRgb('#121212')
+console.log(color_from_overlay(defaultBGColor, [...yellow200, 0.08]))
+const primary700: RGB = hexToRgb('#7B1FA2')
+console.log('contrast primary600 to white:', contrast_ratio(1, relative_luminance(primary700)))
+
+const primaryColor_8percent: RGBA = [206, 147, 216, 0.08]
+const themedBackgroundColor: RGB = [51, 41, 64] // [51, 41, 64 ] vs [31, 26, 36]
+// 18 18 18 = #121212 is default bg color
+const themedBackgroundColorComputed = color_from_overlay([18, 18, 18], primaryColor_8percent)
+console.log(themedBackgroundColor, themedBackgroundColorComputed)
+
+console.log('white:', relative_luminance([255, 255, 255]))
+console.log('black:', relative_luminance([0, 0, 0]))
+console.log('#1f1a24 = rgb(31 26 36)', relative_luminance([31, 26, 36]))
+console.log('#1f1a24 to white contrast ratio:', contrast_ratio(1, relative_luminance([31, 26, 36])))
+
+const overlay_24dp: RGBA = [255, 255, 255, 0.16]
+const elevated_color_24dp = color_from_overlay(themedBackgroundColor, overlay_24dp)
+console.log('contast ratio to themedBGColor elevated:', contrast_ratio(1, relative_luminance(elevated_color_24dp))) */

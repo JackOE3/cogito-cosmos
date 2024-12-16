@@ -1,15 +1,13 @@
 <script lang="ts">
-    import { onDestroy, onMount } from 'svelte'
+    import { onMount, type Snippet } from 'svelte'
     import { fade } from 'svelte/transition'
-    import { WindowId, windowMinimized, windowStack } from '$lib/store'
-    import Image from '$lib/components/Image.svelte'
 
     type Props = {
         title: string
-        windowId: WindowId
         themeId: string
+        children: Snippet
     }
-    let { title = '', windowId, themeId }: Props = $props()
+    let { title = '', themeId, children }: Props = $props()
 
     let windowBar: HTMLElement
 
@@ -18,41 +16,15 @@
             windowBar.style.cursor = 'pointer'
         }
     })
-    onDestroy(() => {
-        console.log(windowId)
-        // remove windowId from windowStack:
-        windowStack.splice(windowStack.indexOf(windowId), 1)
-    })
-
-    const minimized = $derived(windowMinimized.value[windowId])
-
-    function minimizeWindow(id: WindowId): void {
-        windowMinimized.value[id] = !windowMinimized.value[id]
-    }
 </script>
 
 <div class="window-container" transition:fade|local={{ duration: 1000 }} data-theme-colors={themeId}>
     <div class="window-bar draggable" bind:this={windowBar}>
         {title}
-        <button class="window-bar-min-max" onclick={() => minimizeWindow(windowId)}>
-            {#if minimized}
-                <div style="scale: 0.5">
-                    <Image name="maximize" alt="maximize window" />
-                </div>
-            {:else}
-                <div style="scale: 0.5">
-                    <Image name="minimize" alt="maximize window" />
-                </div>
-            {/if}
-        </button>
     </div>
 
     <div class="content">
-        {#if minimized}
-            <slot name="minimized" />
-        {:else}
-            <slot />
-        {/if}
+        {@render children()}
     </div>
 
     <div class="corner" id="corner-top-right"></div>
@@ -64,10 +36,10 @@
 <style>
     .window-container {
         position: relative;
-        width: max-content;
+        width: var(--width, max-content);
         height: max-content;
         /* box-shadow: 0 0 4px 0.25px black; */
-        background-color: var(--Gray900);
+        background-color: var(--background-color);
 
         outline: 1px black solid;
 
@@ -84,80 +56,51 @@
     }
 
     .content {
-        width: max-content; /* var(--width, var(--window-width)); */
-        /*  position: relative; */
+        width: var(--width, max-content);
         display: flex;
         flex-direction: column;
         row-gap: 16px;
         padding: 16px;
         margin-top: 10px;
-
-        /*border-radius: 8px;*/
+        box-sizing: border-box;
     }
-    /* .container::before, */
 
     .window-bar {
-        /* cursor: pointer; */
-        content: attr(data-title);
-        position: absolute;
-        bottom: calc(100% - 12px);
-        left: 16%;
-        width: 68%;
-        height: 1.25rem;
-        font-size: 1rem;
+        cursor: pointer;
         font-weight: bold;
         text-align: center;
-        text-shadow: 1px 1px 4px black;
         color: white;
+        text-shadow: 1px 1px 1px black;
+        font-size: 1rem;
 
-        padding: 4px;
-        background: linear-gradient(90deg, var(--themeColor1) 0%, var(--themeColor2) 100%);
+        position: absolute;
+        top: calc(-0.75rem - 1px);
+        left: 50%;
+        translate: -50%;
+        width: 68%;
+        height: 1.25rem;
+        padding: 2px;
+        /*  background: linear-gradient(90deg, var(--themeColor1) 0%, var(--themeColor2) 50%, var(--themeColor1) 100%); */
+        background: var(--special-bg, linear-gradient(90deg, var(--themeColor1) 0%, var(--themeColor2) 100%));
+        /* linear-gradient(90deg, rgba(206, 147, 208, 1) 5%, rgba(129, 212, 250, 1) 60%, rgba(255, 171, 145, 1) 95%); */
 
-        outline: 1px black solid;
+        /* outline: 1px black solid; */
+        box-shadow: 0px 1px 2px rgb(0, 0, 0);
         border-left: var(--themeColor2);
         border-right: var(--themeColor2);
         border-top: var(--themeColor2);
         border-bottom: var(--themeColor1);
-        border-width: 2px;
+        border-width: 0px;
         border-style: solid;
-        border-radius: 0px;
-        border-top-right-radius: 12px;
-        border-top-left-radius: 12px;
-    }
-    .window-bar-min-max {
-        position: absolute;
-        aspect-ratio: 1 / 1;
-        height: calc(100% - 2px);
-        padding: 0;
-        right: 0px;
-        top: 0;
-        border-width: 0;
-        outline-width: 0;
-        background-color: transparent;
-        border-radius: 4px;
-        border-top-right-radius: 12px;
-        filter: opacity(0.6);
-    }
-    .window-bar-min-max:active {
-        border-width: 2px;
-        outline-width: 1px;
-    }
-    .window-bar-min-max:hover {
-        background-color: white;
-        /* filter: opacity(1); */
-        outline-width: 1px;
+        border-bottom-right-radius: 0px;
+        border-bottom-left-radius: 16px;
+        border-top-right-radius: 16px;
+        border-top-left-radius: 0px;
+        border-radius: 8px;
+        /* -webkit-clip-path: polygon(0% 48%, 20% 0%, 80% 0%, 100% 48%, 100% 52%, 80% 100%, 20% 100%, 0% 52%);
+        clip-path: polygon(0% 48%, 20% 0%, 80% 0%, 100% 48%, 100% 52%, 80% 100%, 20% 100%, 0% 52%); */
     }
 
-    /* .container::after {
-    content: '';
-    position: absolute;
-    border-image: linear-gradient(90deg, rgb(129, 0, 204) 0%, rgb(182, 122, 255) 100%);
-    border-image-width: 10px;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-  } */
     .corner {
         --size: 10px;
         /* z-index: 0; */

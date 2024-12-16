@@ -18,6 +18,13 @@ export const upgrades = {
         costMultiplier: 1.15,
         maxBuy: undefined
     },
+    thoughtBoost: {
+        title: 'Improve the Thought Boost',
+        cost: 100,
+        resource: Resource.THOUGHTS,
+        costMultiplier: 2,
+        maxBuy: undefined
+    },
     thoughtJerk: {
         title: 'Thought Jerk',
         cost: 1e8,
@@ -25,14 +32,26 @@ export const upgrades = {
         costMultiplier: 1.3,
         maxBuy: undefined
     },
+
     //knowledge
-    thoughtBoost: {
-        title: 'Improve the Thought Boost',
+    // decrease exponential decay of thoughts
+    knowledgeConversion: {
+        title: 'Extract knowledge from your thoughts more efficiently',
+        cost: 10,
+        resource: Resource.KNOWLEDGE,
+        costMultiplier: 2,
+        maxBuy: undefined
+    },
+    // additional production multiplier
+    knowledgeMultiplier: {
+        title: 'Increase your knowledge accumulation',
         cost: 20,
         resource: Resource.KNOWLEDGE,
         costMultiplier: 2,
         maxBuy: undefined
     },
+    //
+
     //cheese
     cheeseQueueLength: {
         title: 'Placeholder Title',
