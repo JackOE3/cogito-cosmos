@@ -19,6 +19,7 @@ export function tooltip(
 ): object {
     let tooltipComponent: Record<string, any>
     const TooltipComponent = options.Component ?? Tooltip
+
     const myProps = $state({
         data: options.data ?? null,
         top: 0,
@@ -27,6 +28,8 @@ export function tooltip(
 
     let mousePressed = false
     let tooltipShown = false
+
+    const PADDING = 8
 
     function mouseEnter(_event: MouseEvent): void {
         if (myProps.data === null || mousePressed) return
@@ -41,12 +44,13 @@ export function tooltip(
             rect = element.getBoundingClientRect()
         }
 
-        if (options.direction === Direction.RIGHT) {
-            myProps.top = rect.top
-            myProps.left = rect.right + 8
-        } else {
-            myProps.top = rect.bottom + 10
+        if (options.direction === Direction.BOTTOM) {
+            myProps.top = rect.bottom + PADDING
             myProps.left = rect.left
+        } else {
+            // Direction.RIGHT
+            myProps.top = rect.top
+            myProps.left = rect.right + PADDING
         }
 
         tooltipComponent = mount(TooltipComponent, { target: document.body, props: myProps })
@@ -60,6 +64,7 @@ export function tooltip(
 
     function mouseMove(_event: MouseEvent): void {
         if (myProps.data === null || !mousePressed || !tooltipShown) return
+        // onmount when tooltip is shown & mouse is pressed (= disable tooltip when panning)
         unmount(tooltipComponent)
         tooltipShown = false
     }

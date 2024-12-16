@@ -67,13 +67,13 @@
     button {
         min-height: 50px;
         /* height: 60px; */
+        height: max-content;
         width: 200px;
         position: relative;
         padding: 0px;
     }
 
     #text {
-        /* height: 100%; */
         height: 2rem; /* ~ 2 lines of text */
         flex-grow: 1;
         padding: 8px;
@@ -98,8 +98,8 @@
         position: absolute;
         right: 0px;
         bottom: 0px;
-        height: 1rem;
-        min-width: 24px;
+        height: 1.125rem;
+        min-width: 1.5rem;
         width: max-content;
         padding: 2px;
         display: flex;
@@ -107,7 +107,7 @@
         align-items: center;
         background-color: var(--themeColor1);
         border-radius: 0px;
-        /* border-top-left-radius: 8px; */
+        border-top-left-radius: 8px;
     }
 
     .maxed {

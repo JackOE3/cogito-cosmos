@@ -128,8 +128,8 @@ select,
 textarea {
     font-family: inherit;
     font-size: inherit;
-    -webkit-padding: 8px;
-    padding: 8px;
+    -webkit-padding: 0.5rem;
+    padding: 0.5rem;
     margin: 0;
     box-sizing: border-box;
 
@@ -219,30 +219,6 @@ button:disabled {
     border-bottom: var(--themeColor1);
     border-width: 2px;
     border-style: solid;
-}
-
-.tooltip,
-.tooltip-arrow-up {
-    background-color: black;
-    color: #e2e2e2;
-    position: absolute;
-    width: max-content;
-    display: flex;
-    flex-direction: column;
-    gap: 0rem;
-    text-align: center;
-    border-radius: 4px;
-    padding: 12px;
-}
-.tooltip-arrow-up::before {
-    content: ' ';
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: transparent transparent black transparent;
 }
 
 .bg-on-hover:hover {

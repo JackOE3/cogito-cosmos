@@ -46,7 +46,7 @@
         background: radial-gradient(rgb(40, 40, 40), var(--background-color));
         background-color: var(--background-color);
         border: 1px var(--color) solid;
-        box-shadow: 4px 4px 4px black;
+        box-shadow: 0px 0px 16px 4px black;
 
         width: var(--width);
         height: max-content;
