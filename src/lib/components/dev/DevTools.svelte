@@ -65,13 +65,14 @@
 <style>
     #devTools {
         position: absolute;
-        right: 0;
-        bottom: 0;
-        z-index: 1;
+        right: 16px;
+        bottom: 16px;
+        border-radius: 8px;
+        padding: 16px;
+        z-index: 99;
         background-color: rgb(0, 0, 0, 0.8);
     }
     #devTools > #devControls {
-        margin: 24px;
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
