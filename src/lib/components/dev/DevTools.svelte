@@ -1,63 +1,46 @@
 <script lang="ts">
-    import { devToolsEnabled, resource } from '$lib/store'
+    import { formatNumber } from '$lib/gamelogic/utils'
+    import { addResource, devToolsEnabled, multResource, Resource, resource, resourceTotal } from '$lib/store'
 </script>
 
 {#if devToolsEnabled.value}
     <div id="devTools">
         <div id="devControls">
-            <strong>Developer Tools</strong>
+            <span style="font-size:1rem; font-weight: bold;">Dev Tools</span>
 
-            <span>thoughts</span>
+            <span>thoughts (total: {formatNumber(resourceTotal.value.thoughts, 2)})</span>
             <div style="display:flex;">
-                <button onclick={() => (resource.value.thoughts += 1000)}>+1K</button>
-                <button onclick={() => (resource.value.thoughts += 100000)}>+100K</button>
-                <button onclick={() => (resource.value.thoughts += 1000000)}>+1M</button>
-                <button onclick={() => (resource.value.thoughts *= 10)}>*10</button>
-                <button onclick={() => (resource.value.thoughts /= 10)}>/10</button>
+                <button onclick={() => addResource(Resource.THOUGHTS, 1e2)}>+100</button>
+                <button onclick={() => addResource(Resource.THOUGHTS, 1e4)}>+10K</button>
+                <button onclick={() => addResource(Resource.THOUGHTS, 1e7)}>+1M</button>
+                <button onclick={() => multResource(Resource.THOUGHTS, 10)}>*10</button>
+                <button onclick={() => multResource(Resource.THOUGHTS, 0.1)}>/10</button>
             </div>
-            <span>knowledge</span>
+            <span>knowledge (total: {formatNumber(resourceTotal.value.knowledge, 2)})</span>
             <div style="display:flex;">
-                <button onclick={() => (resource.value.knowledge += 1000)}>+1K</button>
-                <button onclick={() => (resource.value.knowledge += 100000)}>+100K</button>
-                <button onclick={() => (resource.value.knowledge += 1000000)}>+1M</button>
-                <button onclick={() => (resource.value.knowledge *= 10)}>*10</button>
-                <button onclick={() => (resource.value.knowledge /= 10)}>/10</button>
+                <button onclick={() => addResource(Resource.KNOWLEDGE, 1e2)}>+100</button>
+                <button onclick={() => addResource(Resource.KNOWLEDGE, 1e4)}>+10K</button>
+                <button onclick={() => addResource(Resource.KNOWLEDGE, 1e7)}>+1M</button>
+                <button onclick={() => multResource(Resource.KNOWLEDGE, 10)}>*10</button>
+                <button onclick={() => multResource(Resource.KNOWLEDGE, 0.1)}>/10</button>
             </div>
-            <span>insight</span>
+            <span>insight (total: {formatNumber(resourceTotal.value.insight, 2)})</span>
             <div style="display:flex;">
-                <button onclick={() => (resource.value.insight += 1000)}>+1K</button>
-                <button onclick={() => (resource.value.insight += 100000)}>+100K</button>
-                <button onclick={() => (resource.value.insight += 1000000)}>+1M</button>
-                <button onclick={() => (resource.value.insight *= 10)}>*10</button>
-                <button onclick={() => (resource.value.insight /= 10)}>/10</button>
-            </div>
-
-            <span>cheese</span>
-            <div style="display:flex;">
-                <button onclick={() => (resource.value.cheese += 1000)}>+1K</button>
-                <button onclick={() => (resource.value.cheese += 100000)}>+100K</button>
-                <button onclick={() => (resource.value.cheese += 1000000)}>+1M</button>
-                <button onclick={() => (resource.value.cheese *= 10)}>*10</button>
-                <button onclick={() => (resource.value.cheese /= 10)}>/10</button>
+                <button onclick={() => addResource(Resource.INSIGHT, 1e2)}>+100</button>
+                <button onclick={() => addResource(Resource.INSIGHT, 1e4)}>+10K</button>
+                <button onclick={() => addResource(Resource.INSIGHT, 1e7)}>+1M</button>
+                <button onclick={() => multResource(Resource.INSIGHT, 10)}>*10</button>
+                <button onclick={() => multResource(Resource.INSIGHT, 0.1)}>/10</button>
             </div>
 
-            <span>moldy cheese</span>
-            <div style="display:flex;">
-                <button onclick={() => (resource.value.moldyCheese += 1000)}>+1K</button>
-                <button onclick={() => (resource.value.moldyCheese += 100000)}>+100K</button>
-                <button onclick={() => (resource.value.moldyCheese += 1000000)}>+1M</button>
-                <button onclick={() => (resource.value.moldyCheese *= 10)}>*10</button>
-                <button onclick={() => (resource.value.moldyCheese /= 10)}>/10</button>
-            </div>
-
-            <span>cheese monsters</span>
+            <!--   <span>cheese monsters</span>
             <input type="number" bind:value={resource.value.cheeseMonster} />
 
             <span>cheese Brains</span>
             <input type="number" bind:value={resource.value.cheeseBrains} />
 
             <span>milk</span>
-            <input type="number" bind:value={resource.value.milk} />
+            <input type="number" bind:value={resource.value.milk} /> -->
         </div>
     </div>
 {/if}

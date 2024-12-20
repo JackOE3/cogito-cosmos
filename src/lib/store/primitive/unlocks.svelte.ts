@@ -15,7 +15,7 @@ export enum UnlockName {
     MILK = 'milk',
     MILK_TREE = 'milkTree',
     // Knowledge
-    PONDER_PASSIVELY = 'ponderPassively',
+    THOUGHTS_BOOST_KNOWLEDGE_GENERATION = 'thoughtsBoostKnowledgeGeneration',
     SAD_MOOD = 'sadMood',
     // Cheese
     CHEESE_QUEUE = 'cheeseQueue',
@@ -149,14 +149,14 @@ export const unlocks: { [key in ResourceType]: IUnlock[] } = {
     ],
     knowledge: [
         {
-            name: UnlockName.PONDER_PASSIVELY,
-            title: 'Deeper Learning',
-            description: 'You acquire <strong style="color:lightblue">Knowledge</strong> passively at a reduced rate while in a neutral mood. ',
-            tooltipText: 'TBD',
-            cost: 3,
+            name: UnlockName.THOUGHT_BOOST,
+            title: 'Boost your thinking',
+            description: 'Instead of thinking once when you click, you gain a production multiplier temporarily.',
+            tooltipText: '"I dont want to spam click a gazillion times to play ur game"',
+            cost: 10,
             resource: 'knowledge',
-            type: 'Effect',
-            availableAt: UnlockName.NEUTRAL_MOOD
+            type: 'Mechanic',
+            availableAt: UnlockName.THINK_PASSIVELY
         },
         {
             name: UnlockName.SAD_MOOD,
@@ -169,14 +169,14 @@ export const unlocks: { [key in ResourceType]: IUnlock[] } = {
             availableAt: UnlockName.NEUTRAL_MOOD
         },
         {
-            name: UnlockName.THOUGHT_BOOST,
-            title: 'Boost your thinking',
-            description: 'Instead of thinking once when you click, you gain a production multiplier temporarily.',
-            tooltipText: '"I dont want to spam click a gazillion times to play ur game"',
-            cost: 50,
+            name: UnlockName.THOUGHTS_BOOST_KNOWLEDGE_GENERATION,
+            title: 'Deeper Learning',
+            description: `You acquire <strong data-theme-colors="knowledge" style="color:var(--themeColor2)">Knowledge</strong> passively in neutral mood depending on your number of <strong data-theme-colors="thoughts" style="color:var(--themeColor2)">Thoughts</strong>. However, you <strong style="color:var(--error)">lose</strong> a portion of your accumulated <strong data-theme-colors="thoughts" style="color:var(--themeColor2)">Thoughts</strong> each second while doing so.`,
+            tooltipText: 'How many thoughts did you lose just reading this? And how much knowledge did it give you?',
+            cost: 1e4,
             resource: 'knowledge',
-            type: 'Mechanic',
-            availableAt: UnlockName.THINK_PASSIVELY
+            type: 'Effect',
+            availableAt: UnlockName.NEUTRAL_MOOD
         },
         {
             name: UnlockName.THOUGHT_BOOST_STACK,
@@ -373,9 +373,9 @@ export const unlocks: { [key in ResourceType]: IUnlock[] } = {
             resource: 'cheeseBrains',
             type: 'Effect'
         }
-    ],
+    ]
 
-    milk: [
+    /*  milk: [
         {
             name: UnlockName.BACTERIA,
             title: 'Escherichia coli',
@@ -394,7 +394,7 @@ export const unlocks: { [key in ResourceType]: IUnlock[] } = {
             resource: 'milk',
             type: 'Unlock'
         }
-    ]
+    ] */
 }
 
 export const unlockedInitial = convertEnumToFlagObject(UnlockName)

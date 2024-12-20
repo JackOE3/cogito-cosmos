@@ -65,11 +65,7 @@ html[data-theme='light'] {
 }
 
 html {
-    --primary: #ce93d8;
-    --primary-variant: #3700b3;
-    --secondary: #03dac6;
-    --secondary-variant: #018786;
-    --error: #cf6679;
+    --error: #c62828;
     --high-emphasis: 87%;
     --medium-emphasis: 60%;
     --disabled: 38%;

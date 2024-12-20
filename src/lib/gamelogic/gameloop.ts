@@ -1,5 +1,5 @@
 //import { handleCheeseMonster } from './cheeseMonster'
-import { lastSaved, resource, highestMilk, totalTimePlayed, mood, fromPrimitive, higherOrder } from '$lib/store'
+import { lastSaved, resource, highestMilk, totalTimePlayed, mood, derivedState, resourceTotal, addResource, Resource } from '$lib/store'
 import { saveSaveGame } from './saveload'
 
 // natural log of 2
@@ -79,15 +79,17 @@ function gameLoop(): void {
 function gameUpdate(deltaTimeSeconds: number): void {
     deltaTimeSeconds *= fastFowardFactor
 
-    resource.value.thoughts += higherOrder.thoughtsPerSec * deltaTimeSeconds
-    resource.value.knowledge += fromPrimitive.knowledgePerSec * deltaTimeSeconds
-    resource.value.insight += fromPrimitive.insightPerSec * deltaTimeSeconds
+    addResource(Resource.THOUGHTS, derivedState.thoughtsPerSec * deltaTimeSeconds)
+    addResource(Resource.KNOWLEDGE, derivedState.knowledgePerSec * deltaTimeSeconds)
+    addResource(Resource.INSIGHT, derivedState.insightPerSec * deltaTimeSeconds)
+
+    addResource(Resource.ENLIGHTENMENT_POINTS, derivedState.enlightenmentPerSec * deltaTimeSeconds)
 
     // moldy cheese decay (linear extrapolation)
     // moldyCheese.update(value => value * (1 - LN2/mcHalfLifeSeconds) * deltaTimeSeconds))
     // OR: moldy cheese decay (exact)
     // if statement so while offline for longer than 10s you dont lose moldy cheese (?)
-    resource.value.moldyCheese *= Math.exp((-LN2 * deltaTimeSeconds) / fromPrimitive.mcHalfLifeSeconds)
+    resource.value.moldyCheese *= Math.exp((-LN2 * deltaTimeSeconds) / derivedState.mcHalfLifeSeconds)
 
     //handleCheeseMonster(resource.value, deltaTimeSeconds)
 

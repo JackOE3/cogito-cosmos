@@ -26,15 +26,17 @@
 
 <style>
     #outerContainer {
-        background: var(--barBgColor, var(--Gray800));
-        width: var(--width, 4rem);
-        height: var(--height);
+        background: var(--progBarBgColor, var(--dp01));
+        width: var(--widthProgBar, 4rem);
+        height: var(--heightProgBar);
         overflow: hidden;
         position: relative;
-        border-radius: 2px;
+        border-radius: 0px;
+        border: 1px solid var(--dp08);
+        box-sizing: border-box;
     }
     #innerBar {
-        background-color: var(--barColor, var(--secondary));
+        background: var(--barColor, var(--text-high-emphasis));
         width: var(--progress, 0);
         /*transition: width .25s ease-in-out;*/
         /* transition: linear 0.2s; */

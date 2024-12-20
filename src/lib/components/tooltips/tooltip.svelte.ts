@@ -96,7 +96,7 @@ export function tooltip(
             //if (tooltipComponent !== undefined) tooltipComponent.$set({ data })
         },
         destroy() {
-            console.log('DESTROYED TOOLTIP')
+            /* console.log('DESTROYED TOOLTIP') */
             if (tooltipComponent !== undefined) unmount(tooltipComponent)
             element.removeEventListener('mouseenter', mouseEnter)
             element.removeEventListener('mousemove', mouseMove)

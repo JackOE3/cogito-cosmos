@@ -14,14 +14,15 @@
         //thoughtBoostDuration,
         //thoughtsPerSec,
         //thoughtsPerSecBase,
-        fromPrimitive,
-        higherOrder,
+        derivedState,
         mood,
         upgradeCount
     } from '$lib/store'
 
     import { onDestroy, onMount } from 'svelte'
     import { tooltip } from '../tooltips/tooltip.svelte'
+    import Benchmark from '../Benchmark.svelte'
+    import ProgBar from '../misc/ProgBar.svelte'
     /* import EffectComponent from '../EffectComponent.svelte'
     import Effect from '../Effect.svelte'
     import Image from '../Image.svelte' */
@@ -38,8 +39,8 @@
             return
         }
         // set multiplier, which expires after a time and starts decaying
-        currentThoughtBoost.value = fromPrimitive.thoughtBoostMultiplier
-        currentThoughtBoostTime.value = fromPrimitive.thoughtBoostDuration
+        currentThoughtBoost.value = derivedState.thoughtBoostMultiplier
+        currentThoughtBoostTime.value = derivedState.thoughtBoostDuration
 
         cancelAnimationFrame(myReq)
         myReq = requestAnimationFrame(animateThoughtBoost)
@@ -61,7 +62,7 @@
             if (currentThoughtBoostTime.value < 0) currentThoughtBoostTime.value = 0
         } else {
             // decrement evenly over {thoughtBoostDecay} milliseconds
-            currentThoughtBoost.value -= ((fromPrimitive.thoughtBoostMultiplier - 1) / thoughtBoostDecay) * deltaT
+            currentThoughtBoost.value -= ((derivedState.thoughtBoostMultiplier - 1) / thoughtBoostDecay) * deltaT
             if (currentThoughtBoost.value <= 1) {
                 currentThoughtBoost.value = 1
             }
@@ -73,7 +74,7 @@
     //$: if ($thoughtBoostBought && get(currentThoughtBoostTime) > 0) currentThoughtBoost.set(get(thoughtBoostMultiplier))
     const thoughtBoostActive = $derived(currentThoughtBoostTime.value > 0)
     $effect(() => {
-        if (thoughtBoostActive) currentThoughtBoost.value = fromPrimitive.thoughtBoostMultiplier
+        if (thoughtBoostActive) currentThoughtBoost.value = derivedState.thoughtBoostMultiplier
     })
 
     onMount(() => {
@@ -85,9 +86,15 @@
 
     const thinkBtnTooltip = $derived.by(() => {
         if (unlocked.value.thoughtBoost) {
-            return `${formatNumber(fromPrimitive.thoughtBoostMultiplier, 2)}x thoughts/s for ${formatTime(fromPrimitive.thoughtBoostDuration / 1000)}`
+            return `${formatNumber(derivedState.thoughtBoostMultiplier, 2)}x thoughts/s for ${formatTime(derivedState.thoughtBoostDuration / 1000)}`
         } else return '+1 thought'
     })
+
+    const isGeneratingKnowledge = $derived(upgradeCount.value.knowledgeGeneration >= 1)
+
+    /* let test = $state.snapshot(derivedState.thoughtsPerSec)
+
+    $effect(() => console.log('Test:', test, derivedState.thoughtsPerSec)) */
 </script>
 
 <Window title="Cogito Ergo Sum" themeId="cogitoErgoSum" --width="500px">
@@ -95,8 +102,8 @@
             <input type="checkbox" name="buyMax" bind:checked={buyMaxUpgrades} />
             <label for="buyMax">Buy Max</label>
         </div> -->
-
-    <div style="display: flex; justify-content: start; flex-direction:column; background-color: var(--dp02); padding: 8px; border-radius: 4px; height: 4rem;">
+    <div
+        style="display: flex; justify-content: start; flex-direction:column; background-color: var(--dp01); padding: 8px; border-radius: 0px; height: 4rem; border: 1px solid var(--dp08);">
         <span style="font-size: .875rem; display: flex; justify-content: start; flex-direction:column; ">
             <span>
                 You are <span style="font-weight:bold">{mood.value}</span>.
@@ -107,7 +114,7 @@
                     <span data-theme-colors="thoughts" style="color: var(--themeColor2); font-weight:bold">thinking</span>
                     of
                     <span class:green={currentThoughtBoost.value > 1}>
-                        {formatNumber(higherOrder.thoughtsPerSec, 2)}
+                        {formatNumber(derivedState.thoughtsPerSec, 2)}
                     </span>
                     things per second
                 </span>
@@ -121,14 +128,10 @@
                     </span>
                 {/if}
             {:else if mood.value === 'neutral'}
-                {#if unlocked.value.ponderPassively}
+                {#if isGeneratingKnowledge}
                     <span>
-                        You are acquiring {formatNumber(fromPrimitive.knowledgePerSec, 2)}
+                        You are acquiring {formatNumber(derivedState.knowledgePerSec, 2)}
                         <span data-theme-colors="knowledge" style="color: var(--themeColor2); font-weight:bold">knowledge</span> per second<br />
-                    </span>
-                    <span>
-                        while thinking away {formatNumber(-higherOrder.thoughtsPerSec, 2)}
-                        <span data-theme-colors="thoughts" style="color: var(--themeColor2); font-weight:bold">thoughts</span> per second
                     </span>
                 {:else}
                     <span>
@@ -137,7 +140,7 @@
                 {/if}
             {:else if mood.value === 'sad'}
                 <span>
-                    You are gaining {formatNumber(fromPrimitive.insightPerSec, 2)}
+                    You are gaining {formatNumber(derivedState.insightPerSec, 2)}
                     <span data-theme-colors="insight" style="color: var(--themeColor2); font-weight:bold">insight</span> per second.
                 </span>
             {/if}
@@ -185,6 +188,10 @@
             {/if}
         </div>
     </div>
+
+    <span>Health: fit</span>
+    <ProgBar --widthProgBar="300px" --heightProgBar="1rem" --barColor="linear-gradient(to right, #170000 0%, red 30%, yellow 50%, green 90%)" --progress="{90}%"
+    ></ProgBar>
 
     <div class="flexRowContainer" style="display: flex; justify-content: center">
         <!-- <div class="gridColumn" style="height:332px;">

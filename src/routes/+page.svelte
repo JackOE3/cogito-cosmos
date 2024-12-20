@@ -31,6 +31,7 @@
     import Knowledge from '../lib/components/game-windows/Knowledge.svelte'
     import Insight from '$lib/components/game-windows/Insight.svelte'
     import CogitoErgoSum from '$lib/components/game-windows/CogitoErgoSum.svelte'
+    import Enlightenment from '$lib/components/game-windows/Enlightenment.svelte'
 
     // Start the game loop in the background.
     startGameLoop()
@@ -368,6 +369,12 @@
             {#if unlocked.value.sadMood || LORCA_OVERRIDE.value}
                 <div id={WindowId.INSIGHT} class="window" onmousedown={() => selectWindow(WindowId.INSIGHT, gameWindow)} use:initWindow role="none">
                     <Insight></Insight>
+                </div>
+            {/if}
+
+            {#if unlocked.value.start || LORCA_OVERRIDE.value}
+                <div id={WindowId.ENLIGHTENMENT} class="window" onmousedown={() => selectWindow(WindowId.ENLIGHTENMENT, gameWindow)} use:initWindow role="none">
+                    <Enlightenment></Enlightenment>
                 </div>
             {/if}
             <!-- {#if $unlocked.switzerland || $LORCA_OVERRIDE}

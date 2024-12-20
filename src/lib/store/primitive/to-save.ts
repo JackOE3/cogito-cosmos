@@ -3,7 +3,7 @@
  * is either transient (never gets saved) or derived from this
  */
 
-export { resource } from './resources.svelte'
+export { resource, resourceTotal } from './resources.svelte'
 
 export { upgradeCount, upgradeCost } from './upgrades.svelte'
 

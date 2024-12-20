@@ -10,12 +10,12 @@ export interface IUpgrade {
 }
 
 export const upgrades = {
-    //thoughts
-    thoughtAcceleration: {
-        title: 'Thought Acceleration',
+    // THOUGHTS
+    thoughtGeneration: {
+        title: 'Accelerate your thinking',
         cost: 10,
         resource: Resource.THOUGHTS,
-        costMultiplier: 1.15,
+        costMultiplier: 1.4,
         maxBuy: undefined
     },
     thoughtBoost: {
@@ -25,32 +25,62 @@ export const upgrades = {
         costMultiplier: 2,
         maxBuy: undefined
     },
+
+    // KNOWLEDGE
+    knowledgeGeneration: {
+        title: 'Improve knowledge acquisition',
+        cost: 2,
+        resource: Resource.KNOWLEDGE,
+        costMultiplier: 1.4,
+        maxBuy: undefined
+    },
     thoughtJerk: {
-        title: 'Thought Jerk',
-        cost: 1e8,
-        resource: Resource.THOUGHTS,
-        costMultiplier: 1.3,
+        title: 'Jerk your thinking',
+        cost: 10,
+        resource: Resource.KNOWLEDGE,
+        costMultiplier: 1.4,
         maxBuy: undefined
     },
 
-    //knowledge
     // decrease exponential decay of thoughts
     knowledgeConversion: {
-        title: 'Extract knowledge from your thoughts more efficiently',
+        title: 'Use your head more efficiently when learning',
         cost: 10,
         resource: Resource.KNOWLEDGE,
         costMultiplier: 2,
-        maxBuy: undefined
+        maxBuy: 40
     },
     // additional production multiplier
     knowledgeMultiplier: {
-        title: 'Increase your knowledge accumulation',
+        title: 'Increase your rate of knowledge acquisition',
         cost: 20,
         resource: Resource.KNOWLEDGE,
         costMultiplier: 2,
+        maxBuy: 10
+    },
+
+    // INSIGHT
+    insightGeneration: {
+        title: 'Increase your rate of gaining insight',
+        cost: 1,
+        resource: Resource.INSIGHT,
+        costMultiplier: 1.2,
         maxBuy: undefined
     },
-    //
+    studySmarter: {
+        title: 'Study smarter',
+        cost: 2,
+        resource: Resource.INSIGHT,
+        costMultiplier: 1.3,
+        maxBuy: undefined
+    },
+    thoughtSnap: {
+        title: 'Snappier thinking',
+        cost: 100,
+        resource: Resource.INSIGHT,
+        costMultiplier: 1.4,
+        maxBuy: undefined
+    },
 
     //cheese
     cheeseQueueLength: {
