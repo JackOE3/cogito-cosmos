@@ -28,44 +28,41 @@
     }
 </script>
 
-{#if btnUnlocked || LORCA_OVERRIDE.value}
-    <button
-        onclick={handleUpgradeClicked}
-        class:disabled={!canAfford && !isMaxed}
-        use:tooltip={{ data: tooltipText }}
-        class:maxed={isMaxed}
-        transition:fade|local={{ duration: 1000 }}>
-        <div style="display:flex; flex-direction: column; justify-content: end; height: 100%">
-            <span id="text">
-                {upgrades[upgradeName].title}
-            </span>
-            <div id="cost">
-                {#if !isMaxed}
-                    {formatNumber(cost, 2, currentNotation.value)}
-                    {formatResourceName(resourceName)}
+<button onclick={handleUpgradeClicked} class:disabled={(!canAfford && !isMaxed) || (!btnUnlocked && !LORCA_OVERRIDE.value)} class:maxed={isMaxed}>
+    {#if btnUnlocked || LORCA_OVERRIDE.value}
+        <div in:fade={{ duration: 1000 }} use:tooltip={{ data: tooltipText }}>
+            <div style="display:flex; flex-direction: column; justify-content: end; height: 100%">
+                <span id="text">
+                    {upgrades[upgradeName].title}
+                </span>
+                <div id="cost">
+                    {#if !isMaxed}
+                        {formatNumber(cost, 2)}
+                        {formatResourceName(resourceName)}
+                    {/if}
+                </div>
+            </div>
+
+            <div id="upgradeCount" class="border">
+                {#if maxBuy !== undefined}
+                    {#if isMaxed}
+                        MAX
+                    {:else}
+                        {upgradesBought}/{maxBuy}
+                    {/if}
+                {:else}
+                    {upgradesBought}
                 {/if}
             </div>
         </div>
-
-        <div id="upgradeCount" class="border">
-            {#if maxBuy !== undefined}
-                {#if isMaxed}
-                    MAX
-                {:else}
-                    {upgradesBought}/{maxBuy}
-                {/if}
-            {:else}
-                {upgradesBought}
-            {/if}
-        </div>
-    </button>
-{:else}
-    <button class="disabled">???</button>
-{/if}
+    {:else}
+        <div>???</div>
+    {/if}
+</button>
 
 <style>
     button {
-        min-height: 50px;
+        min-height: 71px;
         /* height: 60px; */
         height: max-content;
         width: 200px;
