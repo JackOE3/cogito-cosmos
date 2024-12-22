@@ -83,29 +83,36 @@ export const upgrades = {
     },
 
     //cheese
-    cheeseQueueLength: {
-        title: 'Placeholder Title',
+    enercheeGeneration: {
+        title: 'Increase enerchee generation',
         cost: 5,
         resource: Resource.CHEESE,
         costMultiplier: 2,
         maxBuy: undefined
     },
     cheeseYield: {
-        title: 'Placeholder Title',
+        title: 'Your workers create more cheese but also take longer',
         cost: 15,
         resource: Resource.CHEESE,
         costMultiplier: 1.3,
         maxBuy: undefined
     },
+    cheeseQueueLength: {
+        title: 'Lengthen the Cheese Queue',
+        cost: 50,
+        resource: Resource.CHEESE,
+        costMultiplier: 2,
+        maxBuy: undefined
+    },
     cheeseThoughtMult: {
-        title: 'Placeholder Title',
+        title: 'Cheese increases your thinking speed',
         cost: 300,
         resource: Resource.CHEESE,
         costMultiplier: 2,
         maxBuy: undefined
     },
     cheeseQueueOverclockingCost: {
-        title: 'Placeholder Title',
+        title: 'Divide the cost requirement of Overclocking ',
         cost: 5e3,
         resource: Resource.CHEESE,
         costMultiplier: 1.5,

@@ -19,7 +19,7 @@
     import DevTools from '$lib/components/dev/DevTools.svelte'
     import ToggleUnlocks from '$lib/components/dev/ToggleUnlocks.svelte'
 
-    /*  import CheeseComponent from '$lib/components/game-windows/CheeseComponent.svelte'
+    /*
     import MoldyCheeseComponent from '$lib/components/game-windows/MoldyCheeseComponent.svelte'
     import CheeseyardComponent from '$lib/components/game-windows/CheeseyardComponent.svelte'
     import MilkComponent from '$lib/components/game-windows/MilkComponent.svelte'
@@ -32,6 +32,8 @@
     import Insight from '$lib/components/game-windows/Insight.svelte'
     import CogitoErgoSum from '$lib/components/game-windows/CogitoErgoSum.svelte'
     import Enlightenment from '$lib/components/game-windows/Enlightenment.svelte'
+
+    import CheeseComponent from '$lib/components/game-windows/CheeseComponent.svelte'
 
     // Start the game loop in the background.
     startGameLoop()
@@ -377,16 +379,14 @@
                     <Enlightenment></Enlightenment>
                 </div>
             {/if}
-            <!-- {#if $unlocked.switzerland || $LORCA_OVERRIDE}
-                <div
-                    id={WindowId.cheeseComponent}
-                    class="window"
-                    on:mousedown={() => selectWindow(WindowId.cheeseComponent, gameWindow)}
-                    use:initWindow
-                    role="none">
-                    <CheeseComponent windowId={WindowId.cheeseComponent} />
+
+            {#if unlocked.value.switzerland || LORCA_OVERRIDE.value}
+                <div id={WindowId.CHEESE} class="window" onmousedown={() => selectWindow(WindowId.CHEESE, gameWindow)} use:initWindow role="none">
+                    <CheeseComponent windowId={WindowId.CHEESE} />
                 </div>
             {/if}
+
+            <!--
             {#if $unlocked.moldyCheese || $LORCA_OVERRIDE}
                 <div
                     id={WindowId.moldyCheeseComponent}

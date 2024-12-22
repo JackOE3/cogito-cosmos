@@ -3,11 +3,18 @@
     import UnlockDrawer from '../UnlockDrawer.svelte'
     import { formatNumber, formatTime } from '$lib/gamelogic/utils'
     import UpgradeButton from '../UpgradeButton.svelte'
-    import { unlocks, LORCA_OVERRIDE, resource, unlocked, derivedState, mood, upgradeCount } from '$lib/store'
+    import { unlocks, LORCA_OVERRIDE, resource, unlocked, derivedState, mood, upgradeCount, enlightenmentStage } from '$lib/store'
 
     import { onDestroy, onMount } from 'svelte'
     import { tooltip } from '../tooltips/tooltip.svelte'
     import ProgBar from '../misc/ProgBar.svelte'
+
+    const enlightenmentStageNames = [
+        'Amoeba',
+        'Cockroach',
+        // ...
+        'Buddha'
+    ]
 </script>
 
 <Window title="Enlightenment" themeId="cogitoErgoSum" --width="500px">
@@ -15,7 +22,7 @@
             <input type="checkbox" name="buyMax" bind:checked={buyMaxUpgrades} />
             <label for="buyMax">Buy Max</label>
         </div> -->
-    <span style="font-size: .875rem">You are at Stage 0: Amoeba</span>
+    <span style="font-size: .875rem">You are at Stage {enlightenmentStage.value}: {enlightenmentStageNames[enlightenmentStage.value] ?? 'Not yet named'}</span>
     <div style="height: 2rem; width:100%; display: flex; gap:8px">
         <div class="stage">Amoeba</div>
         <div style="flex: 1; width: 100%; height: 100%;">

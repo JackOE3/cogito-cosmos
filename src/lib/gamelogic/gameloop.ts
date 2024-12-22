@@ -1,6 +1,6 @@
 //import { handleCheeseMonster } from './cheeseMonster'
-import { lastSaved, resource, highestMilk, totalTimePlayed, mood, derivedState, resourceTotal, addResource, Resource } from '$lib/store'
-import { saveSaveGame } from './saveload'
+import { lastSaved, resource, totalTimePlayed, derivedState, addResource, Resource, fastFowardFactor } from '$lib/store'
+//import { saveSaveGame } from './saveload'
 
 // natural log of 2
 const LN2 = 0.69314718056
@@ -10,7 +10,6 @@ const LN2 = 0.69314718056
  * 200ms or 100ms is usually fast enough to feel responsive without wasting too much CPU time
  */
 const GAME_INTERVAL = 100
-const fastFowardFactor = 1
 
 /**
  * How often to auto save the game. 60_000 = 60 seconds.
@@ -77,7 +76,7 @@ function gameLoop(): void {
  * @param deltaTimeSeconds time in seconds since last update
  */
 function gameUpdate(deltaTimeSeconds: number): void {
-    deltaTimeSeconds *= fastFowardFactor
+    deltaTimeSeconds *= fastFowardFactor.value
 
     addResource(Resource.THOUGHTS, derivedState.thoughtsPerSec * deltaTimeSeconds)
     addResource(Resource.KNOWLEDGE, derivedState.knowledgePerSec * deltaTimeSeconds)

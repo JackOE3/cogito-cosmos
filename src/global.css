@@ -240,8 +240,8 @@ button:disabled {
 }
 
 [data-theme-colors='cheese'] {
-    --themeColor1: rgb(168, 143, 2);
-    --themeColor2: rgb(244, 255, 33);
+    --themeColor1: #f57f17;
+    --themeColor2: #ffeb3b;
 }
 [data-theme-colors='moldyCheese'] {
     --themeColor1: rgb(75, 121, 0);

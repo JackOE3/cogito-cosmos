@@ -2,7 +2,6 @@
     import { formatNumber } from '../gamelogic/utils'
     import { fade } from 'svelte/transition'
     import { tooltip } from './tooltips/tooltip.svelte'
-    import { currentNotation } from '$lib/store'
 
     export let factor: number
     export let unlocked = true
@@ -12,7 +11,7 @@
 {#if unlocked}
     <span class="effect" transition:fade|local={{ duration: 1000 }} use:tooltip={{ data: tooltipText }} class:bg-on-hover={tooltipText !== null}>
         <slot>No Description</slot>
-        [<span style="color:var(--themeColor2)">{formatNumber(factor, 2, $currentNotation)}x</span>]
+        [<span style="color:var(--themeColor2)">{formatNumber(factor, 2)}x</span>]
     </span>
 {/if}
 

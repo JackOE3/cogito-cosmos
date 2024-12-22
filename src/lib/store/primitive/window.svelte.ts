@@ -5,7 +5,9 @@ export enum WindowId {
     ENLIGHTENMENT = 'enlightenment',
     THOUGHTS = 'thoughts',
     KNOWLEDGE = 'knowledge',
-    INSIGHT = 'insight'
+    INSIGHT = 'insight',
+
+    CHEESE = 'cheese'
     /* cheeseComponent = 'cheeseComponent',
     moldyCheeseComponent = 'moldyCheeseComponent',
     cheeseyardComponent = 'cheeseyardComponent',
@@ -27,7 +29,8 @@ export const windowLocationsInitial: Record<WindowId, Coordinate> = {
     enlightenment: { x: 0, y: 0 },
     thoughts: { x: 0, y: 0 },
     knowledge: { x: 0, y: 0 },
-    insight: { x: 0, y: 0 }
+    insight: { x: 0, y: 0 },
+    cheese: { x: 0, y: 0 }
     /* cheeseComponent: { x: 580, y: 0 },
     moldyCheeseComponent: { x: 580, y: 670 },
     cheeseyardComponent: { x: 0, y: 600 },

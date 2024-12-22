@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { type CheeseFactoryMode, cheeseModeStats } from '$lib/store'
+    import { type CheeseFactoryMode, derivedState } from '$lib/store'
 
     export let data: CheeseFactoryMode
     export let top = 0
@@ -20,7 +20,7 @@
         <span>{cheeseModeDescription[data]}</span>
         <span class="effect">
             Relative gain/duration/cost:
-            {cheeseModeStats[data].yield}x / {cheeseModeStats[data].duration}x / {cheeseModeStats[data].cost}x
+            {derivedState.cheeseModeStats[data].yield}x / {derivedState.cheeseModeStats[data].duration}x / {derivedState.cheeseModeStats[data].cost}x
         </span>
         {#if data === 'warpSpeed'}
             <span class="effect"> In this mode you are unable to produce byprodcuts. </span>

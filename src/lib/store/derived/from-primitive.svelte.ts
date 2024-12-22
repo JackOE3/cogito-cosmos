@@ -11,7 +11,8 @@ import {
     totalCheeseMonsterDeaths,
     type CheeseFactoryMode,
     type BrainMode,
-    mood
+    mood,
+    enlightenmentStage
 } from '../primitive'
 import { checkBoolForNum } from '$lib/gamelogic/utils'
 
@@ -65,7 +66,15 @@ class DerivedState {
         } else return 0
     })
 
+    /**
+     * The amount of Enlightenment Points you passively generate from your thoughts, knowledge and insight
+     */
     enlightenmentPerSec = $derived(0.01 * Math.log(resourceTotal.thoughts + 1) * Math.log(resourceTotal.knowledge + 1) * Math.log(resourceTotal.insight + 1))
+
+    /**
+     * The amount of Enlightenment Points which are required to advance to the next Enlightenment Stage
+     */
+    enlightenmentPointsToNextStage = $derived(1000 * Math.pow(2, enlightenmentStage.value))
 
     knowledgeMultiplier = $derived(1 + upgradeCount.knowledgeMultiplier)
     /**
@@ -88,13 +97,101 @@ class DerivedState {
 
     thoughtMultFromUnlocks = $derived(checkBoolForNum(unlocked.thoughts50Percent, 1.5))
 
-    //========================================================
+    //------------------------------------------------------------------------------------------
+
+    /**
+     * Manually convert all your thoughts to this amount of enerchee
+     */
+    convertToEnerchee = $derived(Math.log2(resource.thoughts + 1))
+
+    /**
+     * The amount of enerchee per second you generate passively
+     */
+    enercheePerSec = $derived(1 * upgradeCount.enercheeGeneration)
+
+    /**
+     * The max amount of cheese production cycles you can queue up in advance
+     */
+    maxCheeseQueue = $derived.by(() => {
+        if (unlocked.cheeseQueue) {
+            return 5 + 5 * upgradeCount.cheeseQueueLength
+        } else return 1
+    })
+
+    /**
+     * The amount of enerchee it costs to complete a cheese cycle
+     */
+    cheeseCycleCost = $derived.by(() => ((1 * this.cheeseQueueOverclockCostMult) / this.cheeseQueueCostDivideBy) * this.cheeseModeFactor.cost)
+
+    /**
+     * The amount of cheese a cheese cycles produces
+     */
+    cheeseCycleYield = $derived.by(
+        () => 1 + Math.pow(upgradeCount.cheeseYield, 2)
+        // * this.cheeseQueueLengthBoostFactor * this.cheeseBoostFactorYield * this.cheeseModeFactor.yield * this.mcHalflifeBoostFactor
+    )
+
+    /**
+     * The estimated duration a cheese cycle takes to complete
+     */
+    cheeseCycleDuration = $derived.by(() => (5000 + 1000 * upgradeCount.cheeseYield) / this.cheeseQueueOverclockSpeedMult)
+
+    /**
+     * The duration of a cheese cycle gets divided by this factor
+     */
+    cheeseQueueOverclockSpeedMult = $derived(Math.pow(1.2, cheeseQueueOverclockLvl.value))
+
+    /**
+     * The cost of a cheese cycle gets multiplied by this factor
+     */
+    cheeseQueueOverclockCostMult = $derived(Math.pow(2, cheeseQueueOverclockLvl.value))
+
+    /**
+     * How the happiness of your swiss workers changes per second.
+     * Happiness is a value between 0 and 1.
+     */
+    cheeseWorkerHappinessChangePerSec = $derived.by(() => {
+        //should depend on:
+        /**
+         * how much overclocking: cheeseQueueOverclockLvl.value
+         * which cheese factory procotol: cheeseFactoryMode.value
+         * [maybe some Skills/Blessings]
+         */
+        return 0
+    })
+
+    // old stuff:
+    /* cheeseCycleBase = $derived.by(() => {
+        return {
+            duration: 1000 + this.cheeseYieldDeltaDuration * upgradeCount.cheeseYield,
+            yield: 1 + 0.5 * (upgradeCount.cheeseYield + upgradeCount.cheeseYield * upgradeCount.cheeseYield),
+            cost: (10 * this.cheeseQueueOverclockCostMult) / this.cheeseQueueCostDivideBy
+        }
+    }) */
+
+    cheeseQueueLengthBoostFactor = $derived.by(() => {
+        if (unlocked.cheeseQueueLengthBoost) {
+            return (this.maxCheeseQueue * this.maxCheeseQueue) / 100
+        } else return 1
+    })
+
+    /* Reactive variables for Yield, Duration & Cost of the cheese cycle */
+
+    /* cheeseCycleBatchSize = $derived.by(() =>
+        this.cheeseCycleBase.yield * this.cheeseQueueLengthBoostFactor * this.cheeseBoostFactorYield * this.cheeseModeFactor.yield * this.mcHalflifeBoostFactor
+    )
+
+    cheeseCycleDuration = $derived.by(() =>
+        this.cheeseCycleBase.duration * (1 / this.cheeseQueueOverclockSpeedMult) * this.cheeseModeFactor.duration * (1 / this.cheeseCycleAcceleratorFactor)
+    )
+
+    cheeseCycleCost = $derived.by(() => this.cheeseCycleBase.cost * this.cheeseModeFactor.cost) */
+
+    //------------------------------------------------------------------------------------------
 
     cheeseThoughtMult = $derived(1 + Math.log(resource.cheese + 1) * upgradeCount.cheeseThoughtMult * upgradeCount.cheeseThoughtMult)
 
     cheeseCyclesPerBarFill = $derived(1 + upgradeCount.multipleCheeseCycles)
-
-    maxCheeseQueue = $derived(5 + 5 * upgradeCount.cheeseQueueLength)
 
     cheeseCyclesThoughtMult = $derived(checkBoolForNum(unlocked.cheeseCyclesBoostThoughts, 1 + 0.001 * Math.pow(cheeseQueueTotalCycles.value, 1.5)))
 
@@ -112,9 +209,6 @@ class DerivedState {
             ? 1 + 0.25 * (upgradeCount.cheeseQueueOverclockingCost + 1) * (upgradeCount.cheeseQueueOverclockingCost + 1)
             : 1
     )
-
-    cheeseQueueOverclockSpeedMult = $derived(Math.pow(1.05, cheeseQueueOverclockLvl.value))
-    cheeseQueueOverclockCostMult = $derived(1 * Math.pow(2, cheeseQueueOverclockLvl.value))
 
     cheeseCycleAcceleratorFactor = $derived(checkBoolForNum(unlocked.cheeseCycleAccelerator, 1 + Math.log(cheeseQueueTotalCycles.value / 100 + 1)))
 
@@ -167,29 +261,7 @@ class DerivedState {
 
     // FROM FILE: higherOrder (old)
 
-    cheeseCycleBase = $derived.by(() => {
-        return {
-            duration: 1000 + this.cheeseYieldDeltaDuration * upgradeCount.cheeseYield,
-            yield: 1 + 0.5 * (upgradeCount.cheeseYield + upgradeCount.cheeseYield * upgradeCount.cheeseYield),
-            cost: (10 * this.cheeseQueueOverclockCostMult) / this.cheeseQueueCostDivideBy
-        }
-    })
-
-    cheeseQueueLengthBoostFactor = $derived(checkBoolForNum(unlocked.cheeseQueueLengthBoost, (this.maxCheeseQueue * this.maxCheeseQueue) / 100))
-
     mcHalflifeBoostFactor = $derived(unlocked.moldyCheeseHalflifeBoost ? 1 + 1e-6 * Math.pow(this.mcHalfLifeSeconds, 3) : 1)
-
-    /* Reactive variables for Yield, Duration & Cost of the cheese cycle */
-
-    cheeseCycleBatchSize = $derived(
-        this.cheeseCycleBase.yield * this.cheeseQueueLengthBoostFactor * this.cheeseBoostFactorYield * this.cheeseModeFactor.yield * this.mcHalflifeBoostFactor
-    )
-
-    cheeseCycleDuration = $derived(
-        this.cheeseCycleBase.duration * (1 / this.cheeseQueueOverclockSpeedMult) * this.cheeseModeFactor.duration * (1 / this.cheeseCycleAcceleratorFactor)
-    )
-
-    cheeseCycleCost = $derived(this.cheeseCycleBase.cost * this.cheeseModeFactor.cost)
 
     mcCycleDurationBoostFactor = $derived(Math.pow(this.cheeseModeFactor.duration, 1.5))
 
@@ -211,13 +283,13 @@ class DerivedState {
 
     monsterMoldyCheeseMult = $derived(1 + this.monsterMoldyCheeseFactor * resource.cheeseMonster * this.resourceFactorFromBrainMode)
 
-    mcByproductAmount = $derived(
+    /* mcByproductAmount = $derived(
         cheeseFactoryMode.value !== 'warpSpeed'
             ? Math.pow(this.cheeseCycleBatchSize, this.mcConversionExponent) *
                   this.monsterMoldyCheeseMult *
                   (unlocked.moldyCheeseCycleDurationBoost ? this.mcCycleDurationBoostFactor : 1)
             : 0
-    )
+    ) */
 
     mcManualConversionAmount = $derived(
         Math.pow(resource.cheese, this.mcConversionExponent) * this.monsterMoldyCheeseMult * (unlocked.manualMoldyCheeseConversionBoost ? 10 : 1)

@@ -4,3 +4,4 @@ import { makeState } from '../customStore.svelte'
 export const ADMIN_MODE = makeState(true)
 export const LORCA_OVERRIDE = makeState(true)
 export const devToolsEnabled = makeState(false)
+export const fastFowardFactor = makeState(1)

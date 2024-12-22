@@ -35,6 +35,22 @@ export function makeState<T>(initialState: T) {
 }
 export type State = ReturnType<typeof makeState>
 
+/* export function makeStateClamped(initialState: number) {
+    let value = $state(initialState)
+    return {
+        get value() {
+            return value
+        },
+        reset() {
+            value = initialState
+        },
+        add(v: number) {
+            value += v
+            if (value > 1) value = 1
+            else if (value < 0) value = 0
+        }
+    }
+} */
 /* const test = makeState({ a: 1, c: 2 })
 
 console.log($state.snapshot(test.value.a))

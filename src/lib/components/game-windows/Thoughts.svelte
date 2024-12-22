@@ -12,7 +12,7 @@
             {formatNumber(resource.value.thoughts, 2)}
             <span style="color: var(--themeColor2); font-weight:bold">Thoughts</span>
         </div>
-        <span style="text-decoration: line-through">{formatNumber(derivedState.thoughtsPerSec, 2)}/s </span>
+        <span>{formatNumber(derivedState.thoughtsPerSec, 2)}/s </span>
     </div>
     <div class="gridColumn">
         <UnlockDrawer unlocks={unlocks.thoughts} folderName="Swordsman_Skill_Icons_Pack" themeId="thoughts" />

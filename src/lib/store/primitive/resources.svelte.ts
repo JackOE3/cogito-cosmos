@@ -7,6 +7,7 @@ export enum Resource {
 
     ENLIGHTENMENT_POINTS = 'enlightenmentPoints',
 
+    ENERCHEE = 'enerchee',
     CHEESE = 'cheese',
     MOLDY_CHEESE = 'moldyCheese',
     CHEESE_MONSTER = 'cheeseMonster',

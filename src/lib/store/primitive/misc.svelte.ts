@@ -8,18 +8,39 @@ export const totalTimePlayed = makeState(0)
 
 export const lastSaved = makeState(Date.now())
 
+/**
+ * Your current stage of Enlightenment
+ */
+export const enlightenmentStage = makeState(0)
+
 export type Mood = 'happy' | 'neutral' | 'sad'
+/**
+ * Your current mood
+ */
 export const mood = makeState<Mood>('happy')
 
+/**
+ * Your current multiplier from the Thought Boost
+ */
 export const currentThoughtBoost = makeState(1)
+/**
+ * The amount of time your current Thought Boost is still active
+ */
 export const currentThoughtBoostTime = makeState(0)
 
+/**
+ * The current (remaining) length of the Cheese Queue
+ */
 export const currentCheeseQueue = makeState(0)
 export const cheeseQueueActive = makeState(false)
 export const cheeseQueueOverclockLvl = makeState(0)
+/**
+ * The total amount of cycles the Cheese Queue has completed
+ */
 export const cheeseQueueTotalCycles = makeState(0)
 export type CheeseFactoryMode = 'meticulous' | 'nominal' | 'warpSpeed'
 export const cheeseFactoryMode = makeState<CheeseFactoryMode>('nominal')
+export const cheeseWorkerHappiness = makeState(1)
 
 export const totalCheeseMonsterDeaths = makeState(0)
 export type BrainMode = 'peaceful' | 'neutral' | 'destructive'

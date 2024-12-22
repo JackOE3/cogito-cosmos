@@ -19,12 +19,12 @@ export enum UnlockName {
     SAD_MOOD = 'sadMood',
     // Cheese
     CHEESE_QUEUE = 'cheeseQueue',
+    PASSIVE_ENERCHEE = 'passiveEnerchee',
     CHEESE_QUEUE_OVERCLOCKING = 'cheeseQueueOverclocking',
     CHEESE_QUEUE_LENGTH_BOOST = 'cheeseQueueLengthBoost',
     CHEESE_BOOST = 'cheeseBoost',
     CHEESE_QUEUE_COST_DIVIDE = 'cheeseQueueCostDivide',
     CHEESE_CYCLE_ACCELERATOR = 'cheeseCycleAccelerator',
-    THOUGHT_JERK = 'thoughtJerk',
     CHEESE_MODES = 'cheeseModes',
     CHEESE_CYCLES_BOOST_THOUGHTS = 'cheeseCyclesBoostThoughts',
     // Moldy Cheese
@@ -144,7 +144,7 @@ export const unlocks: { [key in ResourceType]: IUnlock[] } = {
             cost: 1e22,
             resource: 'thoughts',
             type: 'Unlock',
-            availableAt: UnlockName.THOUGHT_JERK
+            availableAt: UnlockName.CHEESE_MODES
         }
     ],
     knowledge: [
@@ -198,23 +198,32 @@ export const unlocks: { [key in ResourceType]: IUnlock[] } = {
             title: 'Cheese Queue',
             description: 'You can queue up the production of <strong style="color:yellow">Cheese</strong>.',
             tooltipText: 'Cheese-o-mation lets you cheese clicking a button.',
-            cost: 8,
+            cost: 5,
             resource: 'cheese',
             type: 'Mechanic'
         },
         {
             name: UnlockName.CHEESE_QUEUE_OVERCLOCKING,
             title: 'Cheese Overclocking',
-            description: 'You can increase the speed of your workers producing cheese by forcing them to think faster.',
-            tooltipText: 'Thinking about how to cheese faster...',
+            description: 'You can force your workers into overdrive to produce cheese even faster.',
+            tooltipText: "Don't worry about their health for now.",
             cost: 50,
             resource: 'cheese',
             type: 'Mechanic'
         },
         {
+            name: UnlockName.PASSIVE_ENERCHEE,
+            title: 'Enerchee-se?',
+            description: 'You can passively generate enerchee without needing to think.',
+            tooltipText: 'Think about what this means...',
+            cost: 250,
+            resource: 'cheese',
+            type: 'Effect'
+        },
+        {
             name: UnlockName.CHEESE_QUEUE_LENGTH_BOOST,
             title: 'Length Boost',
-            description: 'The capacity of the Cheese Queue boosts cheese production.',
+            description: 'Your workers will (be forced to) produce more cheese the longer the Cheese Queue is.',
             tooltipText: 'Give your employees more work like a good boss.',
             cost: 500,
             resource: 'cheese',
@@ -249,16 +258,6 @@ export const unlocks: { [key in ResourceType]: IUnlock[] } = {
             cost: 5e6,
             resource: 'cheese',
             type: 'Effect',
-            availableAt: UnlockName.CHEESE_QUEUE_LENGTH_BOOST
-        },
-        {
-            name: UnlockName.THOUGHT_JERK,
-            title: 'More to think about',
-            description: 'Jerk(?) your thinking.',
-            tooltipText: 'something something per second cubed',
-            cost: 3e7,
-            resource: 'cheese',
-            type: 'Unlock',
             availableAt: UnlockName.CHEESE_QUEUE_LENGTH_BOOST
         },
         {
