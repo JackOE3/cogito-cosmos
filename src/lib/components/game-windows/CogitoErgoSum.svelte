@@ -16,7 +16,8 @@
         //thoughtsPerSecBase,
         derivedState,
         mood,
-        upgradeCount
+        upgradeCount,
+        health
     } from '$lib/store'
 
     import { onDestroy, onMount } from 'svelte'
@@ -91,10 +92,6 @@
     })
 
     const isGeneratingKnowledge = $derived(upgradeCount.value.knowledgeGeneration >= 1)
-
-    /* let test = $state.snapshot(derivedState.thoughtsPerSec)
-
-    $effect(() => console.log('Test:', test, derivedState.thoughtsPerSec)) */
 </script>
 
 <Window title="Cogito Ergo Sum" themeId="cogitoErgoSum" --width="500px">
@@ -189,9 +186,16 @@
         </div>
     </div>
 
-    <span>Health: fit</span>
-    <ProgBar --widthProgBar="300px" --heightProgBar="1rem" --barColor="linear-gradient(to right, #170000 0%, red 30%, yellow 50%, green 90%)" --progress="{90}%"
-    ></ProgBar>
+    <p>
+        Health: {derivedState.healthStage}
+        <span>({derivedState.healthMultiplier}x production)</span>
+    </p>
+
+    <ProgBar
+        --widthProgBar="300px"
+        --heightProgBar="1rem"
+        --barColor="linear-gradient(to right, #170000 0%, red 30%, yellow 50%, green 90%)"
+        --progress="{Math.abs(health.value * 100)}%"></ProgBar>
 
     <div class="flexRowContainer" style="display: flex; justify-content: center">
         <!-- <div class="gridColumn" style="height:332px;">

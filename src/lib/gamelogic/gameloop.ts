@@ -1,5 +1,5 @@
 //import { handleCheeseMonster } from './cheeseMonster'
-import { lastSaved, resource, totalTimePlayed, derivedState, addResource, Resource, fastFowardFactor } from '$lib/store'
+import { lastSaved, resource, totalTimePlayed, derivedState, addResource, Resource, fastFowardFactor, health } from '$lib/store'
 //import { saveSaveGame } from './saveload'
 
 // natural log of 2
@@ -83,6 +83,11 @@ function gameUpdate(deltaTimeSeconds: number): void {
     addResource(Resource.INSIGHT, derivedState.insightPerSec * deltaTimeSeconds)
 
     addResource(Resource.ENLIGHTENMENT_POINTS, derivedState.enlightenmentPerSec * deltaTimeSeconds)
+
+    if (health.value >= 0 && health.value <= 1) {
+        health.value += derivedState.healthChangePerSec * deltaTimeSeconds
+    } else if (health.value > 1) health.value = 1
+    else if (health.value < 0) health.value = 0
 
     // moldy cheese decay (linear extrapolation)
     // moldyCheese.update(value => value * (1 - LN2/mcHalfLifeSeconds) * deltaTimeSeconds))

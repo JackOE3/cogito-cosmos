@@ -36,12 +36,26 @@
         box-sizing: border-box;
     }
     #innerBar {
-        background: var(--barColor, var(--text-high-emphasis));
         width: var(--progress, 0);
+        /* background: var(--barColor, var(--text-high-emphasis)); */
+
         /*transition: width .25s ease-in-out;*/
-        /* transition: linear 0.2s; */
+        /* transition: linear 0.1s; should avoid this */
         height: inherit;
         border-radius: inherit;
+
+        /* this will do the magic (clip the background) */
+        -webkit-mask: linear-gradient(#fff 0 0);
+        mask: linear-gradient(#fff 0 0);
+    }
+    #innerBar::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--barColor, var(--text-high-emphasis)); /* your gradient here */
     }
     #barLabel {
         display: flex;

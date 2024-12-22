@@ -3,7 +3,7 @@
     import UnlockDrawer from '../UnlockDrawer.svelte'
     import { formatNumber, formatTime } from '$lib/gamelogic/utils'
     import UpgradeButton from '../UpgradeButton.svelte'
-    import { unlocks, LORCA_OVERRIDE, resource, unlocked, derivedState, mood, upgradeCount, enlightenmentStage } from '$lib/store'
+    import { unlocks, LORCA_OVERRIDE, resource, unlocked, derivedState, mood, upgradeCount, enlightenmentStage, health } from '$lib/store'
 
     import { onDestroy, onMount } from 'svelte'
     import { tooltip } from '../tooltips/tooltip.svelte'

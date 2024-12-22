@@ -20,6 +20,11 @@ export type Mood = 'happy' | 'neutral' | 'sad'
 export const mood = makeState<Mood>('happy')
 
 /**
+ * Your current health. Between 0 and 1.
+ */
+export const health = makeState(1)
+
+/**
  * Your current multiplier from the Thought Boost
  */
 export const currentThoughtBoost = makeState(1)

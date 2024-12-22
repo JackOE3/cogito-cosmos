@@ -12,9 +12,12 @@ import {
     type CheeseFactoryMode,
     type BrainMode,
     mood,
-    enlightenmentStage
+    enlightenmentStage,
+    health
 } from '../primitive'
 import { checkBoolForNum } from '$lib/gamelogic/utils'
+
+export type HealthStage = 'fit' | 'ok' | 'bad' | 'horrible' | 'dead'
 
 // shorthands:
 const unlocked = $derived(unlockedState.value)
@@ -38,6 +41,7 @@ class DerivedState {
         if (mood.value === 'happy') {
             return (
                 this.thoughtsPerSecBase *
+                this.healthMultiplier *
                 this.thoughtMultFromUnlocks *
                 currentThoughtBoost.value *
                 this.cheeseThoughtMult *
@@ -54,6 +58,7 @@ class DerivedState {
     knowledgePerSec = $derived.by(() => {
         if (mood.value === 'neutral') {
             let result = 0.1 * upgradeCount.knowledgeGeneration * (1 + upgradeCount.studySmarter)
+            result *= this.healthMultiplier
             if (unlocked.thoughtsBoostKnowledgeGeneration) result *= 1 + 0.1 * Math.pow(resource.thoughts, 0.25) * this.knowledgeMultiplier
             return result
         } else return 0
@@ -62,8 +67,44 @@ class DerivedState {
     insightPerSec = $derived.by(() => {
         if (mood.value === 'sad') {
             // * 0.1 * Math.pow(resource.knowledge, 0.25)
-            return 0.01 * upgradeCount.insightGeneration
+            return 0.01 * upgradeCount.insightGeneration * this.healthMultiplier
         } else return 0
+    })
+
+    healthStage: HealthStage = $derived.by(() => {
+        if (health.value >= 0.7) return 'fit'
+        else if (health.value >= 0.4) return 'ok'
+        else if (health.value >= 0.2) return 'bad'
+        else if (health.value > 0) return 'horrible'
+        else return 'dead'
+    })
+
+    healthMultiplier = $derived.by(() => {
+        switch (this.healthStage) {
+            case 'fit':
+                return 2
+            case 'ok':
+                return 1
+            case 'bad':
+                return 0.5
+            case 'horrible':
+                return 0.1
+            case 'dead':
+                return 0
+        }
+    })
+
+    healthChangePerSec = $derived.by(() => {
+        switch (mood.value) {
+            case 'happy':
+                if (health.value >= 1) return 0
+                return 1e-2
+            case 'neutral':
+                return 0
+            case 'sad':
+                if (health.value <= 0) return 0
+                return -1e-2
+        }
     })
 
     /**
