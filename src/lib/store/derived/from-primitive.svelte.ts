@@ -13,7 +13,9 @@ import {
     type BrainMode,
     mood,
     enlightenmentStage,
-    health
+    health,
+    enlightenmentSubstage,
+    devCheat
 } from '../primitive'
 import { checkBoolForNum } from '$lib/gamelogic/utils'
 
@@ -28,8 +30,14 @@ const resourceTotal = $derived(resourceTotalState.value)
 class Formulas {
     // with this formula, at 40 upgrades its at 0.01 = 1%
     knowledgeConversionFactorFormula = (upgradeCount: number) => 0.05 / (1 + upgradeCount / 10)
+
+    totalEPNeededForStage = function (stage: number, substage: number) {
+        const totalPointsForPreviousStages = (5 * 10 * (stage - 1) * stage) / 2
+        const pointsForCurrentStage = 10 * stage * substage
+        return totalPointsForPreviousStages + pointsForCurrentStage
+    }
 }
-const formulas = new Formulas()
+export const formulas = new Formulas()
 /**
  * for referencing state in the UI:
  * eg. you buy an upgrade and want to know how some state changes.
@@ -107,21 +115,42 @@ class DerivedState {
         }
     })
 
-    /**
-     * The amount of Enlightenment Points you passively generate from your thoughts, knowledge and insight
-     */
-    enlightenmentPerSec = $derived(0.01 * Math.log(resourceTotal.thoughts + 1) * Math.log(resourceTotal.knowledge + 1) * Math.log(resourceTotal.insight + 1))
+    enlightenmentFullStage = $derived(enlightenmentStage.value + 0.1 * enlightenmentSubstage.value)
 
     /**
-     * The amount of Enlightenment Points which are required to advance to the next Enlightenment Stage
+     * Shows how many Enlightenment Points you have from different sources
      */
-    enlightenmentPointsToNextStage = $derived(1000 * Math.pow(2, enlightenmentStage.value))
+    enlightenmentPointsFrom = $derived.by(() => {
+        const totalUpgradeCount = Object.values(upgradeCount).reduce((acc, value) => acc + value, 0)
+        const totalUnlockCount = Object.values(unlocked).filter(value => value).length
+        return {
+            upgrades: totalUpgradeCount * 1, // relative weight is 1 => worth of everything relative to upgrades
+            unlocks: totalUnlockCount * 10, // more weighted for EP
+            cheat: devCheat.value
+        }
+    })
+    /**
+     * The total amount of Enlightenment Points you have accumulated when playing the game
+     */
+    enlightenmentPoints = $derived(Object.values(this.enlightenmentPointsFrom).reduce((acc, value) => acc + value, 0))
+
+    /**
+     * The (total) amount of Enlightenment Points which are required to advance to the next Enlightenment (Sub-)stage
+     *
+     * Every stage has 5 substages.
+     * Advancing to a new substage takes 10 points while you are in stage 1, 20 while in stage 2, 30 in stage 3 and so on.
+     */
+    enlightenmentPointsToNextSubstage = $derived(formulas.totalEPNeededForStage(enlightenmentStage.value, enlightenmentSubstage.value))
+
+    /**
+     * The maximum amount of skills you can have active at once, selected from your skill pool.
+     */
+    maxActiveSkills = $derived(3)
 
     knowledgeMultiplier = $derived(1 + upgradeCount.knowledgeMultiplier)
     /**
      * You lose this fraction of thoughts/s when gaining knowledge.
      */
-
     knowledgeConversionFactor = $derived(formulas.knowledgeConversionFactorFormula(upgradeCount.knowledgeConversion))
 
     thoughtsPerSecKnowledgeConversion = $derived(this.knowledgeConversionFactor * resource.thoughts) // 5% decay every sec

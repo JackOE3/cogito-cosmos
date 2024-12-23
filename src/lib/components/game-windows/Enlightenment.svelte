@@ -1,13 +1,27 @@
 <script lang="ts">
     import Window from './window-model/Window.svelte'
     import UnlockDrawer from '../UnlockDrawer.svelte'
-    import { formatNumber, formatTime } from '$lib/gamelogic/utils'
+    import { formatNumber, formatTime, formatWhole } from '$lib/gamelogic/utils'
     import UpgradeButton from '../UpgradeButton.svelte'
-    import { unlocks, LORCA_OVERRIDE, resource, unlocked, derivedState, mood, upgradeCount, enlightenmentStage, health } from '$lib/store'
+    import {
+        unlocks,
+        LORCA_OVERRIDE,
+        resource,
+        unlocked,
+        derivedState,
+        mood,
+        upgradeCount,
+        enlightenmentStage,
+        health,
+        enlightenmentSubstage,
+        formulas
+    } from '$lib/store'
 
     import { onDestroy, onMount } from 'svelte'
-    import { tooltip } from '../tooltips/tooltip.svelte'
+    import { Direction, tooltip } from '../tooltips/tooltip.svelte'
     import ProgBar from '../misc/ProgBar.svelte'
+    import { skills } from '$lib/store/primitive/skills.svelte'
+    import SkillTooltip from '../tooltips/SkillTooltip.svelte'
 
     const enlightenmentStageNames = [
         'Amoeba',
@@ -15,6 +29,36 @@
         // ...
         'Buddha'
     ]
+    /**
+     * The different kind of substages you have to advance through to get to the next main stage
+     */
+    const enlightenmentSubstageNames = ['Lesser', 'Novice', 'Advanced', 'Expert', 'Master'] as const
+    type EnlightenmentSubstageNames = (typeof enlightenmentSubstageNames)[number]
+
+    function handleAdvanceStage(): void {
+        const points = derivedState.enlightenmentPoints
+        const pointsToNextStage = derivedState.enlightenmentPointsToNextSubstage
+        if (points < pointsToNextStage) return
+
+        enlightenmentSubstage.value++
+        if (enlightenmentSubstage.value > 5) {
+            enlightenmentSubstage.reset()
+            enlightenmentStage.value++
+        }
+    }
+
+    const currentEpProgress = $derived.by(() => {
+        const stage = enlightenmentStage.value
+        const substage = enlightenmentSubstage.value
+        const pointsToLastStage = formulas.totalEPNeededForStage(stage, substage - 1)
+        if (derivedState.enlightenmentPoints > formulas.totalEPNeededForStage(stage, substage)) {
+            return formulas.totalEPNeededForStage(stage, substage) - pointsToLastStage
+        } else return derivedState.enlightenmentPoints - pointsToLastStage
+    })
+
+    const epNeededInCurrentStage = $derived(enlightenmentStage.value * 10)
+
+    const stageProgress = $derived((currentEpProgress / epNeededInCurrentStage) * 100)
 </script>
 
 <Window title="Enlightenment" themeId="cogitoErgoSum" --width="500px">
@@ -22,24 +66,51 @@
             <input type="checkbox" name="buyMax" bind:checked={buyMaxUpgrades} />
             <label for="buyMax">Buy Max</label>
         </div> -->
-    <span style="font-size: .875rem">You are at Stage {enlightenmentStage.value}: {enlightenmentStageNames[enlightenmentStage.value] ?? 'Not yet named'}</span>
-    <div style="height: 2rem; width:100%; display: flex; gap:8px">
-        <div class="stage">Amoeba</div>
+    <span style="font-size: .875rem">
+        You are at Stage {enlightenmentStage.value}-{enlightenmentSubstage.value}: {enlightenmentSubstageNames[enlightenmentSubstage.value - 1]}
+        {enlightenmentStageNames[enlightenmentStage.value - 1] ?? 'Not yet named'}
+    </span>
+    <div style="height: 2rem; width:100%; display: flex; gap:0.5rem">
         <div style="flex: 1; width: 100%; height: 100%;">
-            <ProgBar --widthProgBar="100%" --heightProgBar="2rem" --progress="{20}%">Next stage at 2.5K EP</ProgBar>
+            <ProgBar --widthProgBar="100%" --heightProgBar="2rem" --progress="{stageProgress}%" --progBarBgColor={stageProgress >= 100 ? 'green' : ''}>
+                {formatWhole(currentEpProgress)} / {formatWhole(epNeededInCurrentStage)}
+            </ProgBar>
         </div>
-
-        <div class="stage">Cockroach</div>
+        <button class:disabled={stageProgress < 100} onclick={handleAdvanceStage} style="width: 70px;">
+            {#if stageProgress < 100}
+                Advance
+            {:else}
+                Advance!
+            {/if}
+        </button>
     </div>
+    <span>
+        <p>
+            You have {formatNumber(derivedState.enlightenmentPoints, 0)} enlightenment points.
+        </p>
+        <p>Next stage requires {formatNumber(derivedState.enlightenmentPointsToNextSubstage, 0)} EP</p>
+    </span>
 
-    <span
-        >You have {formatNumber(resource.value.enlightenmentPoints, 2)} enlightenment points <br /> {formatNumber(derivedState.enlightenmentPerSec, 2)}/s</span>
-
-    <span>Your active <strong>Blessings</strong>:</span>
-    <div style="display: flex; flex-direction: row; gap: 0;">
-        <button style="aspect-ratio:1; width: 60px;">Skill1</button>
-        <button style="aspect-ratio:1; width: 60px;">Skill2</button>
-        <button style="aspect-ratio:1; width: 60px;">Skill3</button>
+    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+        <span>
+            <p>Your active <strong>Blessings</strong>: (0/{derivedState.maxActiveSkills})</p>
+            <p style="color:var(--text-medium-emphasis)">Click a slot to assign a blessing to it.</p>
+        </span>
+        <!-- <div style="display:flex;gap:0px">
+        {#each skills as skill}
+            <button style="aspect-ratio:1; width: 60px;" use:tooltip={{ data: skill, Component: SkillTooltip, direction: Direction.RIGHT }}>
+                {skill.name.slice(0, 3)}
+            </button>
+        {/each}
+    </div> -->
+        <div style="display: flex; gap: 0rem">
+            {#each { length: 3 }, rank}
+                {@const skill = skills[rank]}
+                <button style="aspect-ratio:1; width: 60px;" use:tooltip={{ data: skill, Component: SkillTooltip, direction: Direction.RIGHT }}>
+                    {skill.name.slice(0, 3)}
+                </button>
+            {/each}
+        </div>
     </div>
 </Window>
 

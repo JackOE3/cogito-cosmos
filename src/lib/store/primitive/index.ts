@@ -13,3 +13,5 @@ export * from './window.svelte'
 //export * from './upgradesTiered'
 
 export * from './transient.svelte'
+
+export * from './skills.svelte'

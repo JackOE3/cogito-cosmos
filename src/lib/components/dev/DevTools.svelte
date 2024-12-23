@@ -3,7 +3,10 @@
     import {
         addResource,
         derivedState,
+        devCheat,
         devToolsEnabled,
+        enlightenmentStage,
+        enlightenmentSubstage,
         fastFowardFactor,
         health,
         multResource,
@@ -33,7 +36,11 @@
             <span style="font-size:1rem; font-weight: bold;">Dev Tools</span>
 
             <span>fast forward</span>
-            <input type="number" bind:value={fastFowardFactor.value} />
+            <input style="width: 100px" type="number" bind:value={fastFowardFactor.value} />
+
+            <span>enlightenment stage</span>
+            <input style="width: 100px" type="number" bind:value={enlightenmentStage.value} min="1" step="1" />
+            <input style="width: 100px" type="number" bind:value={enlightenmentSubstage.value} min="1" max="5" step="1" />
 
             <span>health: {derivedState.healthStage} ({formatNumber(health.value, 2)})</span>
             <input style="width: 100px" type="number" min="0" max="1" step="0.1" bind:value={healthValue} onchange={() => (health.value = healthValue)} />
@@ -41,7 +48,6 @@
             {@render resourceControls(Resource.THOUGHTS)}
             {@render resourceControls(Resource.KNOWLEDGE)}
             {@render resourceControls(Resource.INSIGHT)}
-            {@render resourceControls(Resource.ENLIGHTENMENT_POINTS)}
             {@render resourceControls(Resource.CHEESE)}
 
             <!--   <span>cheese monsters</span>

@@ -5,8 +5,6 @@ export enum Resource {
     KNOWLEDGE = 'knowledge',
     INSIGHT = 'insight',
 
-    ENLIGHTENMENT_POINTS = 'enlightenmentPoints',
-
     ENERCHEE = 'enerchee',
     CHEESE = 'cheese',
     MOLDY_CHEESE = 'moldyCheese',

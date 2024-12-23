@@ -11,7 +11,12 @@ export const lastSaved = makeState(Date.now())
 /**
  * Your current stage of Enlightenment
  */
-export const enlightenmentStage = makeState(0)
+export const enlightenmentStage = makeState(1)
+
+/**
+ * Your current substage within the current stage of Enlightenment
+ */
+export const enlightenmentSubstage = makeState(1)
 
 export type Mood = 'happy' | 'neutral' | 'sad'
 /**

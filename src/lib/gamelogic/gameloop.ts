@@ -82,8 +82,6 @@ function gameUpdate(deltaTimeSeconds: number): void {
     addResource(Resource.KNOWLEDGE, derivedState.knowledgePerSec * deltaTimeSeconds)
     addResource(Resource.INSIGHT, derivedState.insightPerSec * deltaTimeSeconds)
 
-    addResource(Resource.ENLIGHTENMENT_POINTS, derivedState.enlightenmentPerSec * deltaTimeSeconds)
-
     if (health.value >= 0 && health.value <= 1) {
         health.value += derivedState.healthChangePerSec * deltaTimeSeconds
     } else if (health.value > 1) health.value = 1

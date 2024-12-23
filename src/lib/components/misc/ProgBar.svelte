@@ -1,5 +1,7 @@
 <script lang="ts">
-    import { onMount } from 'svelte'
+    import { onMount, type Snippet } from 'svelte'
+
+    const { children }: { children: Snippet } = $props()
 
     let container: HTMLElement
     let label: HTMLElement
@@ -11,15 +13,15 @@
     onMount(() => {
         // let the barLabel "inherit" the width from the container
         label.style.width = window.getComputedStyle(container).getPropertyValue('width')
+        console.log(children)
     })
 </script>
 
 <div>
     <div id="outerContainer" bind:this={container}>
-        <div id="innerBar">
-            <span id="barLabel" bind:this={label}>
-                <slot />
-            </span>
+        <div id="innerBar"></div>
+        <div id="barLabel" bind:this={label}>
+            <span>{@render children?.()}</span>
         </div>
     </div>
 </div>
@@ -55,9 +57,12 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: var(--barColor, var(--text-high-emphasis)); /* your gradient here */
+        background: var(--barColor, var(--dp24)); /* your gradient here */
     }
     #barLabel {
+        position: absolute;
+        top: 0;
+        left: 0;
         display: flex;
         height: inherit;
         justify-content: center;
