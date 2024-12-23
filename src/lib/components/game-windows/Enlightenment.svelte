@@ -1,8 +1,6 @@
 <script lang="ts">
     import Window from './window-model/Window.svelte'
-    import UnlockDrawer from '../UnlockDrawer.svelte'
     import { formatNumber, formatTime, formatWhole } from '$lib/gamelogic/utils'
-    import UpgradeButton from '../UpgradeButton.svelte'
     import {
         unlocks,
         LORCA_OVERRIDE,
@@ -17,7 +15,6 @@
         formulas
     } from '$lib/store'
 
-    import { onDestroy, onMount } from 'svelte'
     import { Direction, tooltip } from '../tooltips/tooltip.svelte'
     import ProgBar from '../misc/ProgBar.svelte'
     import { skills } from '$lib/store/primitive/skills.svelte'
@@ -115,13 +112,4 @@
 </Window>
 
 <style>
-    .stage {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--dp01);
-        width: 60px;
-        padding: 8px;
-        border: 1px solid var(--dp08);
-    }
 </style>

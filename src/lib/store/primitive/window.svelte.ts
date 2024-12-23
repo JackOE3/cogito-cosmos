@@ -3,6 +3,8 @@ import { makeState } from '../customStore.svelte'
 export enum WindowId {
     COGITO_ERGO_SUM = 'cogitoErgoSum',
     ENLIGHTENMENT = 'enlightenment',
+    STORY = 'story',
+
     THOUGHTS = 'thoughts',
     KNOWLEDGE = 'knowledge',
     INSIGHT = 'insight',
@@ -27,9 +29,12 @@ export const windowStack = windowStackInitial
 export const windowLocationsInitial: Record<WindowId, Coordinate> = {
     cogitoErgoSum: { x: 0, y: 0 },
     enlightenment: { x: 0, y: 0 },
+    story: { x: 0, y: 0 },
+
     thoughts: { x: 0, y: 0 },
     knowledge: { x: 0, y: 0 },
     insight: { x: 0, y: 0 },
+
     cheese: { x: 0, y: 0 }
     /* cheeseComponent: { x: 580, y: 0 },
     moldyCheeseComponent: { x: 580, y: 670 },

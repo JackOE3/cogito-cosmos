@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount, type Snippet } from 'svelte'
 
-    const { children }: { children: Snippet } = $props()
+    const { children }: { children?: Snippet } = $props()
 
     let container: HTMLElement
     let label: HTMLElement
@@ -13,7 +13,6 @@
     onMount(() => {
         // let the barLabel "inherit" the width from the container
         label.style.width = window.getComputedStyle(container).getPropertyValue('width')
-        console.log(children)
     })
 </script>
 

@@ -34,6 +34,7 @@
     import Enlightenment from '$lib/components/game-windows/Enlightenment.svelte'
 
     import CheeseComponent from '$lib/components/game-windows/CheeseComponent.svelte'
+    import Story from '$lib/components/game-windows/Story.svelte'
 
     // Start the game loop in the background.
     startGameLoop()
@@ -358,6 +359,18 @@
                 <CogitoErgoSum></CogitoErgoSum>
             </div>
 
+            {#if unlocked.value.start || LORCA_OVERRIDE.value}
+                <div id={WindowId.ENLIGHTENMENT} class="window" onmousedown={() => selectWindow(WindowId.ENLIGHTENMENT, gameWindow)} use:initWindow role="none">
+                    <Enlightenment></Enlightenment>
+                </div>
+            {/if}
+
+            {#if unlocked.value.switzerland || LORCA_OVERRIDE.value}
+                <div id={WindowId.STORY} class="window" onmousedown={() => selectWindow(WindowId.STORY, gameWindow)} use:initWindow role="none">
+                    <Story />
+                </div>
+            {/if}
+
             <div id={WindowId.THOUGHTS} class="window" onmousedown={() => selectWindow(WindowId.THOUGHTS, gameWindow)} use:initWindow role="none">
                 <Thoughts></Thoughts>
             </div>
@@ -374,15 +387,9 @@
                 </div>
             {/if}
 
-            {#if unlocked.value.start || LORCA_OVERRIDE.value}
-                <div id={WindowId.ENLIGHTENMENT} class="window" onmousedown={() => selectWindow(WindowId.ENLIGHTENMENT, gameWindow)} use:initWindow role="none">
-                    <Enlightenment></Enlightenment>
-                </div>
-            {/if}
-
             {#if unlocked.value.switzerland || LORCA_OVERRIDE.value}
                 <div id={WindowId.CHEESE} class="window" onmousedown={() => selectWindow(WindowId.CHEESE, gameWindow)} use:initWindow role="none">
-                    <CheeseComponent windowId={WindowId.CHEESE} />
+                    <CheeseComponent />
                 </div>
             {/if}
 
