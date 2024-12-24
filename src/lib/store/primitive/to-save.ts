@@ -13,4 +13,4 @@ export { milkBoostActive } from './boosts.svelte'
 
 export * from './misc.svelte'
 
-export { windowLocations } from './window.svelte'
+export { windowLocations, windowStack } from './window.svelte'

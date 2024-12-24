@@ -7,18 +7,18 @@ export const keysDisabled = makeState(false)
 export function updateWindowStacking(gameWindow: HTMLElement): void {
     if (gameWindow === undefined) return
     Object.values(gameWindow.children).forEach((window: HTMLElement) => {
-        window.style.zIndex = windowStack.indexOf(window.id as WindowId).toString()
+        window.style.zIndex = windowStack.value.indexOf(window.id as WindowId).toString()
     })
 }
 
 /** Updates the stacking (z-index) of the windows when selecting/dragging one */
 export function selectWindow(id: WindowId | undefined, gameWindow: HTMLElement): void {
     if (id === undefined) return
-    const selectedIndex = windowStack.indexOf(id)
-    if (selectedIndex === windowStack.length - 1) return
+    const selectedIndex = windowStack.value.indexOf(id)
+    if (selectedIndex === windowStack.value.length - 1) return
 
-    windowStack.push(id)
-    windowStack.splice(selectedIndex, 1)
+    windowStack.value.push(id)
+    windowStack.value.splice(selectedIndex, 1)
 
     updateWindowStacking(gameWindow)
 }
@@ -40,16 +40,16 @@ export function initWindow(window: HTMLElement): void {
     /* console.log('init', window.id) */
     setWindowLocation(window)
     // if new window, it gets pushed to the top of the stack:
-    if (!windowStack.includes(window.id as WindowId)) {
-        windowStack.push(window.id as WindowId)
+    if (!windowStack.value.includes(window.id as WindowId)) {
+        windowStack.value.push(window.id as WindowId)
         panToWindow(window.id as WindowId, false)
     }
-    window.style.zIndex = windowStack.indexOf(window.id as WindowId).toString()
+    window.style.zIndex = windowStack.value.indexOf(window.id as WindowId).toString()
 }
 export function resetWindowLayout(): void {
     windowLocations.reset()
     setAllWindowLocations()
-    panToWindow(WindowId.thoughtComponent)
+    panToWindow(WindowId.COGITO_ERGO_SUM, true)
 }
 
 export function updateWindowLocation(window: HTMLElement | null): void {

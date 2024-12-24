@@ -23,19 +23,19 @@ interface Coordinate {
     y: number
 }
 
-export const windowStackInitial = [WindowId.COGITO_ERGO_SUM, WindowId.KNOWLEDGE]
-export const windowStack = windowStackInitial
+export const windowStackInitial = [WindowId.COGITO_ERGO_SUM]
+export const windowStack = makeState(windowStackInitial)
 
 export const windowLocationsInitial: Record<WindowId, Coordinate> = {
     cogitoErgoSum: { x: 0, y: 0 },
-    enlightenment: { x: 0, y: 0 },
-    story: { x: 0, y: 0 },
+    enlightenment: { x: 0, y: -300 },
+    story: { x: 0, y: 350 },
 
-    thoughts: { x: 0, y: 0 },
-    knowledge: { x: 0, y: 0 },
-    insight: { x: 0, y: 0 },
+    thoughts: { x: 550, y: 0 },
+    knowledge: { x: 800, y: 0 },
+    insight: { x: 1050, y: 0 },
 
-    cheese: { x: 0, y: 0 }
+    cheese: { x: -600, y: 0 }
     /* cheeseComponent: { x: 580, y: 0 },
     moldyCheeseComponent: { x: 580, y: 670 },
     cheeseyardComponent: { x: 0, y: 600 },
