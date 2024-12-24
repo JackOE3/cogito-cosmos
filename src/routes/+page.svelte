@@ -489,5 +489,6 @@
         right: 0;
         display: flex;
         gap: 0;
+        background: var(--background-color);
     }
 </style>
