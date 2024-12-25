@@ -146,15 +146,26 @@
     </div>
 
     <div style="display: flex; justify-content: start; gap: 8px;">
-        <div style="display:flex; flex-direction:column; align-items: start; gap:0;">
+        <fieldset>
+            <legend>Change Mood</legend>
             {#if unlocked.value.neutralMood}
-                <button style="width: 100%" onclick={() => (mood.value = 'happy')}>Happy</button>
-                <button style="width: 100%" onclick={() => (mood.value = 'neutral')}>Neutral</button>
+                <label class="form-control">
+                    <input type="radio" name="mood" bind:group={mood.value} value="happy" />
+                    Happy
+                </label>
+
+                <label class="form-control">
+                    <input type="radio" name="mood" bind:group={mood.value} value="neutral" />
+                    Neutral
+                </label>
             {/if}
             {#if unlocked.value.sadMood}
-                <button style="width: 100%" onclick={() => (mood.value = 'sad')}>Sad</button>
+                <label class="form-control">
+                    <input type="radio" name="mood" bind:group={mood.value} value="sad" />
+                    Sad
+                </label>
             {/if}
-        </div>
+        </fieldset>
 
         <div style="display:flex; flex-direction:row; align-items: center;">
             <div style="font-size: 3rem;">
