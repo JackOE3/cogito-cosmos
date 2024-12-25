@@ -17,7 +17,8 @@
         derivedState,
         mood,
         upgradeCount,
-        health
+        health,
+        addResource
     } from '$lib/store'
 
     import { onDestroy, onMount } from 'svelte'
@@ -36,7 +37,7 @@
 
     function handleThink(): void {
         if (!unlocked.value.thoughtBoost) {
-            resource.value.thoughts += 1
+            addResource('thoughts', 1)
             return
         }
         // set multiplier, which expires after a time and starts decaying
@@ -49,8 +50,8 @@
 
     function handlePonder(): void {
         if (resource.value.thoughts < 100) return
-        resource.value.knowledge += 1
-        resource.value.thoughts -= 100
+        addResource('knowledge', 1)
+        addResource('thoughts', -100)
     }
 
     function animateThoughtBoost(currentTime: number): void {

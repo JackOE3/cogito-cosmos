@@ -26,7 +26,7 @@ export const resourceTotal = makeState(resourcesInitial as Resources)
 
 export function addResource(res: ResourceType, value: number): void {
     resource.value[res] += value
-    resourceTotal.value[res] += value
+    if (value > 0) resourceTotal.value[res] += value
 }
 
 export function multResource(res: ResourceType, value: number): void {
@@ -34,5 +34,5 @@ export function multResource(res: ResourceType, value: number): void {
     const amount = resource.value[res]
     const difference = amount * value - amount
     resource.value[res] += difference
-    resourceTotal.value[res] += difference
+    if (difference > 0) resourceTotal.value[res] += difference
 }

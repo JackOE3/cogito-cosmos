@@ -355,6 +355,10 @@
         </div>
 
         <div id="game" bind:this={gameWindow}>
+            <!-- <div id={WindowId.STORY} class="window" onmousedown={() => selectWindow(WindowId.STORY, gameWindow)} use:initWindow role="none">
+                <Story />
+            </div> -->
+
             <div id={WindowId.COGITO_ERGO_SUM} class="window" onmousedown={() => selectWindow(WindowId.COGITO_ERGO_SUM, gameWindow)} use:initWindow role="none">
                 <CogitoErgoSum></CogitoErgoSum>
             </div>
@@ -362,12 +366,6 @@
             {#if unlocked.value.start || LORCA_OVERRIDE.value}
                 <div id={WindowId.ENLIGHTENMENT} class="window" onmousedown={() => selectWindow(WindowId.ENLIGHTENMENT, gameWindow)} use:initWindow role="none">
                     <Enlightenment></Enlightenment>
-                </div>
-            {/if}
-
-            {#if unlocked.value.switzerland || LORCA_OVERRIDE.value}
-                <div id={WindowId.STORY} class="window" onmousedown={() => selectWindow(WindowId.STORY, gameWindow)} use:initWindow role="none">
-                    <Story />
                 </div>
             {/if}
 

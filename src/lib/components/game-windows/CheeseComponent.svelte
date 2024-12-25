@@ -20,7 +20,8 @@
         unlocks,
         UnlockName,
         derivedState,
-        fastFowardFactor
+        fastFowardFactor,
+        addResource
     } from '$lib/store'
     import UnlockDrawer from '../UnlockDrawer.svelte'
     import { tooltip } from '../tooltips/tooltip.svelte'
@@ -94,7 +95,7 @@
      * This function shall be called whenever the cheese bar completes a cycle.
      */
     function handleCheeseGeneration(): void {
-        resource.value.cheese += derivedState.cheeseCycleYield
+        addResource('cheese', derivedState.cheeseCycleYield)
 
         if (currentCheeseQueue.value === 0) {
             // 'initial' better than 'paused', because the animation might've already started a small bit
@@ -119,7 +120,7 @@
     }
 
     function handleConvertToEnerchee() {
-        resource.value.enerchee += derivedState.convertToEnerchee
+        addResource('enerchee', derivedState.convertToEnerchee)
         resource.value.thoughts = 0
     }
 </script>
