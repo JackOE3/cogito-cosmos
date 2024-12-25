@@ -3,7 +3,6 @@
     import {
         addResource,
         derivedState,
-        devCheat,
         devToolsEnabled,
         enlightenmentStage,
         enlightenmentSubstage,
@@ -11,7 +10,6 @@
         health,
         multResource,
         Resource,
-        resource,
         resourceTotal,
         type ResourceType
     } from '$lib/store'

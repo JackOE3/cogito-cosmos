@@ -6,23 +6,24 @@
     }
 </script>
 
-<div>
+<div id="unlockList">
     {#each Object.entries(unlocked.value) as [name, isUnlocked], id}
-        <button onclick={() => toggleUnlock(name as UnlockName)}>
-            {id}
-            {name}
-            {isUnlocked ? '✅' : '❌'}
-        </button>
+        <div class="unlockToggle" style="background: var(--background-color); width: max-content;">
+            <button onclick={() => toggleUnlock(name as UnlockName)}>
+                {id}
+                {name}
+                {isUnlocked ? '✅' : '❌'}
+            </button>
+        </div>
     {/each}
 </div>
 
 <style>
-    div {
+    #unlockList {
         display: grid;
         position: absolute;
         z-index: 1;
     }
-    button {
-        border: 1px solid rgba(0, 0, 0, 1);
+    .unlockToggle {
     }
 </style>

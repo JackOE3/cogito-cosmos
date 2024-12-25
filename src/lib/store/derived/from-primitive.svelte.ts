@@ -14,8 +14,7 @@ import {
     mood,
     enlightenmentStage,
     health,
-    enlightenmentSubstage,
-    devCheat
+    enlightenmentSubstage
 } from '../primitive'
 import { checkBoolForNum } from '$lib/gamelogic/utils'
 
@@ -125,8 +124,7 @@ class DerivedState {
         const totalUnlockCount = Object.values(unlocked).filter(value => value).length
         return {
             upgrades: totalUpgradeCount * 1, // relative weight is 1 => worth of everything relative to upgrades
-            unlocks: totalUnlockCount * 10, // more weighted for EP
-            cheat: devCheat.value
+            unlocks: totalUnlockCount * 10 // more weighted for EP
         }
     })
     /**
