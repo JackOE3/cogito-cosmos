@@ -253,6 +253,7 @@
                         <legend>Cheese Factory Protocol</legend>
 
                         <label
+                            class="form-control"
                             use:tooltip={{
                                 data: 'meticulous',
                                 Component: CheeseFactoryProtocol,
@@ -262,6 +263,7 @@
                             meticulous
                         </label>
                         <label
+                            class="form-control"
                             use:tooltip={{
                                 data: 'nominal',
                                 Component: CheeseFactoryProtocol,
@@ -271,6 +273,7 @@
                             nominal
                         </label>
                         <label
+                            class="form-control"
                             use:tooltip={{
                                 data: 'warpSpeed',
                                 Component: CheeseFactoryProtocol,
