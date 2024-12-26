@@ -58,7 +58,7 @@
     const stageProgress = $derived((currentEpProgress / epNeededInCurrentStage) * 100)
 </script>
 
-<Window title="Enlightenment" themeId="cogitoErgoSum" --width="500px">
+<Window title="Path to Enlightenment" themeId="cogitoErgoSum" --width="500px">
     <!-- <div style="position: absolute; right: 8px; top: 8px;">
             <input type="checkbox" name="buyMax" bind:checked={buyMaxUpgrades} />
             <label for="buyMax">Buy Max</label>
@@ -101,7 +101,7 @@
         {/each}
     </div> -->
         <div style="display: flex; gap: 0rem">
-            {#each { length: 3 }, rank}
+            {#each { length: skills.length }, rank}
                 {@const skill = skills[rank]}
                 <button style="aspect-ratio:1; width: 60px;" use:tooltip={{ data: skill, Component: SkillTooltip, direction: Direction.RIGHT }}>
                     {skill.name.slice(0, 3)}

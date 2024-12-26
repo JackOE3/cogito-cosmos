@@ -11,35 +11,35 @@
 </script>
 
 <div style="position:relative; width: max-content; height: max-content; display: flex; justify-content: center" data-theme-colors={themeId}>
-    <div class="unlock-drawer theme-border">
+    <div class="unlock-drawer">
         {#each unlocks as unlock, tempCount}
-            {#if !unlocked.value[unlock.name] && unlocked.value[unlock.availableAt ?? 'start']}
-                <UnlockIcon {unlock} {tempCount} {folderName} />
-            {/if}
+            <!-- {#if unlocked.value[unlock.availableAt ?? 'start']} -->
+            <UnlockIcon {unlock} {tempCount} {folderName} />
+            <!-- {/if} -->
         {/each}
     </div>
 </div>
 
 <style>
     * {
-        --slots: var(--num-slots, 3);
-        --pad: 2px;
+        --slots: var(--num-slots, 4);
+        --pad: 0px;
         --dim: 62.7px;
     }
 
     .unlock-drawer {
         position: relative;
-        background-color: var(--Gray800);
+        /* background-color: var(--Gray800); */
         padding: var(--pad);
-        height: var(--dim);
-        width: calc(var(--slots) * var(--dim) + (var(--slots) - 1) * 2px);
+        height: max-content;
+        width: max-content;
         display: grid;
         grid-template-columns: repeat(var(--slots), var(--dim));
-        grid-template-rows: 100px; /* -> so overflow is hidden far beneath */
-        gap: 2px;
-        overflow: hidden;
+        /* grid-template-rows: repeat(var(--slots), var(--dim)); */ /* -> so overflow is hidden far beneath */
+        gap: 0.5rem;
+        /* overflow: hidden; */
         justify-items: center;
-        outline: 1px solid rgba(0, 0, 0, 0.6);
+        /* outline: 1px solid rgba(0, 0, 0, 0.6); */
     }
     /* .unlock-drawer:hover {
     --hover-slots: 5;

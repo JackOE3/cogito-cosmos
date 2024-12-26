@@ -24,11 +24,9 @@
     }
 </script>
 
-<div style="height:max-content; width: max-content">
+<div style="height:max-content; width: max-content;">
     <button
         onclick={unlockFeature}
-        data-cost={formatWhole(unlock.cost)}
-        data-unlockType={unlock.type}
         class:disabled={!canAfford && !isUnlocked}
         class:unlocked={isUnlocked}
         use:tooltip={{ data: unlock, Component: UnlockTooltip, direction: Direction.RIGHT, anchor: 'offsetParent' }}>
@@ -57,7 +55,7 @@
         filter: contrast(150%);
         outline: 2px solid rgba(0, 0, 0, 1);
         border: 1px var(--themeColor2) solid;
-        box-shadow: 0 0 5px 1px var(--themeColor1);
+        /* box-shadow: 0 0 5px 1px var(--themeColor1); */
     }
     button:not(.disabled):not(.unlocked):active {
         border: 2px var(--themeColor2) solid;
@@ -66,9 +64,17 @@
     button.unlocked {
         opacity: 1;
         filter: contrast(100%);
-        border: 2px rgba(255, 255, 255, 0.6) solid;
+        border: 2px var(--themeColor2) solid;
         outline: 1px solid rgba(0, 0, 0, 0.6);
         /* box-shadow: 0 0 2px 1px var(--themeColor1); */
+        outline: 1px solid rgba(0, 0, 0, 0.6);
+        border-left: var(--themeColor2);
+        border-right: var(--themeColor1);
+        border-top: var(--themeColor2);
+        border-bottom: var(--themeColor1);
+        border-width: 2px;
+        border-style: solid;
+        box-shadow: 0 0 5px 1px var(--themeColor1);
     }
 
     /*  button::before {

@@ -7,15 +7,15 @@
 </script>
 
 <Window title="Cogito" themeId="thoughts">
-    <div style="display:flex; flex-direction:column; gap: 4px">
+    <div style="display:flex; flex-direction:column; gap: 4px;">
         <div class="resourceDisplay">
             {formatNumber(resource.value.thoughts, 2)}
             <span style="color: var(--themeColor2); font-weight:bold">Thoughts</span>
         </div>
         <span>{formatNumber(derivedState.thoughtsPerSec, 2)}/s </span>
     </div>
+    <UnlockDrawer unlocks={unlocks.thoughts} folderName="Swordsman_Skill_Icons_Pack" themeId="thoughts" />
     <div class="gridColumn">
-        <UnlockDrawer unlocks={unlocks.thoughts} folderName="Swordsman_Skill_Icons_Pack" themeId="thoughts" />
         <UpgradeButton
             upgradeName="thoughtGeneration"
             btnUnlocked={unlocked.value.thinkFaster}
