@@ -1,15 +1,17 @@
 <script lang="ts">
     import { formatNumber } from '$lib/gamelogic/utils'
     import { unlocks, derivedState, upgradeCount, unlocked, resource, upgrades, addResource } from '$lib/store'
+    import AutoButton from '../AutoButton.svelte'
     import { tooltip } from '../tooltips/tooltip.svelte'
     import UnlockDrawer from '../UnlockDrawer.svelte'
     import UpgradeButton from '../UpgradeButton.svelte'
     import Window from './window-model/Window.svelte'
 
+    const ponderCost = 100
     function handlePonder(): void {
-        if (resource.value.thoughts < 100) return
+        if (resource.value.thoughts < ponderCost) return
         addResource('knowledge', 1)
-        addResource('thoughts', -100)
+        addResource('thoughts', -ponderCost)
     }
 </script>
 
@@ -22,7 +24,9 @@
         <span>{formatNumber(derivedState.knowledgePerSec, 2)}/s </span>
     </div>
 
-    <button use:tooltip={{ data: '+1 knowledge <br> -100 thoughts' }} onclick={handlePonder} class:disabled={resource.value.thoughts < 100}> Ponder </button>
+    <AutoButton tooltipOptions={{ data: '+1 knowledge <br> -100 thoughts' }} onclick={handlePonder} btnDisabled={resource.value.thoughts < ponderCost}>
+        Ponder
+    </AutoButton>
 
     <UnlockDrawer unlocks={unlocks.knowledge} folderName="Free Alchemical Ingredient Icons Pack" themeId="knowledge" />
     <div class="gridColumn">

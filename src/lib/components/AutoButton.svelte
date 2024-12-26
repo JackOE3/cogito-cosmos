@@ -6,12 +6,11 @@
     interface Props {
         onclick: () => void
         tooltipOptions?: Options
+        btnDisabled?: boolean
         children: Snippet
     }
 
-    let { onclick: onClick, tooltipOptions, children }: Props = $props()
-
-    if (!tooltipOptions) tooltipOptions = {}
+    let { onclick: onClick, tooltipOptions = {}, btnDisabled = false, children }: Props = $props()
 
     const onClickDebounced = debounce(onClick, 200, { isImmediate: true, maxWait: 200 })
 
@@ -31,6 +30,6 @@
     }
 </script>
 
-<button {onclick} {onmousedown} {onmouseup} use:tooltip={tooltipOptions}>
+<button {onclick} {onmousedown} {onmouseup} use:tooltip={tooltipOptions} class:disabled={btnDisabled}>
     {@render children?.()}
 </button>
