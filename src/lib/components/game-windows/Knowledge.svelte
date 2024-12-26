@@ -1,9 +1,16 @@
 <script lang="ts">
     import { formatNumber } from '$lib/gamelogic/utils'
-    import { unlocks, derivedState, upgradeCount, unlocked, resource, upgrades } from '$lib/store'
+    import { unlocks, derivedState, upgradeCount, unlocked, resource, upgrades, addResource } from '$lib/store'
+    import { tooltip } from '../tooltips/tooltip.svelte'
     import UnlockDrawer from '../UnlockDrawer.svelte'
     import UpgradeButton from '../UpgradeButton.svelte'
     import Window from './window-model/Window.svelte'
+
+    function handlePonder(): void {
+        if (resource.value.thoughts < 100) return
+        addResource('knowledge', 1)
+        addResource('thoughts', -100)
+    }
 </script>
 
 <Window title="Who knows?" themeId="knowledge">
@@ -14,9 +21,11 @@
         </div>
         <span>{formatNumber(derivedState.knowledgePerSec, 2)}/s </span>
     </div>
-    <div class="gridColumn">
-        <UnlockDrawer unlocks={unlocks.knowledge} folderName="Free Alchemical Ingredient Icons Pack" themeId="knowledge" />
 
+    <button use:tooltip={{ data: '+1 knowledge <br> -100 thoughts' }} onclick={handlePonder} class:disabled={resource.value.thoughts < 100}> Ponder </button>
+
+    <UnlockDrawer unlocks={unlocks.knowledge} folderName="Free Alchemical Ingredient Icons Pack" themeId="knowledge" />
+    <div class="gridColumn">
         <UpgradeButton upgradeName="knowledgeGeneration" tooltipText={`+${0.1} knowledge/s`}></UpgradeButton>
 
         <UpgradeButton

@@ -24,7 +24,7 @@
     }
 </script>
 
-<div style="height:max-content; width: max-content;">
+<div style="height: 100%; width: 100%;">
     <button
         onclick={unlockFeature}
         class:disabled={!canAfford && !isUnlocked}
@@ -42,8 +42,8 @@
     button {
         /* z-index: 1; */
         position: relative;
-        width: 62.7px;
-        height: 62.7px;
+        width: 100%;
+        aspect-ratio: 1;
         background-color: var(--Gray800);
         border: 1px var(--themeColor2) solid;
         border-radius: 0px;

@@ -24,13 +24,14 @@
     * {
         --slots: var(--num-slots, 4);
         --pad: 0px;
-        --dim: 62.7px;
+        --dim: 60px;
     }
 
     .unlock-drawer {
         position: relative;
         /* background-color: var(--Gray800); */
         padding: var(--pad);
+        margin: 0;
         height: max-content;
         width: max-content;
         display: grid;

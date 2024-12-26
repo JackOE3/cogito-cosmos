@@ -1,8 +1,6 @@
 <script lang="ts">
     import Window from './window-model/Window.svelte'
-    import UnlockDrawer from '../UnlockDrawer.svelte'
     import { formatNumber, formatTime } from '$lib/gamelogic/utils'
-    import UpgradeButton from '../UpgradeButton.svelte'
     import {
         unlocks,
         LORCA_OVERRIDE,
@@ -10,87 +8,16 @@
         unlocked,
         currentThoughtBoost,
         currentThoughtBoostTime,
-        //thoughtBoostMultiplier,
-        //thoughtBoostDuration,
-        //thoughtsPerSec,
-        //thoughtsPerSecBase,
         derivedState,
         mood,
         upgradeCount,
         health,
         addResource
     } from '$lib/store'
-
-    import { onDestroy, onMount } from 'svelte'
     import { tooltip } from '../tooltips/tooltip.svelte'
-    import Benchmark from '../Benchmark.svelte'
     import ProgBar from '../misc/ProgBar.svelte'
-    /* import EffectComponent from '../EffectComponent.svelte'
-    import Effect from '../Effect.svelte'
-    import Image from '../Image.svelte' */
-    //import { insightPerSec, knowledgePerSec } from '$lib/store'
 
     let buyMaxUpgrades = false
-    const thoughtBoostDecay = 2000
-    let lastTime: number | null = null
-    let myReq: number
-
-    function handleThink(): void {
-        if (!unlocked.value.thoughtBoost) {
-            addResource('thoughts', 1)
-            return
-        }
-        // set multiplier, which expires after a time and starts decaying
-        currentThoughtBoost.value = derivedState.thoughtBoostMultiplier
-        currentThoughtBoostTime.value = derivedState.thoughtBoostDuration
-
-        cancelAnimationFrame(myReq)
-        myReq = requestAnimationFrame(animateThoughtBoost)
-    }
-
-    function handlePonder(): void {
-        if (resource.value.thoughts < 100) return
-        addResource('knowledge', 1)
-        addResource('thoughts', -100)
-    }
-
-    function animateThoughtBoost(currentTime: number): void {
-        if (lastTime === null) lastTime = currentTime
-        const deltaT = Math.max(Math.min(currentTime - lastTime, 1000), 0)
-        lastTime = currentTime
-
-        if (currentThoughtBoostTime.value > 0) {
-            currentThoughtBoostTime.value -= deltaT
-            if (currentThoughtBoostTime.value < 0) currentThoughtBoostTime.value = 0
-        } else {
-            // decrement evenly over {thoughtBoostDecay} milliseconds
-            currentThoughtBoost.value -= ((derivedState.thoughtBoostMultiplier - 1) / thoughtBoostDecay) * deltaT
-            if (currentThoughtBoost.value <= 1) {
-                currentThoughtBoost.value = 1
-            }
-        }
-        if (currentThoughtBoost.value > 1) myReq = requestAnimationFrame(animateThoughtBoost)
-    }
-
-    // handle currentThoughtBoost being updated automatically when its strength is changed
-    //$: if ($thoughtBoostBought && get(currentThoughtBoostTime) > 0) currentThoughtBoost.set(get(thoughtBoostMultiplier))
-    const thoughtBoostActive = $derived(currentThoughtBoostTime.value > 0)
-    $effect(() => {
-        if (thoughtBoostActive) currentThoughtBoost.value = derivedState.thoughtBoostMultiplier
-    })
-
-    onMount(() => {
-        myReq = requestAnimationFrame(animateThoughtBoost)
-    })
-    onDestroy(() => {
-        if (cancelAnimationFrame) cancelAnimationFrame(myReq)
-    })
-
-    const thinkBtnTooltip = $derived.by(() => {
-        if (unlocked.value.thoughtBoost) {
-            return `${formatNumber(derivedState.thoughtBoostMultiplier, 2)}x thoughts/s for ${formatTime(derivedState.thoughtBoostDuration / 1000)}`
-        } else return '+1 thought'
-    })
 
     const isGeneratingKnowledge = $derived(upgradeCount.value.knowledgeGeneration >= 1)
 </script>
@@ -178,24 +105,6 @@
                 {/if}
             </div>
         </div>
-
-        <div style="display:flex; flex-direction:column; align-items: start; gap: 8px;">
-            {#if mood.value === 'happy'}
-                <button use:tooltip={{ data: thinkBtnTooltip }} onclick={handleThink}>
-                    {#if unlocked.value.thoughtBoost}
-                        Thought Boost
-                    {:else}
-                        Happy Thoughts
-                    {/if}
-                </button>
-            {:else if mood.value === 'neutral'}
-                <button use:tooltip={{ data: '+1 knowledge <br> -100 thoughts' }} onclick={handlePonder} class:disabled={resource.value.thoughts < 100}>
-                    Ponder
-                </button>
-            {:else}
-                <button>Cry</button>
-            {/if}
-        </div>
     </div>
 
     <p>
@@ -234,9 +143,5 @@
         justify-content: start;
         align-items: center;
         font-size: 1rem;
-    }
-    .green {
-        color: rgb(0, 216, 0);
-        font-weight: bold;
     }
 </style>
