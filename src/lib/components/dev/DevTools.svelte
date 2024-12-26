@@ -47,6 +47,7 @@
             {@render resourceControls(Resource.KNOWLEDGE)}
             {@render resourceControls(Resource.INSIGHT)}
             {@render resourceControls(Resource.CHEESE)}
+            {@render resourceControls(Resource.WISDOM)}
 
             <!--   <span>cheese monsters</span>
             <input type="number" bind:value={resource.value.cheeseMonster} />

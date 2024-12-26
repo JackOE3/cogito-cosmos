@@ -35,6 +35,7 @@
 
     import CheeseComponent from '$lib/components/game-windows/CheeseComponent.svelte'
     import Story from '$lib/components/game-windows/Story.svelte'
+    import Wisdom from '$lib/components/game-windows/Wisdom.svelte'
 
     // Start the game loop in the background.
     startGameLoop()
@@ -382,6 +383,12 @@
             {#if unlocked.value.sadMood || LORCA_OVERRIDE.value}
                 <div id={WindowId.INSIGHT} class="window" onmousedown={() => selectWindow(WindowId.INSIGHT, gameWindow)} use:initWindow role="none">
                     <Insight></Insight>
+                </div>
+            {/if}
+
+            {#if unlocked.value.sadMood || LORCA_OVERRIDE.value}
+                <div id={WindowId.WISDOM} class="window" onmousedown={() => selectWindow(WindowId.WISDOM, gameWindow)} use:initWindow role="none">
+                    <Wisdom></Wisdom>
                 </div>
             {/if}
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { debounce } from 'ts-debounce'
     import { formatNumber, formatTime } from '$lib/gamelogic/utils'
     import { unlocks, derivedState, upgradeCount, unlocked, resource, upgrades, addResource, currentThoughtBoost, currentThoughtBoostTime } from '$lib/store'
     import { onDestroy, onMount } from 'svelte'
@@ -6,6 +7,7 @@
     import UnlockDrawer from '../UnlockDrawer.svelte'
     import UpgradeButton from '../UpgradeButton.svelte'
     import Window from './window-model/Window.svelte'
+    import AutoButton from '../AutoButton.svelte'
 
     const thoughtBoostDecay = 2000
     let lastTime: number | null = null
@@ -83,13 +85,13 @@
             {/if}
         </div>
     </div>
-    <button use:tooltip={{ data: thinkBtnTooltip }} onclick={handleThink}>
+    <AutoButton onclick={handleThink} tooltipOptions={{ data: thinkBtnTooltip }}>
         {#if unlocked.value.thoughtBoost}
             Thought Boost
         {:else}
             Happy Thoughts
         {/if}
-    </button>
+    </AutoButton>
     <UnlockDrawer unlocks={unlocks.thoughts} folderName="Swordsman_Skill_Icons_Pack" themeId="thoughts" />
     <div class="gridColumn">
         <UpgradeButton

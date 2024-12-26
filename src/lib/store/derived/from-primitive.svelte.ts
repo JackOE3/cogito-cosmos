@@ -78,6 +78,8 @@ class DerivedState {
         } else return 0
     })
 
+    wisdomPerSec = $derived(1e-3 * Math.log(resource.thoughts + 1) * Math.log(resource.knowledge + 1) * Math.log(resource.insight + 1))
+
     healthStage: HealthStage = $derived.by(() => {
         if (health.value >= 0.7) return 'fit'
         else if (health.value >= 0.4) return 'ok'
@@ -124,7 +126,8 @@ class DerivedState {
         const totalUnlockCount = Object.values(unlocked).filter(value => value).length
         return {
             upgrades: totalUpgradeCount * 1, // relative weight is 1 => worth of everything relative to upgrades
-            unlocks: totalUnlockCount * 10 // more weighted for EP
+            unlocks: totalUnlockCount * 10, // more weighted for EP
+            wisdomUpgrade: upgradeCount.gainEP * 4 // 4+1=5 EP per upgrade
         }
     })
     /**

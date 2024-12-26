@@ -82,6 +82,15 @@ export const upgrades = {
         maxBuy: undefined
     },
 
+    //WISDOM
+    gainEP: {
+        title: 'Enlighten yourself',
+        cost: 10,
+        resource: Resource.WISDOM,
+        costMultiplier: 1.5,
+        maxBuy: undefined
+    },
+
     //cheese
     enercheeGeneration: {
         title: 'Increase enerchee generation',
