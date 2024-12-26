@@ -8,15 +8,14 @@ export enum Direction {
     BOTTOM = 'bottom'
 }
 
-export function tooltip(
-    element: HTMLElement,
-    options: {
-        data?: unknown
-        anchor?: string
-        direction?: Direction
-        Component?: any
-    }
-): object {
+export type Options = {
+    data?: unknown
+    anchor?: string
+    direction?: Direction
+    Component?: any
+}
+
+export function tooltip(element: HTMLElement, options: Options): object {
     let tooltipComponent: Record<string, any>
     const TooltipComponent = options.Component ?? Tooltip
 
