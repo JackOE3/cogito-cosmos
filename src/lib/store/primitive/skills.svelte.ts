@@ -8,6 +8,18 @@ export type Skill = {
 
 export const skills: Skill[] = [
     {
+        name: 'Knowledge is Power',
+        unlockedAt: 1,
+        description: 'Triple your knowledge acqisition rate.',
+        tooltipText: "Don't be single, be triple instead."
+    },
+    {
+        name: 'Duality',
+        unlockedAt: 1,
+        description: 'You also acquire knowledge while thinking.',
+        tooltipText: 'Thin can, no ledge.'
+    },
+    {
         name: 'Life Review',
         unlockedAt: 1,
         description: 'Moments before death, you quickly relive your life, giving you a massive boost to thoughts (+1min worth of production).',
@@ -25,12 +37,7 @@ export const skills: Skill[] = [
         description: 'Your health is preserved at its current stage and will not change.',
         tooltipText: 'B.J. sends his regards.'
     },
-    {
-        name: 'Duality',
-        unlockedAt: 1,
-        description: 'When happy, you also acquire a tiny fraction of knowledge (1% of your base rate).',
-        tooltipText: 'No ledge, thin can.'
-    },
+
     {
         name: 'Enthusiastic Lethargy',
         unlockedAt: 1,

@@ -30,11 +30,11 @@
 
     <UnlockDrawer unlocks={unlocks.knowledge} folderName="Free Alchemical Ingredient Icons Pack" themeId="knowledge" />
     <div class="gridColumn">
-        <UpgradeButton upgradeName="knowledgeGeneration" tooltipText={`+${0.1} knowledge/s`}></UpgradeButton>
+        <UpgradeButton upgradeName="knowledgeGeneration" tooltipText={`Acquire more knowledge. <br> Change: +${0.1} knowledge/s`}></UpgradeButton>
 
         <UpgradeButton
             upgradeName="thoughtJerk"
-            tooltipText={`Increase the potency of the upgrade <br> "${upgrades.thoughtGeneration.title}" by adding <br> +${1 + upgradeCount.value.thoughtSnap} to its effect. <br>Change: +${upgradeCount.value.thoughtGeneration * (1 + upgradeCount.value.thoughtSnap)} thoughts/s`}>
+            tooltipText={`Increase the potency of the upgrade <br> "${upgrades.thoughtAcceleration.title}" by adding <br> +${1 + upgradeCount.value.thoughtSnap} to its effect. <br>Change: +${upgradeCount.value.thoughtAcceleration * (1 + upgradeCount.value.thoughtSnap)} thoughts/s`}>
         </UpgradeButton>
 
         <!-- <UpgradeButton

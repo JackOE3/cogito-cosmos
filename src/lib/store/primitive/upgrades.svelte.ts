@@ -11,15 +11,22 @@ export interface IUpgrade {
 
 export const upgrades = {
     // THOUGHTS
-    thoughtGeneration: {
-        title: 'Accelerate your thinking',
+    thoughtAcceleration: {
+        title: 'Thought Acceleration',
         cost: 10,
         resource: Resource.THOUGHTS,
         costMultiplier: 1.4,
         maxBuy: undefined
     },
-    thoughtBoost: {
-        title: 'Improve the Thought Boost',
+    thoughtBoostMultiplier: {
+        title: 'Bigger Thought Boost',
+        cost: 100,
+        resource: Resource.THOUGHTS,
+        costMultiplier: 2,
+        maxBuy: undefined
+    },
+    thoughtBoostDuration: {
+        title: 'Longer Thought Boost',
         cost: 100,
         resource: Resource.THOUGHTS,
         costMultiplier: 2,
@@ -28,14 +35,14 @@ export const upgrades = {
 
     // KNOWLEDGE
     knowledgeGeneration: {
-        title: 'Improve knowledge acquisition',
+        title: 'Knowledge acquisition',
         cost: 2,
         resource: Resource.KNOWLEDGE,
         costMultiplier: 1.4,
         maxBuy: undefined
     },
     thoughtJerk: {
-        title: 'Jerk your thinking',
+        title: 'Thought Jerk',
         cost: 10,
         resource: Resource.KNOWLEDGE,
         costMultiplier: 1.4,
@@ -61,21 +68,21 @@ export const upgrades = {
 
     // INSIGHT
     insightGeneration: {
-        title: 'Increase your rate of gaining insight',
+        title: 'Insight Generation',
         cost: 1,
         resource: Resource.INSIGHT,
         costMultiplier: 1.2,
         maxBuy: undefined
     },
     studySmarter: {
-        title: 'Study smarter',
+        title: 'Smart Study',
         cost: 2,
         resource: Resource.INSIGHT,
         costMultiplier: 1.3,
         maxBuy: undefined
     },
     thoughtSnap: {
-        title: 'Snappier thinking',
+        title: 'Thought Snap',
         cost: 100,
         resource: Resource.INSIGHT,
         costMultiplier: 1.4,

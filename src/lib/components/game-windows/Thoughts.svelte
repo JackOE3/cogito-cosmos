@@ -95,12 +95,16 @@
     <UnlockDrawer unlocks={unlocks.thoughts} folderName="Swordsman_Skill_Icons_Pack" themeId="thoughts" />
     <div class="gridColumn">
         <UpgradeButton
-            upgradeName="thoughtGeneration"
+            upgradeName="thoughtAcceleration"
             btnUnlocked={unlocked.value.thinkFaster}
             tooltipText={`You think faster. <br>Change: +${(1 + upgradeCount.value.thoughtJerk) * (1 + upgradeCount.value.thoughtSnap)} thoughts/s <br>`}
         ></UpgradeButton>
 
-        <UpgradeButton upgradeName="thoughtBoost" btnUnlocked={unlocked.value.thoughtBoost} tooltipText="Scales ^1.5 with #upgrades"></UpgradeButton>
+        <UpgradeButton upgradeName="thoughtBoostMultiplier" btnUnlocked={unlocked.value.thoughtBoost} tooltipText="Increase the multiplier of Thought Boost"
+        ></UpgradeButton>
+
+        <UpgradeButton upgradeName="thoughtBoostDuration" btnUnlocked={unlocked.value.thoughtBoost} tooltipText="Increase the duration of Thought Boost"
+        ></UpgradeButton>
     </div>
 </Window>
 

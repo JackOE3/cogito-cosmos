@@ -156,12 +156,12 @@ class DerivedState {
 
     thoughtsPerSecKnowledgeConversion = $derived(this.knowledgeConversionFactor * resource.thoughts) // 5% decay every sec
 
-    thoughtBoostMultiplier = $derived(1.5 + 0.2 * Math.pow(upgradeCount.thoughtBoost, 1.5))
+    thoughtBoostMultiplier = $derived(1.5 + 0.2 * Math.pow(upgradeCount.thoughtBoostMultiplier, 1.5))
 
-    thoughtBoostDuration = $derived(5000 + 5000 * upgradeCount.thoughtBoost)
+    thoughtBoostDuration = $derived(5000 + 1000 * upgradeCount.thoughtBoostDuration)
 
     thoughtsPerSecBase = $derived.by(() => {
-        const fromBasicUpgrades = upgradeCount.thoughtGeneration * (1 + upgradeCount.thoughtJerk) * (1 + upgradeCount.thoughtSnap)
+        const fromBasicUpgrades = upgradeCount.thoughtAcceleration * (1 + upgradeCount.thoughtJerk) * (1 + upgradeCount.thoughtSnap)
 
         return +unlocked.thinkPassively + fromBasicUpgrades
     })

@@ -30,7 +30,7 @@
     <UnlockDrawer unlocks={unlocks.insight} folderName="Free 50 Aeromancer Skills" themeId="insight" />
 
     <div class="gridColumn">
-        <UpgradeButton upgradeName="insightGeneration" tooltipText={`+${0.01} insight/s`}></UpgradeButton>
+        <UpgradeButton upgradeName="insightGeneration" tooltipText={`Gain more insight. <br> Change: +${0.01} insight/s`}></UpgradeButton>
         <UpgradeButton
             upgradeName="studySmarter"
             tooltipText={`Increase the potency of the upgrade <br> "${upgrades.knowledgeGeneration.title}" by adding <br> +1 to its effect.`}>
@@ -38,7 +38,7 @@
 
         <UpgradeButton
             upgradeName="thoughtSnap"
-            tooltipText={`Increase the potency of the upgrade <br> "${upgrades.thoughtJerk.title}" by adding <br> +1 to its effect. <br>Change: +${upgradeCount.value.thoughtGeneration} thoughts/s`}>
+            tooltipText={`Increase the potency of the upgrade <br> "${upgrades.thoughtJerk.title}" by adding <br> +1 to its effect. <br>Change: +${upgradeCount.value.thoughtAcceleration} thoughts/s`}>
         </UpgradeButton>
     </div>
 </Window>
