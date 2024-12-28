@@ -57,6 +57,9 @@
     </div>
     <div class="gridColumn">
         <UpgradeButton upgradeName="gainEP" tooltipText={`Gain ${5} enlightenment points`}></UpgradeButton>
+        <UpgradeButton upgradeName="decreaseGeneratorExpRequirement" tooltipText={`Decrease the EXP requirement to <br> level up T1 by a factor of 10.`}
+        ></UpgradeButton>
+        <button>K1 Discount</button>
     </div>
 
     <p>Active Generators: {derivedState.numActiveGenerators}/{derivedState.numMaxActiveGenerators}</p>

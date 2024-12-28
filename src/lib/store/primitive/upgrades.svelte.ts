@@ -97,6 +97,13 @@ export const upgrades = {
         costMultiplier: 1.5,
         maxBuy: undefined
     },
+    decreaseGeneratorExpRequirement: {
+        title: 'T1 Discount',
+        cost: 10,
+        resource: Resource.WISDOM,
+        costMultiplier: 2,
+        maxBuy: undefined
+    },
 
     //cheese
     enercheeGeneration: {

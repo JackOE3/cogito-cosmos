@@ -87,9 +87,9 @@ function gameUpdate(deltaTimeSeconds: number): void {
     Object.entries(generators.value).forEach(([name, generator]) => {
         if (!generator.active) return // Skips the rest of this iteration
         generator.exp += derivedState.generatorExpPerSec[name as GeneratorName] * deltaTimeSeconds
-        const expRequired = derivedState.generatorExpRequirement[name as GeneratorName]
-        while (generator.exp >= expRequired) {
-            generator.exp -= expRequired
+        //const expRequired = derivedState.generatorExpRequirement[name as GeneratorName]
+        while (generator.exp >= derivedState.generatorExpRequirement[name as GeneratorName]) {
+            generator.exp -= derivedState.generatorExpRequirement[name as GeneratorName]
             generator.lvl++
         }
     })

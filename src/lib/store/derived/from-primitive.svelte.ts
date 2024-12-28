@@ -111,14 +111,22 @@ class DerivedState {
         I2: this.generatorExpPerSecBase
     })
 
-    generatorExpRequirement = $derived({
-        T1: 1 + generators.value.T1.lvl,
-        K1: 1 + generators.value.K1.lvl,
-        I1: 1 + generators.value.I1.lvl,
+    generatorExpRequirement = $derived.by(() => {
+        const count = upgradeCount.decreaseGeneratorExpRequirement
+        const growthFactor = 1.05
+        const discountFactor = 10
+        // basis change fromm discountFactor to growthFactor:
+        const T1DiscountExponent = (count * Math.log(discountFactor)) / Math.log(growthFactor)
 
-        T2: 1 + generators.value.T2.lvl,
-        K2: 1 + generators.value.K2.lvl,
-        I2: 1 + generators.value.I2.lvl
+        return {
+            T1: Math.pow(growthFactor, generators.value.T1.lvl - T1DiscountExponent),
+            K1: Math.pow(growthFactor, generators.value.K1.lvl),
+            I1: Math.pow(growthFactor, generators.value.I1.lvl),
+
+            T2: Math.pow(growthFactor, generators.value.T2.lvl),
+            K2: Math.pow(growthFactor, generators.value.K2.lvl),
+            I2: Math.pow(growthFactor, generators.value.I2.lvl)
+        }
     })
 
     /**

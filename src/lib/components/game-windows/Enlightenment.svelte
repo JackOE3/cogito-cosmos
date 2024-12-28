@@ -66,7 +66,7 @@
         },
         {
             resource: 'knowledge',
-            title: 'Knowing'
+            title: 'Learning'
         },
         {
             resource: 'insight',
