@@ -35,6 +35,8 @@ class Formulas {
         const pointsForCurrentStage = 10 * stage * substage
         return totalPointsForPreviousStages + pointsForCurrentStage
     }
+
+    resourceLevel = (totalResource: number) => Math.floor(Math.log10(totalResource > 0 ? totalResource : 1))
 }
 export const formulas = new Formulas()
 /**
@@ -118,6 +120,11 @@ class DerivedState {
 
     enlightenmentFullStage = $derived(enlightenmentStage.value + 0.1 * enlightenmentSubstage.value)
 
+    resourceLevel = $derived({
+        thoughts: formulas.resourceLevel(resourceTotal.thoughts),
+        knowledge: formulas.resourceLevel(resourceTotal.knowledge),
+        insight: formulas.resourceLevel(resourceTotal.insight)
+    })
     /**
      * Shows how many Enlightenment Points you have from different sources
      */
@@ -127,7 +134,8 @@ class DerivedState {
         return {
             upgrades: totalUpgradeCount * 1, // relative weight is 1 => worth of everything relative to upgrades
             unlocks: totalUnlockCount * 10, // more weighted for EP
-            wisdomUpgrade: upgradeCount.gainEP * 4 // 4+1=5 EP per upgrade
+            wisdomUpgrade: upgradeCount.gainEP * 4, // 4+1=5 EP per upgrade
+            resourceMilestones: this.resourceLevel.thoughts + this.resourceLevel.knowledge + this.resourceLevel.insight
         }
     })
     /**

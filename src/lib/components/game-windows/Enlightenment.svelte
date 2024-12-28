@@ -12,7 +12,9 @@
         enlightenmentStage,
         health,
         enlightenmentSubstage,
-        formulas
+        formulas,
+        resourceTotal,
+        type ResourceType
     } from '$lib/store'
 
     import { Direction, tooltip } from '../tooltips/tooltip.svelte'
@@ -56,6 +58,21 @@
     const epNeededInCurrentStage = $derived(enlightenmentStage.value * 10)
 
     const stageProgress = $derived((currentEpProgress / epNeededInCurrentStage) * 100)
+
+    const milestoneThings = [
+        {
+            resource: 'thoughts',
+            title: 'Thinking'
+        },
+        {
+            resource: 'knowledge',
+            title: 'Knowing'
+        },
+        {
+            resource: 'insight',
+            title: 'Understanding'
+        }
+    ] as const
 </script>
 
 <Window title="Path to Enlightenment" themeId="cogitoErgoSum" --width="500px">
@@ -87,6 +104,22 @@
         </p>
         <p>Next stage requires {formatNumber(derivedState.enlightenmentPointsToNextSubstage, 0)} EP</p>
     </span>
+
+    <div style="display: flex">
+        {#each milestoneThings as { resource, title }}
+            {@const lvl = derivedState.resourceLevel[resource]}
+            {@const toNextLvl = Math.pow(10, lvl + 1)}
+            <div>
+                <p>{title} Lv{lvl}</p>
+                <p>Next level at {formatNumber(toNextLvl, 0)} total {resource}</p>
+
+                {formatNumber((resourceTotal.value[resource] / toNextLvl) * 100, 2)}%
+                <ProgBar --widthProgBar="100px" --heightProgBar="2rem" --progress="{(resourceTotal.value[resource] / toNextLvl) * 100}%">
+                    {formatNumber(resourceTotal.value[resource], 2)} / {formatNumber(toNextLvl, 0)}
+                </ProgBar>
+            </div>
+        {/each}
+    </div>
 
     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
         <span>
