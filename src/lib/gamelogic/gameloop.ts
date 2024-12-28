@@ -1,5 +1,5 @@
 //import { handleCheeseMonster } from './cheeseMonster'
-import { lastSaved, resource, totalTimePlayed, derivedState, addResource, Resource, fastFowardFactor, health } from '$lib/store'
+import { lastSaved, resource, totalTimePlayed, derivedState, addResource, Resource, fastFowardFactor, health, generators, type GeneratorName } from '$lib/store'
 //import { saveSaveGame } from './saveload'
 
 // natural log of 2
@@ -83,6 +83,16 @@ function gameUpdate(deltaTimeSeconds: number): void {
     addResource(Resource.INSIGHT, derivedState.insightPerSec * deltaTimeSeconds)
 
     addResource(Resource.WISDOM, derivedState.wisdomPerSec * deltaTimeSeconds)
+
+    Object.entries(generators.value).forEach(([name, generator]) => {
+        if (!generator.active) return // Skips the rest of this iteration
+        generator.exp += derivedState.generatorExpPerSec[name as GeneratorName] * deltaTimeSeconds
+        const expRequired = derivedState.generatorExpRequirement[name as GeneratorName]
+        while (generator.exp >= expRequired) {
+            generator.exp -= expRequired
+            generator.lvl++
+        }
+    })
 
     if (health.value >= 0 && health.value <= 1) {
         health.value += derivedState.healthChangePerSec * deltaTimeSeconds

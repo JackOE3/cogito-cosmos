@@ -58,3 +58,30 @@ export const brainMode = makeState<BrainMode>('peaceful')
 
 export const highestMilk = makeState(0)
 export const totalMilkResets = makeState(0)
+
+const generatorTypes = ['T', 'K', 'I'] as const
+const generatorTiers = [1, 2] as const
+
+type GeneratorType = (typeof generatorTypes)[number] // "T" | "K" | "I"
+type GeneratorTier = (typeof generatorTiers)[number] // 1 | 2
+// Create a type for all combinations
+export type GeneratorName = `${GeneratorType}${GeneratorTier}`
+
+export type Generator = { lvl: number; exp: number; unlocked: boolean; active: boolean }
+
+// Generate all combinations
+const generatorNames = generatorTiers.flatMap(tier => generatorTypes.map(type => `${type}${tier}`))
+
+export const generators = makeState(
+    Object.fromEntries(
+        generatorNames.map(name => [
+            name,
+            {
+                lvl: 0,
+                exp: 0,
+                unlocked: false,
+                active: false
+            }
+        ])
+    ) as Record<GeneratorName, Generator>
+)

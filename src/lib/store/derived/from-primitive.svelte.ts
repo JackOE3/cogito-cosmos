@@ -14,7 +14,8 @@ import {
     mood,
     enlightenmentStage,
     health,
-    enlightenmentSubstage
+    enlightenmentSubstage,
+    generators
 } from '../primitive'
 import { checkBoolForNum } from '$lib/gamelogic/utils'
 
@@ -81,6 +82,53 @@ class DerivedState {
     })
 
     wisdomPerSec = $derived(1e-3 * Math.log(resource.thoughts + 1) * Math.log(resource.knowledge + 1) * Math.log(resource.insight + 1))
+
+    /**
+     * TODO: make this dependent on some upgrade (wisdom?)
+     */
+    generatorExpPerSecBase = $derived(1)
+
+    generatorBoostFrom = $derived({
+        T1: 1 + 0.1 * generators.value.T1.lvl,
+        K1: 1 + 0.1 * generators.value.K1.lvl,
+        I1: 1 + 0.1 * generators.value.I1.lvl,
+
+        T2: 1 + generators.value.T2.lvl,
+        K2: 1 + generators.value.K2.lvl,
+        I2: 1 + generators.value.I2.lvl
+    })
+
+    /**
+     * TODO: make this dependent on upgrades (which decrease exp requirement)
+     */
+    generatorExpPerSec = $derived({
+        T1: this.generatorExpPerSecBase * this.generatorBoostFrom.T2,
+        K1: this.generatorExpPerSecBase * this.generatorBoostFrom.K2,
+        I1: this.generatorExpPerSecBase * this.generatorBoostFrom.I2,
+
+        T2: this.generatorExpPerSecBase,
+        K2: this.generatorExpPerSecBase,
+        I2: this.generatorExpPerSecBase
+    })
+
+    generatorExpRequirement = $derived({
+        T1: 1 + generators.value.T1.lvl,
+        K1: 1 + generators.value.K1.lvl,
+        I1: 1 + generators.value.I1.lvl,
+
+        T2: 1 + generators.value.T2.lvl,
+        K2: 1 + generators.value.K2.lvl,
+        I2: 1 + generators.value.I2.lvl
+    })
+
+    /**
+     * The amount of currently active generators
+     */
+    numActiveGenerators = $derived(Object.values(generators.value).filter(generator => generator.active).length)
+    /**
+     * The maximum amount of generators that can be active at the same time
+     */
+    numMaxActiveGenerators = $derived(2)
 
     healthStage: HealthStage = $derived.by(() => {
         if (health.value >= 0.7) return 'fit'

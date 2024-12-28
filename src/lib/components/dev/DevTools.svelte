@@ -7,6 +7,7 @@
         enlightenmentStage,
         enlightenmentSubstage,
         fastFowardFactor,
+        generators,
         health,
         multResource,
         Resource,
@@ -39,6 +40,13 @@
             <span>enlightenment stage</span>
             <input style="width: 100px" type="number" bind:value={enlightenmentStage.value} min="1" step="1" />
             <input style="width: 100px" type="number" bind:value={enlightenmentSubstage.value} min="1" max="5" step="1" />
+
+            {#each Object.entries(generators.value) as [name, generator] (name)}
+                <label>
+                    <input type="checkbox" bind:checked={generator.active} />
+                    {name}
+                </label>
+            {/each}
 
             <span>health: {derivedState.healthStage} ({formatNumber(health.value, 2)})</span>
             <input style="width: 100px" type="number" min="0" max="1" step="0.1" bind:value={healthValue} onchange={() => (health.value = healthValue)} />
