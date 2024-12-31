@@ -3,6 +3,7 @@ import { Resource, type ResourceType } from './resources.svelte'
 
 export interface IUpgrade {
     title: string
+    description?: string[]
     cost: number
     resource: ResourceType
     costMultiplier: number
@@ -209,63 +210,28 @@ export const upgrades = {
         maxBuy: undefined
     },
 
-    //bacteria
-    bacteriaGrowth: {
-        title: 'Placeholder Title',
-        cost: 100,
-        resource: Resource.BACTERIA,
+    increaseDamage: {
+        title: 'DPS',
+        description: ['Increase your damage per second.', '+1 DPS'],
+        cost: 5,
+        resource: Resource.GOLD,
         costMultiplier: 1.3,
         maxBuy: undefined
     },
-    cheeseMonsterCapacityPerUpgrade: {
-        title: 'Placeholder Title',
-        cost: 1000,
-        resource: Resource.BACTERIA,
-        costMultiplier: 1.5,
+    increaseGoldGain: {
+        title: 'G-YLD',
+        description: ['Get more gold every time the gold bar fills.', '+1 Gold/fill'],
+        cost: 10,
+        resource: Resource.GOLD,
+        costMultiplier: 1.2,
         maxBuy: undefined
     },
-    multipleCheeseCycles: {
-        title: 'Placeholder Title',
-        cost: 1000,
-        resource: Resource.BACTERIA,
-        costMultiplier: 1.5,
-        maxBuy: undefined
-    },
-    multipleMonsterDeaths: {
-        title: 'Placeholder Title',
-        cost: 1000,
-        resource: Resource.BACTERIA,
-        costMultiplier: 1.5,
-        maxBuy: undefined
-    },
-
-    //milk
-    milkThoughtsGain: {
-        title: 'Placeholder Title',
-        cost: 1,
-        resource: Resource.MILK,
-        costMultiplier: 1.5,
-        maxBuy: undefined
-    },
-    milkCheeseGain: {
-        title: 'Placeholder Title',
-        cost: 1,
-        resource: Resource.MILK,
-        costMultiplier: 2,
-        maxBuy: undefined
-    },
-    milkMoldyCheeseGain: {
-        title: 'Placeholder Title',
-        cost: 1,
-        resource: Resource.MILK,
-        costMultiplier: 2,
-        maxBuy: undefined
-    },
-    milkCheeseBrainsGain: {
-        title: 'Placeholder Title',
-        cost: 1,
-        resource: Resource.MILK,
-        costMultiplier: 1.5,
+    increaseGoldSpeed: {
+        title: 'G-SPD',
+        description: ['Increase the speed of the gold bar.', '+10% faster (additive)'],
+        cost: 10,
+        resource: Resource.GOLD,
+        costMultiplier: 1.2,
         maxBuy: undefined
     }
 } as const satisfies Record<string, IUpgrade>

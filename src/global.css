@@ -327,3 +327,8 @@ button:disabled {
     --themeColor1: #00b2be;
     --themeColor2: #81efff;
 }
+
+.full {
+    width: 100%;
+    height: 100%;
+}

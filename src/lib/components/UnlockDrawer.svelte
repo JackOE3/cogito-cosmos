@@ -8,6 +8,9 @@
         themeId: string
     }
     let { unlocks, folderName = '', themeId = '' }: Props = $props()
+
+    const numUnlocks = unlocks.length
+    const numUnlocksGoal = 12
 </script>
 
 <div style="position:relative; width: max-content; height: max-content; display: flex; justify-content: center" data-theme-colors={themeId}>
@@ -17,12 +20,19 @@
             <UnlockIcon {unlock} {tempCount} {folderName} />
             <!-- {/if} -->
         {/each}
+        {#each { length: numUnlocksGoal - numUnlocks }}
+            <div
+                style="width: 100%; aspect-ratio:1; display: flex; justify-content: center; align-items: center; background: var(--dp01); border: 1px solid var(--dp04); box-sizing: border-box; font-size: .875rem;">
+                ?
+            </div>
+        {/each}
     </div>
 </div>
 
 <style>
     * {
-        --slots: var(--num-slots, 4);
+        --columns: var(--num-slots, 4);
+        --rows: var(--num-rows, 1);
         --pad: 0px;
         --dim: 60px;
     }
@@ -35,7 +45,8 @@
         height: max-content;
         width: max-content;
         display: grid;
-        grid-template-columns: repeat(var(--slots), var(--dim));
+        grid-template-columns: repeat(var(--columns), var(--dim));
+        grid-template-rows: repeat(var(--rows), var(--dim));
         /* grid-template-rows: repeat(var(--slots), var(--dim)); */ /* -> so overflow is hidden far beneath */
         gap: 0.5rem;
         /* overflow: hidden; */

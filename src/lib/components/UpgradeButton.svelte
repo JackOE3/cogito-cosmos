@@ -28,7 +28,11 @@
     }
 </script>
 
-<button onclick={handleUpgradeClicked} class:disabled={(!canAfford && !isMaxed) || (!btnUnlocked && !LORCA_OVERRIDE.value)} class:maxed={isMaxed}>
+<button
+    onclick={handleUpgradeClicked}
+    class:disabled={(!canAfford && !isMaxed) || (!btnUnlocked && !LORCA_OVERRIDE.value)}
+    class:maxed={isMaxed}
+    data-theme-colors={resourceName}>
     {#if btnUnlocked || LORCA_OVERRIDE.value}
         <div in:fade={{ duration: 1000 }} use:tooltip={{ data: tooltipText }}>
             <div style="display:flex; flex-direction: column; justify-content: end; height: 100%">

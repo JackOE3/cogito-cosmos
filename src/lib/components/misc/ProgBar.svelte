@@ -16,12 +16,10 @@
     })
 </script>
 
-<div>
-    <div id="outerContainer" bind:this={container}>
-        <div id="innerBar"></div>
-        <div id="barLabel" bind:this={label}>
-            <span>{@render children?.()}</span>
-        </div>
+<div id="outerContainer" bind:this={container}>
+    <div id="innerBar"></div>
+    <div id="barLabel" bind:this={label}>
+        <span>{@render children?.()}</span>
     </div>
 </div>
 

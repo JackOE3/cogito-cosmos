@@ -47,6 +47,10 @@ export const formulas = new Formulas()
  * where to put these formulas? separate or combined with state object?
  */
 class DerivedState {
+    damagePerSec = $derived(1 + upgradeCount.increaseDamage)
+    goldYield = $derived(1 + upgradeCount.increaseGoldGain)
+    goldDurationMillis = $derived(3000 / (1 + 0.1 * upgradeCount.increaseGoldSpeed))
+
     thoughtsPerSec = $derived.by(() => {
         if (mood.value === 'happy') {
             return (

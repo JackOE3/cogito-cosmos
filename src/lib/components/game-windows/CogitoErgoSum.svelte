@@ -116,7 +116,8 @@
         --widthProgBar="300px"
         --heightProgBar="1rem"
         --barColor="linear-gradient(to right, #170000 0%, red 30%, yellow 50%, green 90%)"
-        --progress="{Math.abs(health.value * 100)}%"></ProgBar>
+        --progress="{Math.abs(health.value * 100)}%">
+    </ProgBar>
 
     <div class="flexRowContainer" style="display: flex; justify-content: center">
         <!-- <div class="gridColumn" style="height:332px;">

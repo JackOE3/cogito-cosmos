@@ -11,10 +11,12 @@ export enum Resource {
     CHEESE = 'cheese',
     MOLDY_CHEESE = 'moldyCheese',
     CHEESE_MONSTER = 'cheeseMonster',
-    CHEESE_BRAINS = 'cheeseBrains'
+    CHEESE_BRAINS = 'cheeseBrains',
     /* MILK = 'milk',
     BACTERIA = 'bacteria',
     MILK_POINTS = 'milkPoints' */
+
+    GOLD = 'gold'
 }
 export type ResourceType = `${Resource}`
 
