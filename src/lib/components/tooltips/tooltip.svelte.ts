@@ -1,4 +1,4 @@
-import { mount, unmount } from 'svelte'
+import { mount, unmount, untrack } from 'svelte'
 import Tooltip from './Tooltip.svelte'
 
 export enum Direction {
@@ -15,8 +15,33 @@ export type Options = {
     Component?: any
 }
 
-export function tooltip(element: HTMLElement, options: Options): object {
+export function tooltip(element: HTMLElement, optionsFn: () => Options): void {
     let tooltipComponent: Record<string, any>
+    const options = optionsFn()
+    //let lastData = options.data
+
+    $effect(() => {
+        // assign the new data if it has changed, this is needed to reactivity!
+        myProps.data = optionsFn().data ?? null
+        // cant differntiate if component has been unmounted (destroyed) or just updated...
+        // only unmount tooltip here if component for the tooltip has been unmounted
+        return () => {
+            // optionsFn().data ... new dynamic data
+            // myProps.data ... data assigned in this function (above)
+            // equality here implies that this isnt an update, but that the component was unmounted
+            // then simply do cleanup logic here
+            if (optionsFn().data === myProps.data) {
+                /* console.log('Component for tooltip was destroyed, commencing cleanup logic.') */
+                if (alreadyEntered) unmount(tooltipComponent)
+                element.removeEventListener('mouseenter', mouseEnter)
+                /* element.removeEventListener('mousemove', mouseMove) */
+                element.removeEventListener('mouseleave', mouseLeave)
+                /* element.removeEventListener('mousedown', mouseDown)
+                element.removeEventListener('mouseup', mouseUp) */
+            }
+        }
+    })
+
     const TooltipComponent = options.Component ?? Tooltip
 
     const myProps = $state({
@@ -37,12 +62,11 @@ export function tooltip(element: HTMLElement, options: Options): object {
     const PADDING = 8
 
     function mouseEnter(_event: MouseEvent): void {
-        console.log('mouseEnter', alreadyEntered)
+        /* console.log('mouseEnter', alreadyEntered) */
         if (alreadyEntered) return
         alreadyEntered = true
-        console.log('wat')
 
-        if (myProps.data === null || mousePressed) return
+        if (options.data === null || mousePressed) return
 
         let rect: DOMRect
 
@@ -63,21 +87,24 @@ export function tooltip(element: HTMLElement, options: Options): object {
             myProps.left = rect.right + PADDING
         }
 
-        tooltipComponent = mount(TooltipComponent, { target: document.body, props: myProps })
+        tooltipComponent = mount(TooltipComponent, {
+            target: document.body, //or element?
+            props: myProps
+        })
         tooltipShown = true
     }
 
     function mouseLeave(): void {
-        console.log('mouseLeave')
-        if (myProps.data === null || mousePressed) return
+        /* console.log('mouseLeave') */
+        if (options.data === null || mousePressed) return
         alreadyEntered = false
         unmount(tooltipComponent)
     }
 
     function mouseMove(_event: MouseEvent): void {
-        if (myProps.data === null || !mousePressed || !tooltipShown) return
+        if (options.data === null || !mousePressed || !tooltipShown) return
         // onmount when tooltip is shown & mouse is pressed (= disable tooltip when panning)
-        unmount(tooltipComponent)
+        if (typeof tooltipComponent !== 'undefined') unmount(tooltipComponent)
         tooltipShown = false
     }
 
@@ -95,27 +122,4 @@ export function tooltip(element: HTMLElement, options: Options): object {
     element.addEventListener('mouseleave', mouseLeave)
     /*     element.addEventListener('mousedown', mouseDown)
     element.addEventListener('mouseup', mouseUp) */
-
-    return {
-        // is called whenever the parameter (options) changes
-        // argument is the new parameter
-        update({ data }) {
-            console.log('Updated tooltip')
-            // update the local variable from here, else the tooltip would reset
-            // to the starting value if it's destroyed and created again
-            myProps.data = data
-            // programmatically sets props on an instance. component.$set({ x: 1 })
-            // is equivalent to x = 1 inside the component's <script> block.
-            //if (tooltipComponent !== undefined) tooltipComponent.$set({ data })
-        },
-        destroy() {
-            console.log('DESTROYED TOOLTIP')
-            if (tooltipComponent !== undefined) unmount(tooltipComponent)
-            element.removeEventListener('mouseenter', mouseEnter)
-            /* element.removeEventListener('mousemove', mouseMove) */
-            element.removeEventListener('mouseleave', mouseLeave)
-            /*             element.removeEventListener('mousedown', mouseDown)
-            element.removeEventListener('mouseup', mouseUp) */
-        }
-    }
 }
