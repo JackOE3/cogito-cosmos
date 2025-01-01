@@ -28,9 +28,20 @@ export function tooltip(element: HTMLElement, options: Options): object {
     let mousePressed = false
     let tooltipShown = false
 
+    /**
+     * mouseEnter can trigger when clicking a button while still inside it,
+     * so this flag has to be kept track of so the tooltip isnt mounted twice
+     */
+    let alreadyEntered = false
+
     const PADDING = 8
 
     function mouseEnter(_event: MouseEvent): void {
+        console.log('mouseEnter', alreadyEntered)
+        if (alreadyEntered) return
+        alreadyEntered = true
+        console.log('wat')
+
         if (myProps.data === null || mousePressed) return
 
         let rect: DOMRect
@@ -57,7 +68,9 @@ export function tooltip(element: HTMLElement, options: Options): object {
     }
 
     function mouseLeave(): void {
+        console.log('mouseLeave')
         if (myProps.data === null || mousePressed) return
+        alreadyEntered = false
         unmount(tooltipComponent)
     }
 
@@ -78,15 +91,16 @@ export function tooltip(element: HTMLElement, options: Options): object {
     }
 
     element.addEventListener('mouseenter', mouseEnter)
-    element.addEventListener('mousemove', mouseMove)
+    /* element.addEventListener('mousemove', mouseMove) */
     element.addEventListener('mouseleave', mouseLeave)
-    element.addEventListener('mousedown', mouseDown)
-    element.addEventListener('mouseup', mouseUp)
+    /*     element.addEventListener('mousedown', mouseDown)
+    element.addEventListener('mouseup', mouseUp) */
 
     return {
         // is called whenever the parameter (options) changes
         // argument is the new parameter
         update({ data }) {
+            console.log('Updated tooltip')
             // update the local variable from here, else the tooltip would reset
             // to the starting value if it's destroyed and created again
             myProps.data = data
@@ -95,13 +109,13 @@ export function tooltip(element: HTMLElement, options: Options): object {
             //if (tooltipComponent !== undefined) tooltipComponent.$set({ data })
         },
         destroy() {
-            /* console.log('DESTROYED TOOLTIP') */
+            console.log('DESTROYED TOOLTIP')
             if (tooltipComponent !== undefined) unmount(tooltipComponent)
             element.removeEventListener('mouseenter', mouseEnter)
-            element.removeEventListener('mousemove', mouseMove)
+            /* element.removeEventListener('mousemove', mouseMove) */
             element.removeEventListener('mouseleave', mouseLeave)
-            element.removeEventListener('mousedown', mouseDown)
-            element.removeEventListener('mouseup', mouseUp)
+            /*             element.removeEventListener('mousedown', mouseDown)
+            element.removeEventListener('mouseup', mouseUp) */
         }
     }
 }
