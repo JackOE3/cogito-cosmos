@@ -12,7 +12,7 @@
         class?: string
     }
 
-    let { onclick: onClick, tooltipOptions = {}, disabled = false, style, class: className, children }: Props = $props()
+    let { onclick: onClick, tooltipOptions = { data: null }, disabled = false, style, class: className, children }: Props = $props()
 
     const onClickDebounced = debounce(onClick, 200, { isImmediate: true, maxWait: 200 })
 
@@ -41,6 +41,6 @@
     })
 </script>
 
-<button {onclick} {onmousedown} {onmouseup} {style} class={className} use:tooltip={tooltipOptions} class:disabled>
+<button {onclick} {onmousedown} {onmouseup} {style} class={className} use:tooltip={() => tooltipOptions} class:disabled>
     {@render children?.()}
 </button>
