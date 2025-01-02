@@ -16,7 +16,10 @@ export enum Resource {
     BACTERIA = 'bacteria',
     MILK_POINTS = 'milkPoints' */
 
-    GOLD = 'gold'
+    GOLD = 'gold',
+    RED = 'red',
+    BLUE = 'blue',
+    GREEN = 'green'
 }
 export type ResourceType = `${Resource}`
 
