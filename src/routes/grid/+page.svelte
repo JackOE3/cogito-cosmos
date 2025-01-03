@@ -18,6 +18,7 @@
         type GeneratorI,
         type GeneratorResource,
         type UpgradeBaseI,
+        type UpgradeI,
         type UpgradeType
     } from '$lib/store'
     import { cubicOut, quartOut } from 'svelte/easing'
@@ -148,73 +149,72 @@
         }
     }
 
-    class UpgradeCellBuilder {
-        private upgradeType!: UpgradeType
-        private title!: string
-        private description?: string[]
-        private cost!: number
-        private resource!: GeneratorResource
-        private costMultiplier!: number
-        private count!: number
-        private maxBuy?: number
-
-        setUpgradeType(upgradeType: UpgradeType): this {
-            this.upgradeType = upgradeType
-            return this
+    function makeAddAttackUpgrade(addAttack: number, cost: number, resource: GeneratorResource): UpgradeI {
+        return {
+            type: 'upgrade',
+            id: uuidv4(),
+            upgradeType: 'addAttack',
+            addAttack,
+            title: 'ATK++',
+            description: ['Increase your attack power. (additive)'],
+            cost,
+            resource,
+            costMultiplier: 1.3,
+            count: 0
         }
-
-        setTitle(title: string): this {
-            this.title = title
-            return this
+    }
+    function makeMultAttackUpgrade(multAttack: number, cost: number, resource: GeneratorResource): UpgradeI {
+        return {
+            type: 'upgrade',
+            id: uuidv4(),
+            upgradeType: 'multAttack',
+            multAttack,
+            title: 'ATK*',
+            description: ['Multiply your attack power.'],
+            cost,
+            resource,
+            costMultiplier: 1.3,
+            count: 0
         }
-
-        setDescription(description: string[]): this {
-            this.description = description
-            return this
+    }
+    function makeAddGeneratorGainUpgrade(forGeneratorResource: GeneratorResource, addGain: number, cost: number, resource: GeneratorResource): UpgradeI {
+        const titleDict: Record<GeneratorResource, string> = {
+            red: 'R++',
+            green: 'G++',
+            blue: 'B++'
         }
-
-        setCost(cost: number): this {
-            this.cost = cost
-            return this
+        return {
+            type: 'upgrade',
+            id: uuidv4(),
+            upgradeType: 'addGeneratorGain',
+            forGeneratorResource,
+            addGain,
+            title: titleDict[forGeneratorResource],
+            description: [`Get more ${forGeneratorResource} every time the ${forGeneratorResource} bar fills.`],
+            cost,
+            resource,
+            costMultiplier: 1.3,
+            count: 0
         }
-
-        setResource(resource: GeneratorResource): this {
-            this.resource = resource
-            return this
+    }
+    function makeAddGeneratorSpeedUpgrade(forGeneratorResource: GeneratorResource, addSpeed: number, cost: number, resource: GeneratorResource): UpgradeI {
+        const titleDict: Record<GeneratorResource, string> = {
+            red: 'R>>',
+            green: 'G>>',
+            blue: 'B>>'
         }
-
-        setCostMult(costMultiplier: number): this {
-            this.costMultiplier = costMultiplier
-            return this
-        }
-
-        setMaxBuy(maxBuy: number): this {
-            this.maxBuy = maxBuy
-            return this
-        }
-
-        build(): UpgradeCell {
-            if (
-                this.upgradeType === undefined ||
-                this.title === undefined ||
-                this.cost === undefined ||
-                this.resource === undefined ||
-                this.costMultiplier === undefined
-            ) {
-                throw new Error('Missing required properties to build UpgradeCell')
-            }
-
-            return {
-                type: 'upgrade' as const,
-                upgradeType: this.upgradeType,
-                title: this.title,
-                description: this.description,
-                cost: this.cost,
-                resource: this.resource,
-                costMultiplier: this.costMultiplier,
-                count: 0,
-                maxBuy: this.maxBuy
-            }
+        return {
+            type: 'upgrade',
+            id: uuidv4(),
+            upgradeType: 'addGeneratorSpeed',
+            forGeneratorResource,
+            addSpeed,
+            title: titleDict[forGeneratorResource],
+            description: [`Increase the speed of the ${forGeneratorResource} bar.`],
+            cost,
+            resource,
+            costMultiplier: 1.3,
+            count: 0
         }
     }
 
@@ -228,57 +228,11 @@
         gridCellContent[center][center] = makeGeneratorCell(Resource.GREEN)
         gridCellContent[center][center + 1] = makeGeneratorCell(Resource.BLUE)
 
-        gridCellContent[center + 1][center - 1] = {
-            type: 'upgrade',
-            id: uuidv4(),
-            upgradeType: 'addGeneratorGain',
-            forGeneratorResource: Resource.RED,
-            addGain: 1,
-            title: 'RED++',
-            description: ['Get more red every time the red bar fills.'],
-            cost: 5,
-            resource: Resource.RED,
-            costMultiplier: 1.2,
-            count: 0
-        }
-        gridCellContent[center + 2][center - 1] = {
-            type: 'upgrade',
-            id: uuidv4(),
-            upgradeType: 'addGeneratorSpeed',
-            forGeneratorResource: Resource.RED,
-            addSpeed: 1,
-            title: 'RED>>',
-            description: ['Increase the speed of the red bar.'],
-            cost: 5,
-            resource: Resource.RED,
-            costMultiplier: 1.2,
-            count: 0
-        }
+        gridCellContent[center + 1][center - 1] = makeAddGeneratorGainUpgrade(Resource.RED, 1, 5, Resource.RED)
+        gridCellContent[center + 2][center - 1] = makeAddGeneratorSpeedUpgrade(Resource.RED, 1, 5, Resource.RED)
 
-        gridCellContent[center][center + 2] = {
-            type: 'upgrade',
-            id: uuidv4(),
-            upgradeType: 'addAttack',
-            addAttack: 1,
-            title: 'ATK++',
-            description: ['Increase your attack power. (additive)'],
-            cost: 10,
-            resource: Resource.RED,
-            costMultiplier: 1.3,
-            count: 0
-        }
-        gridCellContent[center][center + 3] = {
-            type: 'upgrade',
-            id: uuidv4(),
-            upgradeType: 'multAttack',
-            multAttack: 2,
-            title: 'ATK++',
-            description: ['Multiply your attack power.'],
-            cost: 10,
-            resource: Resource.RED,
-            costMultiplier: 1.3,
-            count: 0
-        }
+        gridCellContent[center][center + 2] = makeAddAttackUpgrade(1, 10, Resource.RED)
+        gridCellContent[center][center + 3] = makeMultAttackUpgrade(1.5, 10, Resource.RED)
 
         return gridCellContent
     }
