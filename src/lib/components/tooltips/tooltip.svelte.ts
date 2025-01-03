@@ -1,4 +1,4 @@
-import { mount, unmount, untrack } from 'svelte'
+import { mount, unmount } from 'svelte'
 import Tooltip from './Tooltip.svelte'
 
 export enum Direction {

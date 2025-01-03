@@ -4,6 +4,7 @@
     import type { Snippet } from 'svelte'
     import { tooltip } from './tooltips/tooltip.svelte'
     import { formatNumber } from '$lib/gamelogic/utils'
+    import backgroundImage from '$lib/images/endless-constellation.svg'
 
     type Props = {
         upgrade: UpgradeI
@@ -49,6 +50,8 @@
 
     const tooltipText = $derived.by(() => {
         if (!upgrade.description) return null
+
+        if (isMaxed) return `${upgrade.description.join('<br>')} <br> <span style="color: var(--text-medium-emphasis)"> This upgrade is maxed out. </span>`
         //console.log('tooltipTextUpgrade')
         const upgradesSnapshot = $state.snapshot(derivedGrid.upgradesInCellGrid) as UpgradeI[]
         const upgradeSnap = upgradesSnapshot.find(u => u.id == upgrade.id)
@@ -62,8 +65,8 @@
     })
 </script>
 
-<button {style} class={className} onclick={handleUpgradeClicked} class:disabled={!canAfford || isMaxed} class:maxed={isMaxed}>
-    <div class="full" use:tooltip={() => ({ data: tooltipText })}>
+<button {style} class={className} onclick={handleUpgradeClicked} class:disabled={!canAfford || isMaxed}>
+    <div class="full" class:maxed={isMaxed} use:tooltip={() => ({ data: tooltipText })}>
         <!-- {upgrades[upgradeName].title} -->
         {@render children?.()}
     </div>
@@ -77,5 +80,9 @@
         display: flex;
         justify-content: center;
         align-items: center;
+    }
+    .maxed {
+        text-decoration: line-through;
+        /* background-color: var(--dp08); */
     }
 </style>

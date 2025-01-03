@@ -146,7 +146,7 @@
         }
     }
 
-    function makeAddAttackUpgrade(addAttack: number, cost: number, resource: GeneratorResource): UpgradeI {
+    function makeAddAttackUpgrade(addAttack: number, cost: number, resource: GeneratorResource, maxBuy?: number): UpgradeI {
         return {
             type: 'upgrade',
             id: uuidv4(),
@@ -157,10 +157,11 @@
             cost,
             resource,
             costMultiplier: 1.3,
-            count: 0
+            count: 0,
+            maxBuy
         }
     }
-    function makeMultAttackUpgrade(multAttack: number, cost: number, resource: GeneratorResource): UpgradeI {
+    function makeMultAttackUpgrade(multAttack: number, cost: number, resource: GeneratorResource, maxBuy?: number): UpgradeI {
         return {
             type: 'upgrade',
             id: uuidv4(),
@@ -171,10 +172,17 @@
             cost,
             resource,
             costMultiplier: 1.3,
-            count: 0
+            count: 0,
+            maxBuy
         }
     }
-    function makeAddGeneratorGainUpgrade(forGeneratorResource: GeneratorResource, addGain: number, cost: number, resource: GeneratorResource): UpgradeI {
+    function makeAddGeneratorGainUpgrade(
+        forGeneratorResource: GeneratorResource,
+        addGain: number,
+        cost: number,
+        resource: GeneratorResource,
+        maxBuy?: number
+    ): UpgradeI {
         const titleDict: Record<GeneratorResource, string> = {
             red: 'R++',
             green: 'G++',
@@ -191,10 +199,17 @@
             cost,
             resource,
             costMultiplier: 1.3,
-            count: 0
+            count: 0,
+            maxBuy
         }
     }
-    function makeAddGeneratorSpeedUpgrade(forGeneratorResource: GeneratorResource, addSpeed: number, cost: number, resource: GeneratorResource): UpgradeI {
+    function makeAddGeneratorSpeedUpgrade(
+        forGeneratorResource: GeneratorResource,
+        addSpeed: number,
+        cost: number,
+        resource: GeneratorResource,
+        maxBuy?: number
+    ): UpgradeI {
         const titleDict: Record<GeneratorResource, string> = {
             red: 'R>>',
             green: 'G>>',
@@ -211,7 +226,8 @@
             cost,
             resource,
             costMultiplier: 1.3,
-            count: 0
+            count: 0,
+            maxBuy
         }
     }
 
@@ -225,8 +241,8 @@
         gridCellContent[center][center] = makeGeneratorCell(Resource.GREEN)
         gridCellContent[center][center + 1] = makeGeneratorCell(Resource.BLUE)
 
-        gridCellContent[center + 1][center - 1] = makeAddGeneratorGainUpgrade(Resource.RED, 1, 5, Resource.RED)
-        gridCellContent[center + 2][center - 1] = makeAddGeneratorSpeedUpgrade(Resource.RED, 1, 5, Resource.RED)
+        gridCellContent[center + 1][center - 1] = makeAddGeneratorGainUpgrade(Resource.RED, 1, 5, Resource.RED, 10)
+        gridCellContent[center + 2][center - 1] = makeAddGeneratorSpeedUpgrade(Resource.RED, 1, 5, Resource.RED, 12)
 
         gridCellContent[center][center + 2] = makeAddAttackUpgrade(1, 10, Resource.RED)
         gridCellContent[center][center + 3] = makeMultAttackUpgrade(1.5, 10, Resource.RED)
@@ -376,11 +392,6 @@
             }
         }
     }
-
-    function test(): void {
-        const snappy = $state.snapshot(derivedGrid.upgradesInCellGrid)
-        console.log(snappy)
-    }
 </script>
 
 {#snippet basicCell(callback: () => void)}
@@ -426,7 +437,11 @@
 {#snippet upgradeCell(upgrade: UpgradeI)}
     <UpgradeCellComponent {upgrade} class="full">
         {upgrade.title}
-        ({upgrade.count})
+        {#if upgrade.maxBuy}
+            ({upgrade.count}/{upgrade.maxBuy})
+        {:else}
+            ({upgrade.count})
+        {/if}
     </UpgradeCellComponent>
 {/snippet}
 
@@ -455,7 +470,6 @@
         <button onclick={handleLevelUp}>Level Up</button> Auto?
         <button onclick={populateCells}>Reset Grid</button>
         <button onclick={() => defeatWholeGrid()}> Defeat whole grid </button>
-        <button onclick={() => test()}> Test </button>
     </div>
 
     <div class="grid">
