@@ -21,24 +21,26 @@ export function tooltip(element: HTMLElement, optionsFn: () => Options): void {
     //let lastData = options.data
 
     $effect(() => {
-        // assign the new data if it has changed, this is needed to reactivity!
+        element.addEventListener('mouseenter', mouseEnter)
+        /* element.addEventListener('mousemove', mouseMove) */
+        element.addEventListener('mouseleave', mouseLeave)
+        /*     element.addEventListener('mousedown', mouseDown)
+        element.addEventListener('mouseup', mouseUp) */
+        if (alreadyEntered) mountTooltip()
+
+        // assign the new data if it has changed, this is needed for reactivity!
         myProps.data = optionsFn().data ?? null
-        // cant differntiate if component has been unmounted (destroyed) or just updated...
-        // only unmount tooltip here if component for the tooltip has been unmounted
+        // cant differentiate if component has been unmounted (destroyed) or just updated...
+        // anyhow, this will run before the the effect is run again, so it should be fine.
+        // will just remove and add event listeners and re-mount the tooltip blazingly fast
         return () => {
-            // optionsFn().data ... new dynamic data
-            // myProps.data ... data assigned in this function (above)
-            // equality here implies that this isnt an update, but that the component was unmounted
-            // then simply do cleanup logic here
-            if (optionsFn().data === myProps.data) {
-                /* console.log('Component for tooltip was destroyed, commencing cleanup logic.') */
-                if (alreadyEntered) unmount(tooltipComponent)
-                element.removeEventListener('mouseenter', mouseEnter)
-                /* element.removeEventListener('mousemove', mouseMove) */
-                element.removeEventListener('mouseleave', mouseLeave)
-                /* element.removeEventListener('mousedown', mouseDown)
+            console.log('effect return')
+            element.removeEventListener('mouseenter', mouseEnter)
+            /* element.removeEventListener('mousemove', mouseMove) */
+            element.removeEventListener('mouseleave', mouseLeave)
+            /* element.removeEventListener('mousedown', mouseDown)
                 element.removeEventListener('mouseup', mouseUp) */
-            }
+            if (alreadyEntered) unmount(tooltipComponent)
         }
     })
 
@@ -87,11 +89,15 @@ export function tooltip(element: HTMLElement, optionsFn: () => Options): void {
             myProps.left = rect.right + PADDING
         }
 
+        mountTooltip()
+        tooltipShown = true
+    }
+
+    function mountTooltip(): void {
         tooltipComponent = mount(TooltipComponent, {
             target: document.body, //or element?
             props: myProps
         })
-        tooltipShown = true
     }
 
     function mouseLeave(): void {
@@ -116,10 +122,4 @@ export function tooltip(element: HTMLElement, optionsFn: () => Options): void {
         mousePressed = false
         if (!tooltipShown) mouseEnter(event)
     }
-
-    element.addEventListener('mouseenter', mouseEnter)
-    /* element.addEventListener('mousemove', mouseMove) */
-    element.addEventListener('mouseleave', mouseLeave)
-    /*     element.addEventListener('mousedown', mouseDown)
-    element.addEventListener('mouseup', mouseUp) */
 }
