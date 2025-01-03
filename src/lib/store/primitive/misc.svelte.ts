@@ -1,4 +1,6 @@
+import type { Tween } from 'svelte/motion'
 import { makeState } from '../customStore.svelte'
+import type { IUpgrade } from './upgrades.svelte'
 
 // SETTINGS (should not be reset when resetting the game)
 export const isDarkMode = makeState<boolean | 'notChecked'>('notChecked')
@@ -8,6 +10,90 @@ export const totalTimePlayed = makeState(0)
 
 export const lastSaved = makeState(Date.now())
 
+export const level = makeState(1)
+
+export type GeneratorResource = 'red' | 'green' | 'blue'
+
+type ContentI = {
+    type: string
+}
+
+export interface EmptyI extends ContentI {
+    type: 'empty'
+}
+
+export interface CombatI extends ContentI {
+    type: 'combat'
+    HP: number
+    maxHP: number
+    active: boolean
+    intervalId: number
+    progress: Tween<number>
+    defeated: boolean
+}
+
+export interface GeneratorI extends ContentI {
+    type: 'generator'
+    resource: GeneratorResource
+    active: boolean
+    progress: number
+    efficiency: number // starts at 100%, will go down asymptotically to 0%
+}
+
+export type UpgradeType = 'addAttack' | 'multAttack' | 'addGeneratorGain' | 'addGeneratorSpeed'
+export interface UpgradeBaseI extends ContentI {
+    type: 'upgrade'
+    id: string
+    upgradeType: UpgradeType
+    title: string
+    description?: string[]
+    cost: number
+    resource: GeneratorResource
+    costMultiplier: number
+    count: number
+    maxBuy?: number
+}
+// Specific types for each `upgradeType` with required additional properties
+export interface GeneratorGainUpgrade extends UpgradeBaseI {
+    upgradeType: 'addGeneratorGain'
+    forGeneratorResource: GeneratorResource
+    addGain: number
+}
+export interface GeneratorSpeedUpgrade extends UpgradeBaseI {
+    upgradeType: 'addGeneratorSpeed'
+    forGeneratorResource: GeneratorResource
+    addSpeed: number
+}
+export interface AddAttackUpgrade extends UpgradeBaseI {
+    upgradeType: 'addAttack'
+    addAttack: number
+}
+export interface MultAttackUpgrade extends UpgradeBaseI {
+    upgradeType: 'multAttack'
+    multAttack: number
+}
+
+export type UpgradeI = GeneratorGainUpgrade | GeneratorSpeedUpgrade | AddAttackUpgrade | MultAttackUpgrade
+
+export type CellContent = EmptyI | CombatI | GeneratorI | UpgradeI
+
+export type Location = {
+    row: number
+    col: number
+}
+export type Cell = {
+    id: string
+    location: Location
+    hidden: boolean
+    content: CellContent
+    relX: number
+    relY: number
+}
+export const N_ROWS = 9
+export const N_COLS = 9
+export const gridCell = makeState<Cell[][]>(Array.from({ length: N_ROWS }, () => new Array(N_COLS).fill(undefined)))
+
+//--------------------------------------------------------
 /**
  * Your current stage of Enlightenment
  */

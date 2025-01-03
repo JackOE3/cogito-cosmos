@@ -84,6 +84,12 @@ export function getOffset(el: HTMLElement): { left: number; top: number } {
         top: rect.top + window.scrollY
     }
 }
+/**
+ * Create a UUID.
+ */
+export function uuidv4(): string {
+    return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c => (+c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))).toString(16))
+}
 
 export const costColor = (canAfford: boolean): string => (canAfford ? 'rgb(102, 255, 102)' : 'rgb(255, 102, 102)')
 

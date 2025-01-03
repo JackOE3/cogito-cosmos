@@ -15,7 +15,11 @@ import {
     enlightenmentStage,
     health,
     enlightenmentSubstage,
-    generators
+    generators,
+    level,
+    gridCell,
+    type UpgradeCell,
+    type UpgradeI
 } from '../primitive'
 import { checkBoolForNum } from '$lib/gamelogic/utils'
 
@@ -38,8 +42,129 @@ class Formulas {
     }
 
     resourceLevel = (totalResource: number) => Math.floor(Math.log10(totalResource > 0 ? totalResource : 1))
+
+    expToNextLevel = (level: number) => level * 10
+
+    attack = (upgrades: UpgradeI[]) => {
+        let result = 1
+        upgrades.forEach(cell => {
+            if (cell.upgradeType === 'addAttack') {
+                result += cell.count * cell.addAttack
+            }
+        })
+        upgrades.forEach(cell => {
+            if (cell.upgradeType === 'multAttack') {
+                result *= Math.pow(cell.multAttack, cell.count)
+            }
+        })
+        return result
+    }
 }
 export const formulas = new Formulas()
+
+class DerivedGrid {
+    /**
+     * Collects all the upgrades in the grid into an array for easy access.
+     */
+    upgradesInCellGrid = $derived(
+        gridCell.value
+            .flat()
+            .map(cell => cell.content)
+            .filter(content => content.type === 'upgrade')
+    )
+
+    /**
+     * Your total attack power.
+     */
+    attack = $derived(formulas.attack(this.upgradesInCellGrid))
+
+    /**
+     * How much a generator of a resource produces.
+     */
+    generatorYieldForResource = $derived.by(() => {
+        const genYield = {
+            red: 1,
+            green: 1,
+            blue: 1
+        }
+        this.upgradesInCellGrid.forEach(cell => {
+            if (cell.upgradeType === 'addGeneratorGain') {
+                const resource = cell.forGeneratorResource
+                //console.log('generatorYieldForResource', resource, cell.addGain)
+                genYield[resource] += cell.count * cell.addGain
+            }
+        })
+        return genYield
+    })
+
+    /**
+     * How fast a generator of a resource produces.
+     */
+    generatorDurationForResource = $derived.by(() => {
+        const speed = {
+            red: 1,
+            green: 1,
+            blue: 1
+        }
+        gridCell.value.flat().forEach(cell => {
+            if (cell.content.type !== 'upgrade') return
+            if (cell.content.upgradeType === 'addGeneratorSpeed') {
+                const resource = cell.content.forGeneratorResource
+                speed[resource] += 0.1 * cell.content.count
+            }
+        })
+        return {
+            red: 3000 / speed.red,
+            green: 3000 / speed.green,
+            blue: 3000 / speed.blue
+        }
+    })
+
+    /*  generatorYield = $derived({
+        red: 1 + upgradeCount.increaseRedGain,
+        green: 1,
+        blue: 1
+    })
+    generatorDurationMillis = $derived({
+        red: 3000 / (1 + 0.1 * upgradeCount.increaseRedSpeed),
+        green: 3000,
+        blue: 3000
+    }) */
+
+    resourceLevel = $derived({
+        red: formulas.resourceLevel(resourceTotal.red),
+        green: formulas.resourceLevel(resourceTotal.green),
+        blue: formulas.resourceLevel(resourceTotal.blue)
+    })
+
+    /**
+     * Shows how many Enlightenment Points you have from different sources
+     */
+    expFrom = $derived.by(() => {
+        const totalUpgradeCount = Object.values(upgradeCount).reduce((acc, value) => acc + value, 0)
+        return {
+            upgrades: totalUpgradeCount * 1 // relative weight is 1 => worth of everything relative to upgrades
+            //resourceMilestones: this.resourceLevel.red + this.resourceLevel.green + this.resourceLevel.blue
+        }
+    })
+    /**
+     * The total amount of Enlightenment Points you have accumulated when playing the game
+     */
+    expPointsTotal = $derived(Object.values(this.expFrom).reduce((acc, value) => acc + value, 0))
+
+    expInLevel = $derived.by(() => {
+        let expPointsPrevLevels = 0
+        for (let i = 1; i < level.value; i++) {
+            expPointsPrevLevels += formulas.expToNextLevel(i)
+        }
+        return this.expPointsTotal - expPointsPrevLevels
+    })
+
+    expToNextLevel = $derived(formulas.expToNextLevel(level.value))
+}
+
+export const derivedGrid = new DerivedGrid()
+
 /**
  * for referencing state in the UI:
  * eg. you buy an upgrade and want to know how some state changes.
@@ -47,10 +172,6 @@ export const formulas = new Formulas()
  * where to put these formulas? separate or combined with state object?
  */
 class DerivedState {
-    damagePerSec = $derived(1 + upgradeCount.increaseDamage)
-    goldYield = $derived(1 + upgradeCount.increaseGoldGain)
-    goldDurationMillis = $derived(3000 / (1 + 0.1 * upgradeCount.increaseGoldSpeed))
-
     thoughtsPerSec = $derived.by(() => {
         if (mood.value === 'happy') {
             return (

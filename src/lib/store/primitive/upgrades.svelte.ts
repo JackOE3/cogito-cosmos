@@ -208,31 +208,6 @@ export const upgrades = {
         resource: Resource.CHEESE_BRAINS,
         costMultiplier: 1.25,
         maxBuy: undefined
-    },
-
-    increaseDamage: {
-        title: 'DPS',
-        description: ['Increase your damage per second.', '+1 DPS'],
-        cost: 5,
-        resource: Resource.GOLD,
-        costMultiplier: 1.3,
-        maxBuy: undefined
-    },
-    increaseGoldGain: {
-        title: 'G-YLD',
-        description: ['Get more gold every time the gold bar fills.', '+1 Gold/fill'],
-        cost: 10,
-        resource: Resource.GOLD,
-        costMultiplier: 1.2,
-        maxBuy: undefined
-    },
-    increaseGoldSpeed: {
-        title: 'G-SPD',
-        description: ['Increase the speed of the gold bar.', '+10% faster (additive)'],
-        cost: 10,
-        resource: Resource.GOLD,
-        costMultiplier: 1.2,
-        maxBuy: undefined
     }
 } as const satisfies Record<string, IUpgrade>
 

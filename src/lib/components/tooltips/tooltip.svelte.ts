@@ -34,7 +34,6 @@ export function tooltip(element: HTMLElement, optionsFn: () => Options): void {
         // anyhow, this will run before the the effect is run again, so it should be fine.
         // will just remove and add event listeners and re-mount the tooltip blazingly fast
         return () => {
-            console.log('effect return')
             element.removeEventListener('mouseenter', mouseEnter)
             /* element.removeEventListener('mousemove', mouseMove) */
             element.removeEventListener('mouseleave', mouseLeave)
