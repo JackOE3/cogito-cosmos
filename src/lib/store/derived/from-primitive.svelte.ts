@@ -59,6 +59,41 @@ class Formulas {
         })
         return result
     }
+
+    generatorGainForResource = (upgrades: UpgradeI[]) => {
+        const gain = {
+            red: 1,
+            green: 1,
+            blue: 1
+        }
+        upgrades.forEach(cell => {
+            if (cell.upgradeType === 'addGeneratorGain') {
+                const resource = cell.forGeneratorResource
+                //console.log('generatorGainForResource', resource, cell.addGain)
+                gain[resource] += cell.count * cell.addGain
+            }
+        })
+        return gain
+    }
+
+    generatorDurationForResource = (upgrades: UpgradeI[]) => {
+        const speed = {
+            red: 1,
+            green: 1,
+            blue: 1
+        }
+        upgrades.forEach(cell => {
+            if (cell.upgradeType === 'addGeneratorSpeed') {
+                const resource = cell.forGeneratorResource
+                speed[resource] += 0.1 * cell.count
+            }
+        })
+        return {
+            red: 3000 / speed.red,
+            green: 3000 / speed.green,
+            blue: 3000 / speed.blue
+        }
+    }
 }
 export const formulas = new Formulas()
 
@@ -81,55 +116,12 @@ class DerivedGrid {
     /**
      * How much a generator of a resource produces.
      */
-    generatorYieldForResource = $derived.by(() => {
-        const genYield = {
-            red: 1,
-            green: 1,
-            blue: 1
-        }
-        this.upgradesInCellGrid.forEach(cell => {
-            if (cell.upgradeType === 'addGeneratorGain') {
-                const resource = cell.forGeneratorResource
-                //console.log('generatorYieldForResource', resource, cell.addGain)
-                genYield[resource] += cell.count * cell.addGain
-            }
-        })
-        return genYield
-    })
+    generatorGainForResource = $derived(formulas.generatorGainForResource(this.upgradesInCellGrid))
 
     /**
      * How fast a generator of a resource produces.
      */
-    generatorDurationForResource = $derived.by(() => {
-        const speed = {
-            red: 1,
-            green: 1,
-            blue: 1
-        }
-        gridCell.value.flat().forEach(cell => {
-            if (cell.content.type !== 'upgrade') return
-            if (cell.content.upgradeType === 'addGeneratorSpeed') {
-                const resource = cell.content.forGeneratorResource
-                speed[resource] += 0.1 * cell.content.count
-            }
-        })
-        return {
-            red: 3000 / speed.red,
-            green: 3000 / speed.green,
-            blue: 3000 / speed.blue
-        }
-    })
-
-    /*  generatorYield = $derived({
-        red: 1 + upgradeCount.increaseRedGain,
-        green: 1,
-        blue: 1
-    })
-    generatorDurationMillis = $derived({
-        red: 3000 / (1 + 0.1 * upgradeCount.increaseRedSpeed),
-        green: 3000,
-        blue: 3000
-    }) */
+    generatorDurationForResource = $derived(formulas.generatorDurationForResource(this.upgradesInCellGrid))
 
     resourceLevel = $derived({
         red: formulas.resourceLevel(resourceTotal.red),
@@ -141,7 +133,11 @@ class DerivedGrid {
      * Shows how many Enlightenment Points you have from different sources
      */
     expFrom = $derived.by(() => {
-        const totalUpgradeCount = Object.values(upgradeCount).reduce((acc, value) => acc + value, 0)
+        let totalUpgradeCount = 0
+        this.upgradesInCellGrid.forEach(cell => {
+            totalUpgradeCount += cell.count
+        })
+
         return {
             upgrades: totalUpgradeCount * 1 // relative weight is 1 => worth of everything relative to upgrades
             //resourceMilestones: this.resourceLevel.red + this.resourceLevel.green + this.resourceLevel.blue

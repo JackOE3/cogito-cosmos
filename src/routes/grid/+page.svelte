@@ -5,7 +5,6 @@
     import {
         derivedGrid,
         fastFowardFactor,
-        formulas,
         gridCell,
         level,
         LORCA_OVERRIDE,
@@ -17,9 +16,7 @@
         type CombatI,
         type GeneratorI,
         type GeneratorResource,
-        type UpgradeBaseI,
-        type UpgradeI,
-        type UpgradeType
+        type UpgradeI
     } from '$lib/store'
     import { cubicOut, quartOut } from 'svelte/easing'
     import { fly } from 'svelte/transition'
@@ -339,7 +336,7 @@
         for (const generator of generatorCellsActive) {
             generator.progress += (deltaTimeMillis / derivedGrid.generatorDurationForResource[generator.resource]) * fastFowardFactor.value
             while (generator.progress >= 1) {
-                resource.value[generator.resource] += derivedGrid.generatorYieldForResource[generator.resource]
+                resource.value[generator.resource] += derivedGrid.generatorGainForResource[generator.resource]
                 generator.progress -= 1
                 // ensures that the progress bar will always start from 0 and not carry over some remainder:
                 if (generator.progress < 1) generator.progress = 0
@@ -411,7 +408,7 @@
             ? `background: ${colors(0.2)[generator.resource]}`
             : ''}"
         use:tooltip={() => ({
-            data: `Farm some ${generator.resource}. <br> +${derivedGrid.generatorYieldForResource[generator.resource]} ${generator.resource} every ${formatNumber(derivedGrid.generatorDurationForResource[generator.resource] / 1000, 2)}s <br> Uses 1 AP while active.`
+            data: `Farm some ${generator.resource}. <br> +${derivedGrid.generatorGainForResource[generator.resource]} ${generator.resource} every ${formatNumber(derivedGrid.generatorDurationForResource[generator.resource] / 1000, 2)}s <br> Uses 1 AP while active.`
         })}>
         <span>GET {generator.resource.toUpperCase()}</span>
         {#if generator.active}
@@ -426,7 +423,7 @@
     </button>
 {/snippet}
 
-{#snippet upgradeCell(upgrade: UpgradeBaseI)}
+{#snippet upgradeCell(upgrade: UpgradeI)}
     <UpgradeCellComponent {upgrade} class="full">
         {upgrade.title}
         ({upgrade.count})

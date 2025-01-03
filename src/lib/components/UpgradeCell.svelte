@@ -1,12 +1,12 @@
 <script lang="ts">
     import { buyUpgrade } from '$lib/gamelogic/buy-upgrade-v2'
-    import { derivedGrid, formulas, resource, type UpgradeBaseI, type UpgradeI, type UpgradeType } from '$lib/store'
+    import { derivedGrid, formulas, resource, type GeneratorResource, type UpgradeI, type UpgradeType } from '$lib/store'
     import type { Snippet } from 'svelte'
     import { tooltip } from './tooltips/tooltip.svelte'
     import { formatNumber } from '$lib/gamelogic/utils'
 
     type Props = {
-        upgrade: UpgradeBaseI
+        upgrade: UpgradeI
         buyMaxUpgrades?: boolean // setContext/getContext better?
         style?: string
         class?: string
@@ -22,6 +22,12 @@
         buyUpgrade(upgrade, resource.value)(buyMaxUpgrades)
     }
 
+    // very hacky
+    let arg: unknown
+    if (upgrade.upgradeType === 'addGeneratorGain' || upgrade.upgradeType === 'addGeneratorSpeed') {
+        arg = upgrade.forGeneratorResource
+    }
+
     /**
      * Depending on the type of upgrade, supply the formula/function to calculate what value it changes.
      */
@@ -31,8 +37,8 @@
         //clean but probably wont be enough:
         multAttack: formulas.attack,
         //paceholder:
-        addGeneratorGain: (upgrades: UpgradeI[]) => 1,
-        addGeneratorSpeed: (upgrades: UpgradeI[]) => 1
+        addGeneratorGain: upgrades => formulas.generatorGainForResource(upgrades)[arg as GeneratorResource],
+        addGeneratorSpeed: upgrades => formulas.generatorDurationForResource(upgrades)[arg as GeneratorResource] / 1000
     }
     const valueNameDict: Record<UpgradeType, string> = {
         addAttack: 'Attack',
@@ -46,13 +52,13 @@
         //console.log('tooltipTextUpgrade')
         const upgradesSnapshot = $state.snapshot(derivedGrid.upgradesInCellGrid) as UpgradeI[]
         const upgradeSnap = upgradesSnapshot.find(u => u.id == upgrade.id)
-        const oldAttack = formulaDict[upgrade.upgradeType](upgradesSnapshot)
+        const currentValue = formulaDict[upgrade.upgradeType](upgradesSnapshot)
         upgradeSnap!.count++
-        const newAttack = formulaDict[upgrade.upgradeType](upgradesSnapshot)
+        const newValue = formulaDict[upgrade.upgradeType](upgradesSnapshot)
 
         const valueName = valueNameDict[upgrade.upgradeType]
 
-        return `${upgrade.description.join('<br>')} <br> ${valueName}: ${oldAttack} -> ${newAttack} <br> Cost: ${formatNumber(upgrade.cost, 2)} ${upgrade.resource}`
+        return `${upgrade.description.join('<br>')} <br> ${valueName}: ${formatNumber(currentValue, 2)} -> ${formatNumber(newValue, 2)} <br> Cost: ${formatNumber(upgrade.cost, 2)} ${upgrade.resource}`
     })
 </script>
 
