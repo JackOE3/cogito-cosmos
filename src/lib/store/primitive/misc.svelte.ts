@@ -22,6 +22,12 @@ export interface EmptyI extends ContentI {
     type: 'empty'
 }
 
+export interface LockedI extends ContentI {
+    type: 'locked'
+    cost: number
+    resource: GeneratorResource
+}
+
 export interface CombatI extends ContentI {
     type: 'combat'
     HP: number
@@ -75,7 +81,7 @@ export interface MultAttackUpgrade extends UpgradeBaseI {
 
 export type UpgradeI = GeneratorGainUpgrade | GeneratorSpeedUpgrade | AddAttackUpgrade | MultAttackUpgrade
 
-export type CellContent = EmptyI | CombatI | GeneratorI | UpgradeI
+export type CellContent = EmptyI | LockedI | CombatI | GeneratorI | UpgradeI
 
 export type Location = {
     row: number

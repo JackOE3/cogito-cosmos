@@ -1,7 +1,7 @@
 <script lang="ts">
     import ProgBar from '$lib/components/misc/ProgBar.svelte'
     import { tooltip } from '$lib/components/tooltips/tooltip.svelte'
-    import { colors, formatNumber, uuidv4 } from '$lib/gamelogic/utils'
+    import { colors, formatNumber, square, uuidv4 } from '$lib/gamelogic/utils'
     import {
         derivedGrid,
         fastFowardFactor,
@@ -12,10 +12,12 @@
         N_ROWS,
         Resource,
         resource,
+        type Cell,
         type CellContent,
         type CombatI,
         type GeneratorI,
         type GeneratorResource,
+        type LockedI,
         type UpgradeI
     } from '$lib/store'
     import { cubicOut, quartOut } from 'svelte/easing'
@@ -33,35 +35,42 @@
         const max = 100
         const min = 10
         const random = Math.floor(Math.random() * (max + 1 - min) + min)
-        return Math.pow(2, distanceFromCenter(i, j) ** 2)
+        return Math.pow(2, distanceFromCenter(i, j) ** 2) * random
+    }
+
+    function getCellRequirement(i: number, j: number): number {
+        const max = 50
+        const min = 10
+        const random = Math.floor(Math.random() * (max + 1 - min) + min)
+        return Math.pow(2, distanceFromCenter(i, j) ** 2) * random
     }
 
     function setStartingCell() {
         gridCell.value[center][center].hidden = false
-        if (gridCell.value[center][center].content.type !== 'combat') return
-        gridCell.value[center][center].content.HP = 1
-        gridCell.value[center][center].content.maxHP = 1
+        gridCell.value[center][center].content = {
+            type: 'locked',
+            cost: 0,
+            resource: Resource.GREEN
+        }
+    }
+
+    function getRandomResource(): GeneratorResource {
+        const colors = ['red', 'green', 'blue'] as const
+        const randomIndex = Math.floor(Math.random() * colors.length)
+        return colors[randomIndex]
     }
 
     function populateCells(): void {
         for (let i = 0; i < N_ROWS; i++) {
             for (let j = 0; j < N_COLS; j++) {
-                const maxHP = getCellHP(i, j)
                 gridCell.value[i][j] = {
                     id: uuidv4(),
                     location: { row: i, col: j },
                     hidden: true,
                     content: {
-                        type: 'combat',
-                        HP: maxHP,
-                        maxHP: maxHP,
-                        active: false,
-                        intervalId: 0,
-                        progress: new Tween(100, {
-                            duration: 400,
-                            easing: cubicOut
-                        }),
-                        defeated: false
+                        type: 'locked',
+                        cost: getCellRequirement(i, j),
+                        resource: getRandomResource()
                     },
                     relX: 0,
                     relY: 0
@@ -136,7 +145,22 @@
         }
     }
 
-    function makeGeneratorCell(resource: GeneratorResource): GeneratorI {
+    function makeCombat(i: number, j: number): CombatI {
+        const maxHP = getCellHP(i, j)
+        return {
+            type: 'combat',
+            HP: maxHP,
+            maxHP: maxHP,
+            active: false,
+            intervalId: 0,
+            progress: new Tween(100, {
+                duration: 400,
+                easing: cubicOut
+            }),
+            defeated: false
+        }
+    }
+    function makeGenerator(resource: GeneratorResource): GeneratorI {
         return {
             type: 'generator',
             resource,
@@ -145,7 +169,6 @@
             efficiency: 1
         }
     }
-
     function makeAddAttackUpgrade(addAttack: number, cost: number, resource: GeneratorResource, maxBuy?: number): UpgradeI {
         return {
             type: 'upgrade',
@@ -195,7 +218,7 @@
             forGeneratorResource,
             addGain,
             title: titleDict[forGeneratorResource],
-            description: [`Get more ${forGeneratorResource} every time the ${forGeneratorResource} bar fills.`],
+            description: [`Get more ${square[forGeneratorResource]} each time a ${forGeneratorResource} bar is filled.`],
             cost,
             resource,
             costMultiplier: 1.3,
@@ -237,15 +260,15 @@
     function setDeterministicCellContent(): CellContent[][] {
         const gridCellContent: CellContent[][] = Array.from({ length: N_ROWS }, () => new Array(N_COLS).fill({ type: 'empty' }))
 
-        gridCellContent[center][center - 1] = makeGeneratorCell(Resource.RED)
-        gridCellContent[center][center] = makeGeneratorCell(Resource.GREEN)
-        gridCellContent[center][center + 1] = makeGeneratorCell(Resource.BLUE)
+        gridCellContent[center - 1][center] = makeCombat(center - 1, center)
 
-        gridCellContent[center + 1][center - 1] = makeAddGeneratorGainUpgrade(Resource.RED, 1, 5, Resource.RED, 10)
-        gridCellContent[center + 2][center - 1] = makeAddGeneratorSpeedUpgrade(Resource.RED, 1, 5, Resource.RED, 12)
+        gridCellContent[center][center - 1] = makeCombat(center, center - 1)
+        gridCellContent[center][center] = makeGenerator(Resource.GREEN)
+        gridCellContent[center][center + 1] = makeAddGeneratorGainUpgrade(Resource.GREEN, 1, 5, Resource.GREEN, 10)
+        gridCellContent[center][center + 2] = makeAddGeneratorSpeedUpgrade(Resource.GREEN, 1, 5, Resource.GREEN, 12)
 
-        gridCellContent[center][center + 2] = makeAddAttackUpgrade(1, 10, Resource.RED)
-        gridCellContent[center][center + 3] = makeMultAttackUpgrade(1.5, 10, Resource.RED)
+        gridCellContent[center + 1][center] = makeAddAttackUpgrade(1, 10, Resource.GREEN)
+        gridCellContent[center + 2][center] = makeMultAttackUpgrade(1.5, 10, Resource.GREEN)
 
         return gridCellContent
     }
@@ -298,10 +321,11 @@
 
                 setTimeout(() => {
                     // dynamically set the content of the cell when you have defeated it
-                    setCellContent(i, j)
+                    //setCellContent(i, j)
                     /* console.log('cell is defeated and now set to inactive') */
                     cell.active = false
-                    unhideSurroundingCells(i, j)
+                    // clear out cell for now:
+                    gridCell.value[i][j].content = { type: 'empty' }
                 }, 400)
                 clearInterval(cell.intervalId)
             }
@@ -385,12 +409,21 @@
         level.value++
     }
 
-    function defeatWholeGrid(): void {
+    function unlockWholeGrid(): void {
         for (let i = 0; i < N_ROWS; i++) {
             for (let j = 0; j < N_ROWS; j++) {
                 setCellContent(i, j)
             }
         }
+    }
+
+    function handleLockedCell(cell: Cell): void {
+        if (cell.content.type !== 'locked') return
+        if (resource.value[cell.content.resource] < cell.content.cost) return
+        resource.value[cell.content.resource] -= cell.content.cost
+        // dynamically set the content of the cell when you have unlocked it
+        setCellContent(cell.location.row, cell.location.col)
+        unhideSurroundingCells(cell.location.row, cell.location.col)
     }
 </script>
 
@@ -403,6 +436,23 @@
             data: `Get some.`
         })}>
         <span>Basic</span>
+    </button>
+{/snippet}
+
+{#snippet lockedCell(cell: Cell)}
+    {@const content = cell.content as LockedI}
+    {@const tooltipText = `This tile is currently locked. ${content.cost !== 0 ? `<br> Requirement: ${content.cost} ${square[content.resource]}` : ''} <br> <span style="color: var(--text-medium-emphasis)">Click to unlock.</span>`}
+
+    <button
+        class="full"
+        class:disabled={resource.value[content.resource] < content.cost}
+        onclick={() => handleLockedCell(cell)}
+        style="display: flex; flex-direction:column; justify-content: center; gap: 0.25rem;"
+        use:tooltip={() => ({ data: tooltipText })}>
+        <span style="font-size: 0.875rem">&#128274;</span>
+        {#if content.cost !== 0}
+            <span>{content.cost} {@html square[content.resource]}</span>
+        {/if}
     </button>
 {/snippet}
 
@@ -419,9 +469,9 @@
             ? `background: ${colors(0.2)[generator.resource]}`
             : ''}"
         use:tooltip={() => ({
-            data: `Farm some ${generator.resource}. <br> +${derivedGrid.generatorGainForResource[generator.resource]} ${generator.resource} every ${formatNumber(derivedGrid.generatorDurationForResource[generator.resource] / 1000, 2)}s <br> Uses 1 AP while active.`
+            data: `Basic Generator ${generator.active ? '[...]' : ''}<hr> +${derivedGrid.generatorGainForResource[generator.resource]} ${square[generator.resource]} every ${formatNumber(derivedGrid.generatorDurationForResource[generator.resource] / 1000, 2)}s <br> <span style="color: var(--text-medium-emphasis)">Uses 1 AP while active.</span>`
         })}>
-        <span>GET {generator.resource.toUpperCase()}</span>
+        <span>Get {@html square[generator.resource]}</span>
         {#if generator.active}
             <ProgBar
                 --widthProgBar="100%"
@@ -448,11 +498,17 @@
 {#snippet combatCell(i: number, j: number, cell: CombatI)}
     <button
         style="width: 100%; height: 100%; outline: none; position: relative; display: flex; flex-direction:column; justify-content: center; gap: 0.25rem; {cell.active
-            ? 'background: rgba(255,255,255,0.4);'
+            ? 'background: rgba(255,0,0,0.2);'
             : ''}"
         onclick={() => handleCombatCellClicked(i, j, cell)}
-        use:tooltip={() => ({ data: 'nice' })}>
-        {formatNumber(cell.HP, 2)}
+        use:tooltip={() => ({
+            data: 'Combat Tile <hr> <span style="color: var(--text-medium-emphasis)">Use 1 AP while attacking.</span> <br> <span style="color: var(--text-medium-emphasis)">Click to attack this tile.</span>'
+        })}>
+        <span>
+            {formatNumber(cell.HP, 2)}
+            <span style="color: #D50000">&#10084;</span>
+        </span>
+
         {#if cell.active}
             <ProgBar --widthProgBar="100%" --heightProgBar="0.5rem" --barColor="red" --progBarBgColor="var(--dp24)" --progress="{cell.progress.current}%">
             </ProgBar>
@@ -462,14 +518,16 @@
 
 <div style="display: flex; flex-direction:column; gap: 1.5rem; justify-content: center; align-items: center; margin-top: 100px;">
     <div class="stats">
-        Red: {formatNumber(resource.value.red, 2)}, Green: {formatNumber(resource.value.green, 2)}, Blue: {formatNumber(resource.value.blue, 2)}, Attack: {derivedGrid.attack},
-        AP: {actionPoints}/{maxActionPoints}
+        {formatNumber(resource.value.red, 2)}
+        {@html square.red}, {formatNumber(resource.value.green, 2)}
+        {@html square.green}, {formatNumber(resource.value.blue, 2)}
+        {@html square.blue}, Attack: {formatNumber(derivedGrid.attack, 2)}, AP: {actionPoints}/{maxActionPoints}
         <br />
         Level: {level.value}
         ({derivedGrid.expInLevel} / {derivedGrid.expToNextLevel} XP)
         <button onclick={handleLevelUp}>Level Up</button> Auto?
         <button onclick={populateCells}>Reset Grid</button>
-        <button onclick={() => defeatWholeGrid()}> Defeat whole grid </button>
+        <button onclick={() => unlockWholeGrid()}> Defeat whole grid </button>
     </div>
 
     <div class="grid">
@@ -478,7 +536,9 @@
                 <div>
                     {#if !cell.hidden || LORCA_OVERRIDE.value}
                         <div class="full" in:fly={{ duration: 1000, x: cell.relX * 40, y: cell.relY * 40, easing: quartOut }}>
-                            {#if cell.content.type === 'combat' && !LORCA_OVERRIDE.value}
+                            {#if cell.content.type === 'locked' && !LORCA_OVERRIDE.value}
+                                {@render lockedCell(cell)}
+                            {:else if cell.content.type === 'combat'}
                                 {@render combatCell(i, j, cell.content)}
                             {:else if cell.content.type === 'generator'}
                                 {@render generatorCell(cell.content)}

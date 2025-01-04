@@ -3,7 +3,7 @@
     import { derivedGrid, formulas, resource, type GeneratorResource, type UpgradeI, type UpgradeType } from '$lib/store'
     import type { Snippet } from 'svelte'
     import { tooltip } from './tooltips/tooltip.svelte'
-    import { formatNumber } from '$lib/gamelogic/utils'
+    import { formatNumber, square } from '$lib/gamelogic/utils'
     import backgroundImage from '$lib/images/endless-constellation.svg'
 
     type Props = {
@@ -61,7 +61,7 @@
 
         const valueName = valueNameDict[upgrade.upgradeType]
 
-        return `${upgrade.description.join('<br>')} <br> ${valueName}: ${formatNumber(currentValue, 2)} -> ${formatNumber(newValue, 2)} <br> Cost: ${formatNumber(upgrade.cost, 2)} ${upgrade.resource}`
+        return `${upgrade.description.join('<br>')} <br> ${valueName}: ${formatNumber(currentValue, 2)} <span style="font-size: 0.75rem">&#8594;</span> ${formatNumber(newValue, 2)} <br> Cost: ${formatNumber(upgrade.cost, 2)} ${square[upgrade.resource]}`
     })
 </script>
 

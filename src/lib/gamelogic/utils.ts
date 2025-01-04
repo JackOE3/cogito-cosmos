@@ -91,6 +91,12 @@ export function uuidv4(): string {
     return '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c => (+c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (+c / 4)))).toString(16))
 }
 
+export const square = {
+    red: '<span style="color:#D32F2F">&#9670;</span>',
+    green: '<span style="color:#388E3C">&#9670;</span>',
+    blue: '<span style="color:#0288D1">&#9670;</span>'
+} as const
+
 export const costColor = (canAfford: boolean): string => (canAfford ? 'rgb(102, 255, 102)' : 'rgb(255, 102, 102)')
 
 export const colors = (alpha: number) => ({
