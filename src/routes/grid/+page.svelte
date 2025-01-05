@@ -175,7 +175,7 @@
             id: uuidv4(),
             upgradeType: 'addAttack',
             addAttack,
-            title: 'ATK++',
+            title: `<span style="font-size:1.5rem">&#9876;&#8648;</span>`,
             description: ['Increase your attack power. (additive)'],
             cost,
             resource,
@@ -190,7 +190,7 @@
             id: uuidv4(),
             upgradeType: 'multAttack',
             multAttack,
-            title: 'ATK*',
+            title: `<span style="font-size:1.5rem">&#9876;&#8670;</span>`,
             description: ['Multiply your attack power.'],
             cost,
             resource,
@@ -217,7 +217,7 @@
             upgradeType: 'addGeneratorGain',
             forGeneratorResource,
             addGain,
-            title: titleDict[forGeneratorResource],
+            title: `<span style="font-size:1.5rem">${square[forGeneratorResource]}&#8648;</span>`,
             description: [`Get more ${square[forGeneratorResource]} each time a ${forGeneratorResource} bar is filled.`],
             cost,
             resource,
@@ -244,7 +244,7 @@
             upgradeType: 'addGeneratorSpeed',
             forGeneratorResource,
             addSpeed,
-            title: titleDict[forGeneratorResource],
+            title: `<span style="font-size:1.5rem">${square[forGeneratorResource]}&#10227;</span>`,
             description: [`Increase the speed of the ${forGeneratorResource} bar.`],
             cost,
             resource,
@@ -451,7 +451,7 @@
         use:tooltip={() => ({ data: tooltipText })}>
         <span style="font-size: 0.875rem">&#128274;</span>
         {#if content.cost !== 0}
-            <span>{content.cost} {@html square[content.resource]}</span>
+            <span>{formatWhole(content.cost)} {@html square[content.resource]}</span>
         {/if}
     </button>
 {/snippet}
@@ -486,12 +486,14 @@
 
 {#snippet upgradeCell(upgrade: UpgradeI)}
     <UpgradeCellComponent {upgrade} class="full">
-        {upgrade.title}
-        {#if upgrade.maxBuy}
-            ({upgrade.count}/{upgrade.maxBuy})
-        {:else}
-            ({upgrade.count})
-        {/if}
+        <div class="flexCenter flexColumn">
+            <span>{@html upgrade.title}</span>
+            {#if upgrade.maxBuy}
+                ({upgrade.count}/{upgrade.maxBuy})
+            {:else}
+                ({upgrade.count})
+            {/if}
+        </div>
     </UpgradeCellComponent>
 {/snippet}
 
@@ -505,7 +507,7 @@
             data: 'Combat Tile <hr> <span style="color: var(--text-medium-emphasis)">Use 1 AP while attacking.</span> <br> <span style="color: var(--text-medium-emphasis)">Click to attack this tile.</span>'
         })}>
         <span>
-            {formatNumber(cell.HP, 2)}
+            {formatWhole(cell.HP)}
             <span style="color: #D50000">&#10084;</span>
         </span>
 
@@ -516,8 +518,8 @@
     </button>
 {/snippet}
 
-<div style="display: flex; flex-direction:column; gap: 1.5rem; justify-content: center; align-items: center; margin-top: 100px;">
-    <div class="stats">
+<div style="display: flex; flex-direction:column; gap: 1.5rem; justify-content: center; align-items: center;">
+    <div class="stats" style="margin-top: 40px">
         {formatNumber(resource.value.red, 2)}
         {@html square.red}, {formatNumber(resource.value.green, 2)}
         {@html square.green}, {formatNumber(resource.value.blue, 2)}
@@ -527,7 +529,7 @@
         ({derivedGrid.expInLevel} / {derivedGrid.expToNextLevel} XP)
         <button onclick={handleLevelUp}>Level Up</button> Auto?
         <button onclick={populateCells}>Reset Grid</button>
-        <button onclick={() => unlockWholeGrid()}> Defeat whole grid </button>
+        <button onclick={() => unlockWholeGrid()}> Unlock whole grid </button>
     </div>
 
     <div class="grid">
@@ -564,7 +566,7 @@
     }
     .grid {
         display: grid;
-        gap: 0rem;
+        gap: 0.5rem;
         --size: 80px;
         grid-template-columns: repeat(9, var(--size));
         grid-template-rows: repeat(9, var(--size));

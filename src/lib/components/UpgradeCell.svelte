@@ -4,7 +4,6 @@
     import type { Snippet } from 'svelte'
     import { tooltip } from './tooltips/tooltip.svelte'
     import { formatNumber, square } from '$lib/gamelogic/utils'
-    import backgroundImage from '$lib/images/endless-constellation.svg'
 
     type Props = {
         upgrade: UpgradeI
@@ -82,7 +81,7 @@
         align-items: center;
     }
     .maxed {
-        text-decoration: line-through;
+        /* text-decoration: line-through; */
         /* background-color: var(--dp08); */
     }
 </style>
