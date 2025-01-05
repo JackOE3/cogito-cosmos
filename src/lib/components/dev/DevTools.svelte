@@ -37,7 +37,11 @@
             <span>fast forward</span>
             <input style="width: 100px" type="number" bind:value={fastFowardFactor.value} />
 
-            <span>enlightenment stage</span>
+            {@render resourceControls(Resource.RED)}
+            {@render resourceControls(Resource.BLUE)}
+            {@render resourceControls(Resource.GREEN)}
+
+            <!-- <span>enlightenment stage</span>
             <input style="width: 100px" type="number" bind:value={enlightenmentStage.value} min="1" step="1" />
             <input style="width: 100px" type="number" bind:value={enlightenmentSubstage.value} min="1" max="5" step="1" />
 
@@ -55,7 +59,7 @@
             {@render resourceControls(Resource.KNOWLEDGE)}
             {@render resourceControls(Resource.INSIGHT)}
             {@render resourceControls(Resource.CHEESE)}
-            {@render resourceControls(Resource.WISDOM)}
+            {@render resourceControls(Resource.WISDOM)} -->
 
             <!--   <span>cheese monsters</span>
             <input type="number" bind:value={resource.value.cheeseMonster} />
