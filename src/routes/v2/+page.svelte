@@ -131,8 +131,8 @@
     const stageProgress = $derived((currentEpProgress / epNeededInCurrentStage) * 100)
 </script>
 
-<div style="display: flex; flex-direction:column; gap: 1.5rem; align-items: center; margin-top: 60px">
-    <div class="box">
+<div style="display: flex; flex-direction:column; gap: 1.5rem; align-items: center">
+    <div class="box" style="margin-top: 60px">
         <span style="font-size: .875rem">
             Enlightenment Stage: {enlightenmentSubstageNames[enlightenmentSubstage.value - 1]}
             {enlightenmentStageNames[enlightenmentStage.value - 1] ?? 'Not yet named'} ({enlightenmentStage.value}-{enlightenmentSubstage.value})
@@ -245,7 +245,7 @@
             <div style="display: flex; gap: 0rem">
                 {#each { length: skills.length }, rank}
                     {@const skill = skills[rank]}
-                    <button style="aspect-ratio:1; width: 60px;" use:tooltip={{ data: skill, Component: SkillTooltip, direction: Direction.RIGHT }}>
+                    <button style="aspect-ratio:1; width: 60px;" use:tooltip={() => ({ data: skill, Component: SkillTooltip, direction: Direction.RIGHT })}>
                         {skill.name.slice(0, 3)}
                     </button>
                 {/each}
