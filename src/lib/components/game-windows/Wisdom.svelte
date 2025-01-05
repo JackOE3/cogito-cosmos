@@ -70,9 +70,9 @@
 
             <div
                 style="display: flex; flex-direction: row; gap: 0.25rem; align-items: center;"
-                use:tooltip={{
+                use:tooltip={() => ({
                     data: `Generator: ${name} <br> Level: ${formatWhole(generator.lvl)} <hr> ${generatorDescription[name]} <br> Total: ${formatNumber(derivedState.generatorBoostFrom[name], 1)}x <hr> Currently gaining ${formatNumber(derivedState.generatorExpPerSec[name], 2)} Exp/s`
-                }}>
+                })}>
                 <!-- <span>{name}</span> -->
                 <label>
                     <input type="checkbox" bind:this={checkBoxes[name]} onchange={() => toggleGenerator(name, generator)} />

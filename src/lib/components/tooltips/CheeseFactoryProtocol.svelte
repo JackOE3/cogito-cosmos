@@ -1,10 +1,17 @@
 <script lang="ts">
     import { type CheeseFactoryMode, derivedState } from '$lib/store'
 
-    export let data: CheeseFactoryMode
-    export let top = 0
-    export let left = 0
-    const style = `top: ${top}px; left: ${left - 75}px;`
+    type Props = {
+        data: CheeseFactoryMode
+        top: number
+        left: number
+    }
+    const { data, top, left }: Props = $props()
+
+    // export let rect: DOMRect
+    const style = `top: ${top}px; left: ${left}px;`
+
+    $effect(() => console.log(top, left))
 
     const cheeseModeDescription: Record<CheeseFactoryMode, string> = {
         meticulous: '"Quality over quantity"',
@@ -13,7 +20,7 @@
     }
 </script>
 
-<div class="tooltip-arrow-up" id="cheeseFactoryProtocolInfo" {style}>
+<div class="tooltip" id="cheeseFactoryProtocolInfo" {style}>
     <span style="text-decoration: underline; font-weight: bold; color: yellow; margin-bottom: 0.25rem">Cheesy Info</span>
     <br />
     <span style="display:flex;flex-direction:column;gap:0.25rem;">

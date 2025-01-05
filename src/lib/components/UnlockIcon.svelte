@@ -29,7 +29,7 @@
         onclick={unlockFeature}
         class:disabled={!canAfford && !isUnlocked}
         class:unlocked={isUnlocked}
-        use:tooltip={{ data: unlock, Component: UnlockTooltip, direction: Direction.RIGHT, anchor: 'offsetParent' }}>
+        use:tooltip={() => ({ data: unlock, Component: UnlockTooltip, direction: Direction.RIGHT, anchor: 'offsetParent' })}>
         <Image name={`${folderName}/PNG/${tempCount + 1}`} alt="upgrade icon" />
     </button>
 </div>

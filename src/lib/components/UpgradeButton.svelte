@@ -34,7 +34,7 @@
     class:maxed={isMaxed}
     data-theme-colors={resourceName}>
     {#if btnUnlocked || LORCA_OVERRIDE.value}
-        <div in:fade={{ duration: 1000 }} use:tooltip={{ data: tooltipText }}>
+        <div in:fade={{ duration: 1000 }} use:tooltip={() => ({ data: tooltipText })}>
             <div style="display:flex; flex-direction: column; justify-content: end; height: 100%">
                 <span id="text">
                     {upgrades[upgradeName].title}

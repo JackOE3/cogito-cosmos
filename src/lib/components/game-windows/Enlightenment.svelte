@@ -136,7 +136,7 @@
         <div style="display: flex; gap: 0rem">
             {#each { length: skills.length }, rank}
                 {@const skill = skills[rank]}
-                <button style="aspect-ratio:1; width: 60px;" use:tooltip={{ data: skill, Component: SkillTooltip, direction: Direction.RIGHT }}>
+                <button style="aspect-ratio:1; width: 60px;" use:tooltip={() => ({ data: skill, Component: SkillTooltip, direction: Direction.RIGHT })}>
                     {skill.name.slice(0, 3)}
                 </button>
             {/each}

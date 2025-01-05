@@ -78,7 +78,7 @@ export function tooltip(element: HTMLElement, optionsFn: () => Options): void {
         } else {
             rect = element.getBoundingClientRect()
         }
-        const bodyRect = element.ownerDocument.body.getBoundingClientRect()
+        const bodyRect = document.body.getBoundingClientRect()
 
         if (options.direction === Direction.BOTTOM) {
             myProps.top = rect.bottom - bodyRect.top + PADDING

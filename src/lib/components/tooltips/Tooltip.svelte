@@ -25,9 +25,9 @@
         border-radius: 0px;
         outline: 1px solid var(--dp24);
         box-shadow: 0px 0px 16px 4px black;
+        padding: 0.5rem;
     }
     .background {
-        padding: 0.5rem;
         /* background-color: rgba(0, 0, 0, 0.25); */
     }
 

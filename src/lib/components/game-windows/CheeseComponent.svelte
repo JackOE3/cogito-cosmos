@@ -206,9 +206,9 @@
                 <div
                     style="display:flex; flex-direction:column; background-color: var(--Gray800)"
                     class="button-border"
-                    use:tooltip={{
+                    use:tooltip={() => ({
                         data: 'Increases the speed of a cheese cycle. <br> Every level increases SPEED by 5%, but doubles the COST. <br> (multiplicative)'
-                    }}>
+                    })}>
                     <div
                         style="height:1.25rem; border-bottom: 2px solid rgba(255, 255, 255, 0.4); display:flex; align-items: center; justify-content: center; gap: 0.5rem">
                         <span style="font-size:.875rem; font-weight: bold"> Overclocking </span>
@@ -254,31 +254,31 @@
 
                         <label
                             class="form-control"
-                            use:tooltip={{
+                            use:tooltip={() => ({
                                 data: 'meticulous',
                                 Component: CheeseFactoryProtocol,
                                 anchor: 'parentElement'
-                            }}>
+                            })}>
                             <input type="radio" name="cheeseFactoryMode" bind:group={cheeseFactoryMode.value} value="meticulous" />
                             meticulous
                         </label>
                         <label
                             class="form-control"
-                            use:tooltip={{
+                            use:tooltip={() => ({
                                 data: 'nominal',
                                 Component: CheeseFactoryProtocol,
                                 anchor: 'parentElement'
-                            }}>
+                            })}>
                             <input type="radio" name="cheeseFactoryMode" bind:group={cheeseFactoryMode.value} value="nominal" />
                             nominal
                         </label>
                         <label
                             class="form-control"
-                            use:tooltip={{
+                            use:tooltip={() => ({
                                 data: 'warpSpeed',
                                 Component: CheeseFactoryProtocol,
                                 anchor: 'parentElement'
-                            }}>
+                            })}>
                             <input type="radio" name="cheeseFactoryMode" bind:group={cheeseFactoryMode.value} value="warpSpeed" />
                             warp speed
                         </label>
