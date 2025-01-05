@@ -1,7 +1,7 @@
 <script lang="ts">
     import ProgBar from '$lib/components/misc/ProgBar.svelte'
     import { tooltip } from '$lib/components/tooltips/tooltip.svelte'
-    import { colors, formatNumber, square, uuidv4 } from '$lib/gamelogic/utils'
+    import { colors, formatNumber, formatWhole, square, uuidv4 } from '$lib/gamelogic/utils'
     import {
         derivedGrid,
         fastFowardFactor,
@@ -38,11 +38,53 @@
         return Math.pow(2, distanceFromCenter(i, j) ** 2) * random
     }
 
-    function getCellRequirement(i: number, j: number): number {
-        const max = 50
+    function getLockedCell(i: number, j: number): LockedI {
+        const lockedCellContent: LockedI[][] = Array.from({ length: N_ROWS }, () => new Array(N_COLS).fill(undefined))
+
+        function atRelLocation(row: number, col: number, requirement: { cost: number; resource: GeneratorResource }): void {
+            lockedCellContent[center + row][center + col] = { type: 'locked', ...requirement }
+        }
+
+        atRelLocation(-3, 0, { cost: 1e3, resource: 'blue' })
+        atRelLocation(-3, 1, { cost: 2e3, resource: 'green' })
+
+        atRelLocation(-2, -1, { cost: 200, resource: 'red' })
+        atRelLocation(-2, 0, { cost: 1e3, resource: 'green' })
+        atRelLocation(-2, 1, { cost: 200, resource: 'blue' })
+        atRelLocation(-2, 2, { cost: 500, resource: 'green' })
+
+        atRelLocation(-1, -2, { cost: 50, resource: 'red' })
+        atRelLocation(-1, -1, { cost: 200, resource: 'green' })
+        atRelLocation(-1, 0, { cost: 10, resource: 'blue' })
+        atRelLocation(-1, 1, { cost: 50, resource: 'green' })
+        atRelLocation(-1, 2, { cost: 100, resource: 'green' })
+        atRelLocation(-1, 3, { cost: 5e3, resource: 'green' })
+
+        atRelLocation(0, -3, { cost: 1e3, resource: 'green' })
+        atRelLocation(0, -2, { cost: 100, resource: 'blue' })
+        atRelLocation(0, -1, { cost: 50, resource: 'green' })
+
+        atRelLocation(0, 1, { cost: 5, resource: 'green' })
+        atRelLocation(0, 2, { cost: 5, resource: 'blue' })
+        atRelLocation(0, 3, { cost: 1e3, resource: 'green' })
+
+        atRelLocation(1, -2, { cost: 100, resource: 'red' })
+        atRelLocation(1, -1, { cost: 50, resource: 'blue' })
+        atRelLocation(1, 0, { cost: 10, resource: 'red' })
+        atRelLocation(1, 1, { cost: 5, resource: 'red' })
+
+        atRelLocation(2, -1, { cost: 1e3, resource: 'green' })
+        atRelLocation(2, 0, { cost: 200, resource: 'red' })
+
+        atRelLocation(3, 0, { cost: 500, resource: 'red' })
+        atRelLocation(3, 1, { cost: 1e3, resource: 'red' })
+
+        return lockedCellContent[i][j]
+
+        /*         const max = 50
         const min = 10
         const random = Math.floor(Math.random() * (max + 1 - min) + min)
-        return Math.pow(2, distanceFromCenter(i, j) ** 2) * random
+        return Math.pow(2, distanceFromCenter(i, j) ** 2) * random */
     }
 
     function setStartingCell() {
@@ -66,12 +108,8 @@
                 gridCell.value[i][j] = {
                     id: uuidv4(),
                     location: { row: i, col: j },
-                    hidden: true,
-                    content: {
-                        type: 'locked',
-                        cost: getCellRequirement(i, j),
-                        resource: getRandomResource()
-                    },
+                    hidden: true /*  */,
+                    content: getLockedCell(i, j) ?? { type: 'empty' },
                     relX: 0,
                     relY: 0
                 }
@@ -145,12 +183,11 @@
         }
     }
 
-    function makeCombat(i: number, j: number): CombatI {
-        const maxHP = getCellHP(i, j)
+    function makeCombat(hp: number): CombatI {
         return {
             type: 'combat',
-            HP: maxHP,
-            maxHP: maxHP,
+            HP: hp,
+            maxHP: hp,
             active: false,
             intervalId: 0,
             progress: new Tween(100, {
@@ -260,15 +297,43 @@
     function setDeterministicCellContent(): CellContent[][] {
         const gridCellContent: CellContent[][] = Array.from({ length: N_ROWS }, () => new Array(N_COLS).fill({ type: 'empty' }))
 
-        gridCellContent[center - 1][center] = makeCombat(center - 1, center)
+        function atRelLocation(row: number, col: number, content: CellContent): void {
+            gridCellContent[center + row][center + col] = content
+        }
 
-        gridCellContent[center][center - 1] = makeCombat(center, center - 1)
-        gridCellContent[center][center] = makeGenerator(Resource.GREEN)
-        gridCellContent[center][center + 1] = makeAddGeneratorGainUpgrade(Resource.GREEN, 1, 5, Resource.GREEN, 10)
-        gridCellContent[center][center + 2] = makeAddGeneratorSpeedUpgrade(Resource.GREEN, 1, 5, Resource.GREEN, 12)
+        atRelLocation(-3, 0, makeCombat(5e6))
+        atRelLocation(-3, 1, makeMultAttackUpgrade(1.5, 1e3, Resource.BLUE, 10))
 
-        gridCellContent[center + 1][center] = makeAddAttackUpgrade(1, 10, Resource.GREEN)
-        gridCellContent[center + 2][center] = makeMultAttackUpgrade(1.5, 10, Resource.GREEN)
+        atRelLocation(-2, -1, makeAddAttackUpgrade(1, 100, Resource.RED, 50))
+        atRelLocation(-2, 0, makeAddGeneratorGainUpgrade(Resource.GREEN, 1, 100, Resource.RED, 20))
+        atRelLocation(-2, 1, makeAddGeneratorGainUpgrade(Resource.RED, 1, 100, Resource.RED, 10))
+        atRelLocation(-2, 2, makeCombat(1e6))
+
+        atRelLocation(-1, -2, makeAddGeneratorSpeedUpgrade(Resource.RED, 1, 1e3, Resource.BLUE, 10))
+        atRelLocation(-1, -1, makeAddGeneratorGainUpgrade(Resource.RED, 1, 1e3, Resource.GREEN, 10))
+        atRelLocation(-1, 0, makeCombat(10))
+        atRelLocation(-1, 1, makeGenerator(Resource.BLUE))
+        atRelLocation(-1, 2, makeAddGeneratorGainUpgrade(Resource.BLUE, 1, 10, Resource.GREEN, 50))
+        atRelLocation(-1, 3, makeCombat(1e4))
+
+        atRelLocation(0, -3, makeCombat(1e7))
+        atRelLocation(0, -2, makeAddGeneratorGainUpgrade(Resource.GREEN, 1, 1e3, Resource.BLUE, 30))
+        atRelLocation(0, -1, makeCombat(100))
+        atRelLocation(0, 0, makeGenerator(Resource.GREEN))
+        atRelLocation(0, 1, makeAddGeneratorGainUpgrade(Resource.GREEN, 1, 5, Resource.GREEN, 25))
+        atRelLocation(0, 2, makeAddGeneratorSpeedUpgrade(Resource.GREEN, 1, 5, Resource.GREEN, 25))
+        atRelLocation(0, 3, makeMultAttackUpgrade(1.5, 1e3, Resource.GREEN, 10))
+
+        atRelLocation(1, -2, makeAddGeneratorSpeedUpgrade(Resource.BLUE, 1, 200, Resource.GREEN, 20))
+        atRelLocation(1, -1, makeGenerator(Resource.RED))
+        atRelLocation(1, 0, makeAddAttackUpgrade(1, 10, Resource.GREEN, 50))
+        atRelLocation(1, 1, makeCombat(1e3))
+
+        atRelLocation(2, -1, makeCombat(5e4))
+        atRelLocation(2, 0, makeMultAttackUpgrade(1.5, 25, Resource.RED, 5))
+
+        atRelLocation(3, 0, makeAddGeneratorSpeedUpgrade(Resource.GREEN, 1, 100, Resource.BLUE, 20))
+        atRelLocation(3, 1, makeCombat(1e8))
 
         return gridCellContent
     }
