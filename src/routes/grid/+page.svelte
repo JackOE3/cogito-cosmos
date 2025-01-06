@@ -24,6 +24,7 @@
     import { fly } from 'svelte/transition'
     import { Tween } from 'svelte/motion'
     import UpgradeCellComponent from '$lib/components/UpgradeCell.svelte'
+    import { movable } from '$lib/gamelogic/panning-manager.svelte'
 
     const center = Math.floor(N_ROWS / 2)
 
@@ -583,51 +584,73 @@
     </button>
 {/snippet}
 
-<div style="display: flex; flex-direction:column; gap: 1.5rem; justify-content: center; align-items: center;">
-    <div class="stats" style="margin-top: 40px">
-        {formatNumber(resource.value.red, 2)}
-        {@html square.red}, {formatNumber(resource.value.green, 2)}
-        {@html square.green}, {formatNumber(resource.value.blue, 2)}
-        {@html square.blue}, Attack: {formatNumber(derivedGrid.attack, 2)}, AP: {actionPoints}/{maxActionPoints}
-        <br />
-        Level: {level.value}
-        ({derivedGrid.expInLevel} / {derivedGrid.expToNextLevel} XP)
-        <button onclick={handleLevelUp}>Level Up</button> Auto?
-        <button onclick={populateCells}>Reset Grid</button>
-        <button onclick={() => unlockWholeGrid()}> Unlock whole grid </button>
-    </div>
-
-    <div class="grid">
-        {#each gridCell.value as row, i}
-            {#each row as cell, j}
-                <div>
-                    {#if !cell.hidden || LORCA_OVERRIDE.value}
-                        <div class="full" in:fly={{ duration: 1000, x: cell.relX * 40, y: cell.relY * 40, easing: quartOut }}>
-                            {#if cell.content.type === 'locked' && !LORCA_OVERRIDE.value}
-                                {@render lockedCell(cell)}
-                            {:else if cell.content.type === 'combat'}
-                                {@render combatCell(i, j, cell.content)}
-                            {:else if cell.content.type === 'generator'}
-                                {@render generatorCell(cell.content)}
-                            {:else if cell.content.type === 'upgrade'}
-                                {@render upgradeCell(cell.content)}
-                            {:else}
-                                <div class="cell-unlocked"></div>
-                            {/if}
-                        </div>
-                    {/if}
-                </div>
+<div id="display">
+    <div id="game" use:movable>
+        <div class="grid">
+            {#each gridCell.value as row, i}
+                {#each row as cell, j}
+                    <div>
+                        {#if !cell.hidden || LORCA_OVERRIDE.value}
+                            <div class="full" in:fly={{ duration: 1000, x: cell.relX * 40, y: cell.relY * 40, easing: quartOut }}>
+                                {#if cell.content.type === 'locked' && !LORCA_OVERRIDE.value}
+                                    {@render lockedCell(cell)}
+                                {:else if cell.content.type === 'combat'}
+                                    {@render combatCell(i, j, cell.content)}
+                                {:else if cell.content.type === 'generator'}
+                                    {@render generatorCell(cell.content)}
+                                {:else if cell.content.type === 'upgrade'}
+                                    {@render upgradeCell(cell.content)}
+                                {:else}
+                                    <div class="cell-unlocked"></div>
+                                {/if}
+                            </div>
+                        {/if}
+                    </div>
+                {/each}
             {/each}
-        {/each}
+        </div>
+    </div>
+</div>
+
+<div style="display: flex; flex-direction:column; gap: 1.5rem; justify-content: center; align-items: center;">
+    <div class="stats">
+        <div style="background: var(--dp01); padding: 0.5rem;">
+            {formatNumber(resource.value.red, 2)}
+            {@html square.red}, {formatNumber(resource.value.green, 2)}
+            {@html square.green}, {formatNumber(resource.value.blue, 2)}
+            {@html square.blue}, Attack: {formatNumber(derivedGrid.attack, 2)}, AP: {actionPoints}/{maxActionPoints}
+            <br />
+            Level: {level.value}
+            ({derivedGrid.expInLevel} / {derivedGrid.expToNextLevel} XP)
+            <button onclick={handleLevelUp}>Level Up</button> Auto?
+            <button onclick={populateCells}>Reset Grid</button>
+            <button onclick={() => unlockWholeGrid()}> Unlock whole grid </button>
+        </div>
     </div>
 </div>
 
 <style>
+    #display {
+        z-index: -1;
+        position: fixed;
+        width: 100vw;
+        height: 100vh;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    #game {
+        position: absolute; /** also resets positioning of child elements just like relative! */
+        transform: translateZ(0);
+    }
     .stats {
-        background: var(--dp01);
+        background-color: var(--background-color);
         border: 1px solid var(--dp08);
         width: 400px;
-        padding: 0.5rem;
+        margin-top: 40px;
     }
     .grid {
         display: grid;
