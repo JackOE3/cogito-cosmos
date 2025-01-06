@@ -1,19 +1,17 @@
 export function movable(element: HTMLElement): void {
     $effect(() => {
-        console.log('movable $effect')
+        /* console.log('movable $effect') */
         window.addEventListener('keydown', onKeyDown)
         window.addEventListener('keyup', onKeyUp)
-
-        element.addEventListener('mousedown', onMouseDown)
-        element.addEventListener('mouseup', onMouseUp)
-        element.addEventListener('mousemove', onMouseMove)
+        window.addEventListener('mousedown', onMouseDown)
+        window.addEventListener('mouseup', onMouseUp)
+        window.addEventListener('mousemove', onMouseMove)
         return () => {
             window.removeEventListener('keydown', onKeyDown)
             window.removeEventListener('keyup', onKeyUp)
-
-            element.removeEventListener('mousedown', onMouseDown)
-            element.removeEventListener('mouseup', onMouseUp)
-            element.removeEventListener('mousemove', onMouseMove)
+            window.removeEventListener('mousedown', onMouseDown)
+            window.removeEventListener('mouseup', onMouseUp)
+            window.removeEventListener('mousemove', onMouseMove)
         }
     })
 
