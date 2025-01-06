@@ -24,7 +24,7 @@
     import { fly } from 'svelte/transition'
     import { Tween } from 'svelte/motion'
     import UpgradeCellComponent from '$lib/components/UpgradeCell.svelte'
-    import { movable } from '$lib/gamelogic/panning-manager.svelte'
+    import { movable } from '$lib/gamelogic/movable.svelte'
 
     const center = Math.floor(N_ROWS / 2)
 
