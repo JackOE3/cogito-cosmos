@@ -1,9 +1,9 @@
 <script lang="ts">
     import { buyUpgrade } from '$lib/gamelogic/buy-upgrade-v2'
-    import { derivedGrid, formulas, resource, type GeneratorResource, type UpgradeI, type UpgradeType } from '$lib/store'
+    import { resource, type UpgradeI } from '$lib/store'
     import type { Snippet } from 'svelte'
     import { tooltip } from './tooltips/tooltip.svelte'
-    import { formatNumber, square } from '$lib/gamelogic/utils'
+    import UpgradeCellTooltip from './tooltips/UpgradeCellTooltip.svelte'
 
     type Props = {
         upgrade: UpgradeI
@@ -21,51 +21,10 @@
     function handleUpgradeClicked(): void {
         buyUpgrade(upgrade, resource.value)(buyMaxUpgrades)
     }
-
-    // very hacky
-    let arg: unknown
-    if (upgrade.upgradeType === 'addGeneratorGain' || upgrade.upgradeType === 'addGeneratorSpeed') {
-        arg = upgrade.forGeneratorResource
-    }
-
-    /**
-     * Depending on the type of upgrade, supply the formula/function to calculate what value it changes.
-     */
-    const formulaDict: Record<UpgradeType, (upgrades: UpgradeI[]) => number> = {
-        //to insert other dependencies into the formula (there will be others):
-        addAttack: upgrades => formulas.attack(upgrades),
-        //clean but probably wont be enough:
-        multAttack: formulas.attack,
-        //paceholder:
-        addGeneratorGain: upgrades => formulas.generatorGainForResource(upgrades)[arg as GeneratorResource],
-        addGeneratorSpeed: upgrades => formulas.generatorDurationForResource(upgrades)[arg as GeneratorResource] / 1000
-    }
-    const valueNameDict: Record<UpgradeType, string> = {
-        addAttack: 'Attack',
-        multAttack: 'Attack',
-        addGeneratorGain: 'Red/Fill',
-        addGeneratorSpeed: 'Duration'
-    }
-
-    const tooltipText = $derived.by(() => {
-        if (!upgrade.description) return null
-
-        if (isMaxed) return `${upgrade.description.join('<br>')} <br> <span style="color: var(--text-medium-emphasis)"> This upgrade is maxed out. </span>`
-        //console.log('tooltipTextUpgrade')
-        const upgradesSnapshot = $state.snapshot(derivedGrid.upgradesInCellGrid) as UpgradeI[]
-        const upgradeSnap = upgradesSnapshot.find(u => u.id == upgrade.id)
-        const currentValue = formulaDict[upgrade.upgradeType](upgradesSnapshot)
-        upgradeSnap!.count++
-        const newValue = formulaDict[upgrade.upgradeType](upgradesSnapshot)
-
-        const valueName = valueNameDict[upgrade.upgradeType]
-
-        return `${upgrade.description.join('<br>')} <br> ${valueName}: ${formatNumber(currentValue, 2)} <span style="font-size: 0.75rem">&#8594;</span> ${formatNumber(newValue, 2)} <br> Cost: ${formatNumber(upgrade.cost, 2)} ${square[upgrade.resource]}`
-    })
 </script>
 
 <button {style} class={className} onclick={handleUpgradeClicked} class:disabled={!canAfford || isMaxed}>
-    <div class="full" class:maxed={isMaxed} use:tooltip={() => ({ data: tooltipText })}>
+    <div class="full" class:maxed={isMaxed} use:tooltip={() => ({ data: upgrade, Component: UpgradeCellTooltip })}>
         <!-- {upgrades[upgradeName].title} -->
         {@render children?.()}
     </div>
