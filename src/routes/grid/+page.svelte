@@ -1,7 +1,7 @@
 <script lang="ts">
     import ProgBar from '$lib/components/misc/ProgBar.svelte'
     import { tooltip } from '$lib/components/tooltips/tooltip.svelte'
-    import { colors, formatNumber, formatWhole, square, uuidv4 } from '$lib/gamelogic/utils'
+    import { colors, formatNumber, formatWhole, randInt, square, uuidv4 } from '$lib/gamelogic/utils'
     import {
         derivedGrid,
         fastFowardFactor,
@@ -15,9 +15,14 @@
         type Cell,
         type CellContent,
         type CombatI,
+        type DerivativeEffect,
+        type GeneratorDerivativeI,
         type GeneratorI,
         type GeneratorResource,
         type LockedI,
+        type Multiplier,
+        type ResourceMetric,
+        type Stencil,
         type UpgradeI
     } from '$lib/store'
     import { cubicOut, quartOut } from 'svelte/easing'
@@ -25,6 +30,11 @@
     import { Tween } from 'svelte/motion'
     import UpgradeCellComponent from '$lib/components/UpgradeCell.svelte'
     import { movable } from '$lib/gamelogic/movable.svelte'
+
+    const unicodeChars = {
+        upwardsPairedArrows: '&#8648;',
+        clockwiseGappedCircleArrow: '&#10227;'
+    }
 
     const center = Math.floor(N_ROWS / 2)
 
@@ -104,6 +114,7 @@
     }
 
     function populateCells(): void {
+        console.log('populating')
         for (let i = 0; i < N_ROWS; i++) {
             for (let j = 0; j < N_COLS; j++) {
                 gridCell.value[i][j] = {
@@ -119,7 +130,11 @@
         setStartingCell()
     }
 
-    if (typeof gridCell.value[center][center] === 'undefined') populateCells()
+    //if (typeof gridCell.value[center][center] === 'undefined') populateCells()
+
+    if (gridCell.value.flat().some(cell => typeof cell === 'undefined')) {
+        populateCells()
+    }
 
     // This is needed because you cant save a Tween object to localStorage
     gridCell.value.flat().forEach(cell => {
@@ -198,13 +213,61 @@
             defeated: false
         }
     }
-    function makeGenerator(resource: GeneratorResource): GeneratorI {
+    function makeGenerator(
+        duration: number,
+        gain: {
+            amount: number
+            resource: GeneratorResource
+        },
+        cost?: {
+            amount: number
+            resource: GeneratorResource
+        }
+    ): GeneratorI {
+        let costGen: ResourceMetric | undefined = undefined
+        if (cost) costGen = { base: cost.amount, current: cost.amount, multipliers: [], resource: cost.resource }
         return {
             type: 'generator',
-            resource,
+            gain: { base: gain.amount, current: gain.amount, multipliers: [], resource: gain.resource },
+            cost: costGen,
+            baseDurationMillis: duration,
+            speed: {
+                base: 1,
+                current: 1,
+                multipliers: []
+            },
             active: false,
-            progress: 0,
-            efficiency: 1
+            progress: 0
+        }
+    }
+
+    function getAffectedCells(rowIdx: number, colIdx: number, stencil: Stencil): CellContent[] {
+        switch (stencil) {
+            case 'adjacent':
+                return [
+                    gridCell.value[rowIdx][colIdx - 1].content,
+                    gridCell.value[rowIdx][colIdx + 1].content,
+                    gridCell.value[rowIdx - 1][colIdx].content,
+                    gridCell.value[rowIdx + 1][colIdx].content
+                ]
+            default:
+                return []
+        }
+    }
+
+    function makeGeneratorDerivative(row: number, col: number, stencil: Stencil, effect: DerivativeEffect, boost: number): GeneratorDerivativeI {
+        return {
+            type: 'generatorDerivative',
+            id: uuidv4(),
+            effect,
+            stencil,
+            currentExp: 0,
+            requiredExp: 1,
+            expPerSec: 1,
+            level: 0,
+            boost,
+            active: false,
+            progress: 0
         }
     }
     function makeAddAttackUpgrade(addAttack: number, cost: number, resource: GeneratorResource, maxBuy?: number): UpgradeI {
@@ -292,6 +355,41 @@
         }
     }
 
+    const getTotalMult = (mults: Multiplier[]) => mults.reduce((acc, mult) => mult.value * acc, 1)
+
+    function boostGeneratorGain(cell: CellContent, amount: number, id: string): void {
+        if (cell.type !== 'generator') return
+        // find the multiplier corresponding to the id from the cell which causes it
+        const mult = cell.gain.multipliers.find(mult => mult.id === id)
+        if (!mult) cell.gain.multipliers.push({ id, value: 1 + amount })
+        else mult.value += amount
+
+        // update the currently boosted value of the target
+        let gainMult = getTotalMult(cell.gain.multipliers)
+        cell.gain.current = cell.gain.base * gainMult
+    }
+    function boostGeneratorSpeed(cell: CellContent, amount: number, id: string): void {
+        if (cell.type !== 'generator') return
+        // find the multiplier corresponding to the id from the cell which causes it
+        const mult = cell.speed.multipliers.find(mult => mult.id === id)
+        if (!mult) cell.speed.multipliers.push({ id, value: 1 + amount })
+        else mult.value += amount
+
+        // update the currently boosted value of the target
+        let speedMult = getTotalMult(cell.speed.multipliers)
+        cell.speed.current = cell.speed.base * speedMult
+    }
+
+    const boostCallbacks: Record<DerivativeEffect, (cell: CellContent, amount: number, id: string) => void> = {
+        boostGeneratorGain,
+        boostGeneratorSpeed
+    }
+
+    function getDescForBoost(effect: DerivativeEffect, stencil: Stencil, boost: number): string {
+        const what = effect === 'boostGeneratorGain' ? 'gain' : effect === 'boostGeneratorSpeed' ? 'speed ' : ''
+        return `Boost the ${what} of ${stencil} basic generators <br> by ${formatWhole(boost * 100)}% per level.`
+    }
+
     /**
      * deterministic cell content for rapid prototyping
      */
@@ -302,39 +400,15 @@
             gridCellContent[center + row][center + col] = content
         }
 
-        atRelLocation(-3, 0, makeCombat(5e6))
-        atRelLocation(-3, 1, makeMultAttackUpgrade(1.5, 1e3, Resource.BLUE, 10))
+        atRelLocation(0, 0, makeGenerator(1000, { amount: 1, resource: 'green' }))
+        atRelLocation(0, 1, makeGenerator(1000, { amount: 1, resource: 'red' }, { amount: 2, resource: 'green' }))
+        atRelLocation(0, 2, makeGeneratorDerivative(0, 2, 'adjacent', 'boostGeneratorGain', 0.1))
+        atRelLocation(-1, 3, makeGeneratorDerivative(-1, 3, 'adjacent', 'boostGeneratorGain', 0.1))
+        atRelLocation(1, 0, makeGeneratorDerivative(1, 0, 'adjacent', 'boostGeneratorSpeed', 1))
 
-        atRelLocation(-2, -1, makeAddAttackUpgrade(1, 100, Resource.RED, 50))
-        atRelLocation(-2, 0, makeAddGeneratorGainUpgrade(Resource.GREEN, 1, 100, Resource.RED, 20))
-        atRelLocation(-2, 1, makeAddGeneratorGainUpgrade(Resource.RED, 1, 100, Resource.RED, 10))
-        atRelLocation(-2, 2, makeCombat(1e6))
-
-        atRelLocation(-1, -2, makeAddGeneratorSpeedUpgrade(Resource.RED, 1, 1e3, Resource.BLUE, 10))
-        atRelLocation(-1, -1, makeAddGeneratorGainUpgrade(Resource.RED, 1, 1e3, Resource.GREEN, 10))
-        atRelLocation(-1, 0, makeCombat(10))
-        atRelLocation(-1, 1, makeGenerator(Resource.BLUE))
-        atRelLocation(-1, 2, makeAddGeneratorGainUpgrade(Resource.BLUE, 1, 10, Resource.GREEN, 50))
-        atRelLocation(-1, 3, makeCombat(1e4))
-
-        atRelLocation(0, -3, makeCombat(1e7))
-        atRelLocation(0, -2, makeAddGeneratorGainUpgrade(Resource.GREEN, 1, 1e3, Resource.BLUE, 30))
-        atRelLocation(0, -1, makeCombat(100))
-        atRelLocation(0, 0, makeGenerator(Resource.GREEN))
-        atRelLocation(0, 1, makeAddGeneratorGainUpgrade(Resource.GREEN, 1, 5, Resource.GREEN, 25))
-        atRelLocation(0, 2, makeAddGeneratorSpeedUpgrade(Resource.GREEN, 1, 5, Resource.GREEN, 25))
-        atRelLocation(0, 3, makeMultAttackUpgrade(1.5, 1e3, Resource.GREEN, 10))
-
-        atRelLocation(1, -2, makeAddGeneratorSpeedUpgrade(Resource.BLUE, 1, 200, Resource.GREEN, 20))
-        atRelLocation(1, -1, makeGenerator(Resource.RED))
-        atRelLocation(1, 0, makeAddAttackUpgrade(1, 10, Resource.GREEN, 50))
-        atRelLocation(1, 1, makeCombat(1e3))
-
-        atRelLocation(2, -1, makeCombat(5e4))
-        atRelLocation(2, 0, makeMultAttackUpgrade(1.5, 25, Resource.RED, 5))
-
-        atRelLocation(3, 0, makeAddGeneratorSpeedUpgrade(Resource.GREEN, 1, 100, Resource.BLUE, 20))
-        atRelLocation(3, 1, makeCombat(1e8))
+        atRelLocation(0, 3, makeGenerator(1000, { amount: 1, resource: 'blue' }))
+        atRelLocation(1, 3, makeGenerator(1000, { amount: 1, resource: 'blue' }))
+        atRelLocation(1, 2, makeGenerator(1000, { amount: 1, resource: 'blue' }))
 
         return gridCellContent
     }
@@ -352,7 +426,35 @@
         // this will be quite complex and make or break good gameplay
         let content: CellContent
 
-        content = gridCellContentDeterministic[i][j]
+        /* if (i > 20 || j > 20) {
+            gridCell.value[i][j].content = { type: 'empty' }
+            return
+        } */
+        //content = gridCellContentDeterministic[i][j]
+        const res = ['red', 'green', 'blue'] as const
+        const rand = randInt(5)
+        switch (rand) {
+            case 0:
+                content = makeGenerator(3000, { amount: 1, resource: res[randInt(2)] }, { amount: 1, resource: res[randInt(2)] })
+                break
+            case 1:
+                content = makeCombat(10 + randInt(100))
+                break
+            case 2:
+                content = makeAddGeneratorGainUpgrade(res[randInt(2)], 1 + randInt(4), randInt(1e3), res[randInt(2)], randInt(1e2))
+                break
+            case 3:
+                content = makeAddGeneratorSpeedUpgrade(res[randInt(2)], 1 + randInt(4), randInt(1e3), res[randInt(2)], randInt(1e2))
+                break
+            case 4:
+                content = makeAddAttackUpgrade(1 + randInt(4), randInt(1e2), res[randInt(2)], randInt(1e2))
+                break
+            case 5:
+                content = makeMultAttackUpgrade(1 + randInt(10) / 10, randInt(1e2), res[randInt(2)], randInt(1e2))
+                break
+            default:
+                content = { type: 'empty' }
+        }
 
         gridCell.value[i][j].content = content
     }
@@ -399,12 +501,15 @@
     }
 
     const generatorCellsActive = $derived(
-        gridCell.value
-            .flat()
-            .filter(cell => cell.content.type === 'generator' && cell.content.active)
-            .map(cell => cell.content as GeneratorI)
+        gridCell.value.flat().filter(cell => cell.content.type === 'generator' && cell.content.active)
+        /* .map(cell => cell.content as GeneratorI) */
     )
-    const numGeneratorCellsActive = $derived(generatorCellsActive.length)
+    const generatorDerivativeCellsActive = $derived(
+        gridCell.value.flat().filter(cell => cell.content.type === 'generatorDerivative' && cell.content.active)
+        /* .map(cell => cell.content as GeneratorDerivativeI) */
+    )
+
+    const numTotalGeneratorCellsActive = $derived(generatorCellsActive.length + generatorDerivativeCellsActive.length)
 
     const combatCellsActive = $derived(
         gridCell.value
@@ -417,7 +522,7 @@
     let animationId: number
 
     $effect(() => {
-        if (numGeneratorCellsActive > 0) {
+        if (numTotalGeneratorCellsActive > 0) {
             lastTime = null
             animationId = requestAnimationFrame(evolveProgressBars)
         }
@@ -433,23 +538,59 @@
     let lastTime: number | null = null
     function evolveProgressBars(currentTime: number): void {
         if (lastTime === null) lastTime = currentTime
-        const deltaTimeMillis = Math.max(Math.min(currentTime - lastTime), 0)
+        const deltaTimeMillis = Math.max(Math.min(currentTime - lastTime), 0) * fastFowardFactor.value
         lastTime = currentTime
 
         // this can show me the frame rate actually
-        //console.log(deltaTimeMillis)
+        /* console.log(deltaTimeMillis) */
+        for (const cell of generatorDerivativeCellsActive) {
+            const generator = cell.content as GeneratorDerivativeI
+            generator.currentExp += (generator.expPerSec * deltaTimeMillis) / 1000
+            while (generator.currentExp >= generator.requiredExp) {
+                if (generator.cost) {
+                    if (resource.value[generator.cost.resource] < generator.cost.current) {
+                        generator.progress = 0
+                        generator.active = false
+                        break
+                    }
+                    resource.value[generator.cost.resource] -= generator.cost.current
+                }
 
-        for (const generator of generatorCellsActive) {
-            generator.progress += (deltaTimeMillis / derivedGrid.generatorDurationForResource[generator.resource]) * fastFowardFactor.value
+                // get affected cells via the stencil
+                const affectedCells = getAffectedCells(cell.location.row, cell.location.col, generator.stencil)
+                // apply the corresponding effect onto all affected cells
+                for (const cell of affectedCells) {
+                    boostCallbacks[generator.effect](cell, generator.boost, generator.id)
+                }
+
+                //generator.applyEffect()
+                generator.currentExp -= generator.requiredExp
+                generator.requiredExp *= 1.15
+                generator.level++
+            }
+        }
+
+        for (const cell of generatorCellsActive) {
+            const generator = cell.content as GeneratorI
+            generator.progress += (deltaTimeMillis / generator.baseDurationMillis) * generator.speed.current
             while (generator.progress >= 1) {
-                resource.value[generator.resource] += derivedGrid.generatorGainForResource[generator.resource]
+                if (generator.cost) {
+                    if (resource.value[generator.cost.resource] < generator.cost.current) {
+                        generator.progress = 0
+                        generator.active = false
+                        break
+                    }
+                    resource.value[generator.cost.resource] -= generator.cost.current
+                }
+
+                resource.value[generator.gain.resource] += generator.gain.current
                 generator.progress -= 1
                 // ensures that the progress bar will always start from 0 and not carry over some remainder:
                 if (generator.progress < 1) generator.progress = 0
             }
         }
 
-        if (numGeneratorCellsActive > 0) animationId = requestAnimationFrame(evolveProgressBars)
+        if (numTotalGeneratorCellsActive > 0) animationId = requestAnimationFrame(evolveProgressBars)
     }
 
     /**
@@ -462,7 +603,7 @@
      */
     let actionPoints = $derived.by(() => {
         let points = maxActionPoints
-        points -= numGeneratorCellsActive
+        points -= numTotalGeneratorCellsActive
         points -= numCombatCellsActive
         return points
     })
@@ -476,9 +617,11 @@
     }
 
     function unlockWholeGrid(): void {
+        const gridCellContentDeterministic = setDeterministicCellContent()
         for (let i = 0; i < N_ROWS; i++) {
             for (let j = 0; j < N_ROWS; j++) {
-                setCellContent(i, j)
+                /* setCellContent(i, j) */
+                gridCell.value[i][j].content = gridCellContentDeterministic[i][j]
             }
         }
     }
@@ -523,6 +666,8 @@
 {/snippet}
 
 {#snippet generatorCell(generator: GeneratorI)}
+    {@const gainMetric = `+${formatNumber(generator.gain.current, 2)} ${square[generator.gain.resource]}`}
+    {@const costMetric = generator.cost ? `/ -${formatNumber(generator.cost.current, 2)} ${square[generator.cost.resource]}` : ''}
     <button
         class="full"
         onclick={() => {
@@ -532,19 +677,64 @@
             //generatorActive[resourceName] = !generatorActive[resourceName]
         }}
         style="display: flex; flex-direction:column; justify-content: center; gap: 0.25rem; {generator.active
-            ? `background: ${colors(0.2)[generator.resource]}`
+            ? `background: ${colors(0.2)[generator.gain.resource]}`
             : ''}"
         use:tooltip={() => ({
-            data: `Basic Generator ${generator.active ? '[...]' : ''}<hr> +${derivedGrid.generatorGainForResource[generator.resource]} ${square[generator.resource]} every ${formatNumber(derivedGrid.generatorDurationForResource[generator.resource] / 1000, 2)}s <br> <span style="color: var(--text-medium-emphasis)">Uses 1 AP while active.</span>`
+            data: `
+            Basic Generator ${generator.active ? '[...]' : ''}<hr>
+            ${gainMetric} ${costMetric} every ${formatNumber(generator.baseDurationMillis / 1000 / generator.speed.current, 2)}s <br>
+            <span style="color: var(--text-medium-emphasis)">Uses 1 AP while active.</span>
+            `
         })}>
-        <span>Get {@html square[generator.resource]}</span>
+        <span style="font-size: 1.5rem; display: flex; gap: 0.5rem; justify-content: center;">
+            &#120126; {@html square[generator.gain.resource]}
+        </span>
         {#if generator.active}
             <ProgBar
                 --widthProgBar="100%"
                 --heightProgBar="0.5rem"
-                --barColor={colors(0.6)[generator.resource]}
+                --barColor={colors(0.6)[generator.gain.resource]}
                 --progBarBgColor="var(--dp24)"
                 --progress="{generator.progress * 100}%">
+            </ProgBar>
+        {/if}
+    </button>
+{/snippet}
+
+{#snippet generatorDerivativeCell(generator: GeneratorDerivativeI)}
+    <button
+        class="full"
+        onclick={() => {
+            if (!generator.active && actionPoints <= 0) return
+            generator.active = !generator.active
+        }}
+        style="display: flex; flex-direction:column; justify-content: center; gap: 0.25rem; {generator.active ? `background: rgba(255,255,255,0.3)` : ''}"
+        use:tooltip={() => ({
+            data: `
+            Derivative Generator ${generator.active ? '[...]' : ''}<hr>
+            Level: ${formatWhole(generator.level)} - ${formatNumber(generator.currentExp, 1)}/${formatNumber(generator.requiredExp, 1)} XP - ${formatNumber(generator.expPerSec, 1)} XP/s <br>
+            ${getDescForBoost(generator.effect, generator.stencil, generator.boost)} <br>
+            Total Effect: ${formatNumber(1 + generator.boost * generator.level, 2)}x <br>
+            <span style="color: var(--text-medium-emphasis)">Uses 1 AP while active.</span>
+            `
+        })}>
+        <span style="font-size: 1.5rem; display: flex; gap: 0.5rem; justify-content: center;">
+            &#120126;
+            <span>
+                {#if generator.effect === 'boostGeneratorGain'}
+                    {@html unicodeChars.upwardsPairedArrows}
+                {:else if generator.effect === 'boostGeneratorSpeed'}
+                    {@html unicodeChars.clockwiseGappedCircleArrow}
+                {/if}
+            </span>
+        </span>
+        {#if generator.active}
+            <ProgBar
+                --widthProgBar="100%"
+                --heightProgBar="0.5rem"
+                --barColor="white"
+                --progBarBgColor="var(--dp24)"
+                --progress="{(generator.currentExp / generator.requiredExp) * 100}%">
             </ProgBar>
         {/if}
     </button>
@@ -598,6 +788,8 @@
                                     {@render combatCell(i, j, cell.content)}
                                 {:else if cell.content.type === 'generator'}
                                     {@render generatorCell(cell.content)}
+                                {:else if cell.content.type === 'generatorDerivative'}
+                                    {@render generatorDerivativeCell(cell.content)}
                                 {:else if cell.content.type === 'upgrade'}
                                     {@render upgradeCell(cell.content)}
                                 {:else}

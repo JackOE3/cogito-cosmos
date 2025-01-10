@@ -77,6 +77,10 @@ export function checkBoolForNum(bool: boolean, num: number, or = 1): number {
     return bool ? num : or
 }
 
+export function randInt(max: number): number {
+    return Math.floor(Math.random() * (max + 1))
+}
+
 export function getOffset(el: HTMLElement): { left: number; top: number } {
     const rect = el.getBoundingClientRect()
     return {

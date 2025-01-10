@@ -38,12 +38,46 @@ export interface CombatI extends ContentI {
     defeated: boolean
 }
 
-export interface GeneratorI extends ContentI {
-    type: 'generator'
+export type Multiplier = {
+    id: string
+    value: number
+}
+export type ResourceMetric = {
+    base: number
+    current: number
+    multipliers: Multiplier[]
     resource: GeneratorResource
+}
+
+export interface GeneratorI extends ContentI {
+    readonly type: 'generator'
+    gain: ResourceMetric
+    cost?: ResourceMetric
+    readonly baseDurationMillis: number
+    speed: {
+        base: number
+        current: number
+        multipliers: Multiplier[]
+    }
     active: boolean
     progress: number
-    efficiency: number // starts at 100%, will go down asymptotically to 0%
+}
+
+export type DerivativeEffect = 'boostGeneratorGain' | 'boostGeneratorSpeed'
+export type Stencil = 'adjacent' | '3x3'
+export interface GeneratorDerivativeI extends ContentI {
+    readonly type: 'generatorDerivative'
+    id: string
+    effect: DerivativeEffect
+    stencil: Stencil
+    cost?: ResourceMetric
+    level: number
+    boost: number
+    currentExp: number
+    requiredExp: number
+    expPerSec: number
+    active: boolean
+    progress: number
 }
 
 export type UpgradeType = 'addAttack' | 'multAttack' | 'addGeneratorGain' | 'addGeneratorSpeed'
@@ -81,7 +115,7 @@ export interface MultAttackUpgrade extends UpgradeBaseI {
 
 export type UpgradeI = GeneratorGainUpgrade | GeneratorSpeedUpgrade | AddAttackUpgrade | MultAttackUpgrade
 
-export type CellContent = EmptyI | LockedI | CombatI | GeneratorI | UpgradeI
+export type CellContent = EmptyI | LockedI | CombatI | GeneratorI | GeneratorDerivativeI | UpgradeI
 
 export type Location = {
     row: number
