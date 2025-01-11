@@ -379,11 +379,11 @@
         }
 
         atRelLocation(-1, 0, makeUpgrade(-1, 0, 'adjacent', 'boostGeneratorGain', 0.5, { amount: 10, resource: 'green' }, 10))
-        atRelLocation(0, -1, makeUpgrade(0, -1, 'adjacent', 'boostGeneratorSpeed', 0.1, { amount: 5, resource: 'green' }, 20))
+        atRelLocation(0, -1, makeUpgrade(0, -1, 'row', 'boostGeneratorSpeed', 0.1, { amount: 5, resource: 'green' }, 20))
 
         atRelLocation(0, 0, makeGenerator(1000, { amount: 1, resource: 'green' }))
         atRelLocation(0, 1, makeGenerator(1000, { amount: 1, resource: 'red' }, { amount: 2, resource: 'green' }))
-        atRelLocation(0, 2, makeGeneratorDerivative(0, 2, 'adjacent', 'boostGeneratorGain', 0.1))
+        atRelLocation(0, 2, makeGeneratorDerivative(0, 2, 'rightHalf', 'boostGeneratorGain', 0.1))
         atRelLocation(-1, 3, makeGeneratorDerivative(-1, 3, 'adjacent', 'boostGeneratorGain', 0.1))
         atRelLocation(1, 0, makeGeneratorDerivative(1, 0, 'adjacent', 'boostGeneratorSpeed', 1))
 
