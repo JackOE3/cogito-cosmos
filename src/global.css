@@ -234,7 +234,7 @@ input[type='radio']:checked::before {
     border-style: solid;
 }
 
-button:not(.disabled):active {
+button:not(.disabled):not(.disabledClick):active {
     border-right: rgba(255, 255, 255, 0.5);
     border-left: rgba(0, 0, 0, 0.6);
     border-bottom: rgba(255, 255, 255, 0.5);
@@ -243,6 +243,9 @@ button:not(.disabled):active {
     border-style: solid;
 }
 
+button.disabledClick {
+    cursor: move;
+}
 button.disabled {
     opacity: var(--disabled);
     cursor: move;

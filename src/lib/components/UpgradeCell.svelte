@@ -8,23 +8,25 @@
     type Props = {
         cell: Cell & { content: UpgradeI }
         buyMaxUpgrades?: boolean // setContext/getContext better?
+        disabledClick?: boolean
         style?: string
         class?: string
         children?: Snippet
     }
 
-    let { cell, buyMaxUpgrades = false, style, class: className, children }: Props = $props()
+    let { cell, buyMaxUpgrades = false, disabledClick = false, style, class: className, children }: Props = $props()
 
     const upgrade = cell.content
     const canAfford = $derived(resource.value[upgrade.cost.resource] >= upgrade.cost.current)
     const isMaxed = $derived(upgrade.maxBuy !== undefined && upgrade.count >= upgrade.maxBuy)
 
     function handleUpgradeClicked(): void {
+        if (disabledClick) return
         buyUpgrade(cell, resource.value)(buyMaxUpgrades)
     }
 </script>
 
-<button {style} class={className} onclick={handleUpgradeClicked} class:disabled={!canAfford || isMaxed}>
+<button {style} class={className} class:disabledClick onclick={handleUpgradeClicked} class:disabled={(!canAfford || isMaxed) && !disabledClick}>
     <div class="full" class:maxed={isMaxed} use:tooltip={() => ({ data: upgrade, Component: UpgradeCellTooltip })}>
         <!-- {upgrades[upgradeName].title} -->
         {@render children?.()}

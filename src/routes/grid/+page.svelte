@@ -10,7 +10,6 @@
         LORCA_OVERRIDE,
         N_COLS,
         N_ROWS,
-        Resource,
         resource,
         type Cell,
         type CellContent,
@@ -31,6 +30,7 @@
     import UpgradeCellComponent from '$lib/components/UpgradeCell.svelte'
     import { movable } from '$lib/gamelogic/movable.svelte'
     import { applyCellEffects, applyEffect, getAllAffectedCells } from '$lib/gamelogic/cell-effects'
+    import { preventDefault } from 'svelte/legacy'
 
     const unicodeChars = {
         upwardsPairedArrows: '&#8648;',
@@ -43,69 +43,8 @@
         return Math.sqrt((i - center) ** 2 + (j - center) ** 2)
     }
 
-    function getCellHP(i: number, j: number): number {
-        const max = 100
-        const min = 10
-        const random = Math.floor(Math.random() * (max + 1 - min) + min)
-        return Math.pow(2, distanceFromCenter(i, j) ** 2) * random
-    }
-
-    function getLockedCell(i: number, j: number): LockedI {
-        const lockedCellContent: LockedI[][] = Array.from({ length: N_ROWS }, () => new Array(N_COLS).fill(undefined))
-
-        function insertCellContent(row: number, col: number, requirement: { cost: number; resource: GeneratorResource }): void {
-            lockedCellContent[center + row][center + col] = { type: 'locked', ...requirement }
-        }
-
-        insertCellContent(-3, 0, { cost: 1e3, resource: 'blue' })
-        insertCellContent(-3, 1, { cost: 2e3, resource: 'green' })
-
-        insertCellContent(-2, -1, { cost: 200, resource: 'red' })
-        insertCellContent(-2, 0, { cost: 1e3, resource: 'green' })
-        insertCellContent(-2, 1, { cost: 200, resource: 'blue' })
-        insertCellContent(-2, 2, { cost: 500, resource: 'green' })
-
-        insertCellContent(-1, -2, { cost: 50, resource: 'red' })
-        insertCellContent(-1, -1, { cost: 200, resource: 'green' })
-        insertCellContent(-1, 0, { cost: 10, resource: 'blue' })
-        insertCellContent(-1, 1, { cost: 50, resource: 'green' })
-        insertCellContent(-1, 2, { cost: 100, resource: 'green' })
-        insertCellContent(-1, 3, { cost: 5e3, resource: 'green' })
-
-        insertCellContent(0, -3, { cost: 1e3, resource: 'green' })
-        insertCellContent(0, -2, { cost: 100, resource: 'blue' })
-        insertCellContent(0, -1, { cost: 50, resource: 'green' })
-
-        insertCellContent(0, 1, { cost: 5, resource: 'green' })
-        insertCellContent(0, 2, { cost: 5, resource: 'blue' })
-        insertCellContent(0, 3, { cost: 1e3, resource: 'green' })
-
-        insertCellContent(1, -2, { cost: 100, resource: 'red' })
-        insertCellContent(1, -1, { cost: 50, resource: 'blue' })
-        insertCellContent(1, 0, { cost: 10, resource: 'red' })
-        insertCellContent(1, 1, { cost: 5, resource: 'red' })
-
-        insertCellContent(2, -1, { cost: 1e3, resource: 'green' })
-        insertCellContent(2, 0, { cost: 200, resource: 'red' })
-
-        insertCellContent(3, 0, { cost: 500, resource: 'red' })
-        insertCellContent(3, 1, { cost: 1e3, resource: 'red' })
-
-        return lockedCellContent[i][j]
-
-        /*         const max = 50
-        const min = 10
-        const random = Math.floor(Math.random() * (max + 1 - min) + min)
-        return Math.pow(2, distanceFromCenter(i, j) ** 2) * random */
-    }
-
     function setStartingCell() {
-        gridCell.value[center][center].hidden = false
-        gridCell.value[center][center].content = {
-            type: 'locked',
-            cost: 0,
-            resource: Resource.GREEN
-        }
+        insertCellContent({ row: center, col: center }, makeGenerator(2000, { amount: 1, resource: 'green' }))
     }
 
     function getRandomResource(): GeneratorResource {
@@ -122,7 +61,7 @@
                     id: uuidv4(),
                     coord: { row: i, col: j },
                     hidden: true,
-                    content: getLockedCell(i, j) ?? { type: 'empty' },
+                    content: { type: 'empty' },
                     dependencies: [],
                     relX: 0,
                     relY: 0
@@ -303,11 +242,8 @@
         }
     }
 
-    function insertCellContent(relCoord: Coordinate, content: CellContent): void {
-        const coord: Coordinate = {
-            row: center + relCoord.row,
-            col: center + relCoord.col
-        }
+    function insertCellContent(coord: Coordinate, content: CellContent): void {
+        gridCell.value[coord.row][coord.col].hidden = false
         gridCell.value[coord.row][coord.col].content = content
 
         // update the dependency arrays of affected cells for future reference (eg. when adding a new cell)
@@ -342,41 +278,52 @@
         }
     }
 
+    const relToCoord = (rel: Coordinate): Coordinate => {
+        return {
+            row: center + rel.row,
+            col: center + rel.col
+        }
+    }
+
     /**
      * deterministic cell content for rapid prototyping
      */
     function setDeterministicCellContent(): void {
-        insertCellContent({ row: -1, col: 0 }, makeUpgrade('adjacent', 'boostGeneratorGain', 0.5, { amount: 10, resource: 'green' }, 10))
-        insertCellContent({ row: 0, col: -1 }, makeUpgrade('row', 'boostGeneratorSpeed', 0.1, { amount: 5, resource: 'green' }, 20))
+        insertCellContent(relToCoord({ row: -1, col: 0 }), makeUpgrade('adjacent', 'boostGeneratorGain', 0.5, { amount: 10, resource: 'green' }, 10))
+        insertCellContent(relToCoord({ row: 0, col: -1 }), makeUpgrade('row', 'boostGeneratorSpeed', 0.1, { amount: 5, resource: 'green' }, 20))
 
-        insertCellContent({ row: 0, col: 0 }, makeGenerator(1000, { amount: 1, resource: 'green' }))
-        insertCellContent({ row: 0, col: 1 }, makeGenerator(1000, { amount: 1, resource: 'red' }, { amount: 2, resource: 'green' }))
-        insertCellContent({ row: 0, col: 2 }, makeGeneratorDerivative('rightHalf', 'boostGeneratorGain', 0.1))
-        insertCellContent({ row: -1, col: 3 }, makeGeneratorDerivative('adjacent', 'boostGeneratorGain', 0.1))
-        insertCellContent({ row: 1, col: 0 }, makeGeneratorDerivative('adjacent', 'boostGeneratorSpeed', 1))
+        insertCellContent(relToCoord({ row: 0, col: 0 }), makeGenerator(1000, { amount: 1, resource: 'green' }))
+        insertCellContent(relToCoord({ row: 0, col: 1 }), makeGenerator(1000, { amount: 1, resource: 'red' }, { amount: 2, resource: 'green' }))
+        insertCellContent(relToCoord({ row: 0, col: 2 }), makeGeneratorDerivative('rightHalf', 'boostGeneratorGain', 0.1))
+        insertCellContent(relToCoord({ row: -1, col: 3 }), makeGeneratorDerivative('adjacent', 'boostGeneratorGain', 0.1))
+        insertCellContent(relToCoord({ row: 1, col: 0 }), makeGeneratorDerivative('adjacent', 'boostGeneratorSpeed', 1))
 
-        insertCellContent({ row: 0, col: 3 }, makeGenerator(1000, { amount: 1, resource: 'blue' }))
-        insertCellContent({ row: 1, col: 3 }, makeGenerator(1000, { amount: 1, resource: 'blue' }))
-        insertCellContent({ row: 1, col: 2 }, makeGenerator(1000, { amount: 1, resource: 'blue' }))
+        insertCellContent(relToCoord({ row: 0, col: 3 }), makeGenerator(1000, { amount: 1, resource: 'blue' }))
+        insertCellContent(relToCoord({ row: 1, col: 3 }), makeGenerator(1000, { amount: 1, resource: 'blue' }))
+        insertCellContent(relToCoord({ row: 1, col: 2 }), makeGenerator(1000, { amount: 1, resource: 'blue' }))
     }
 
     /**
-     * When you defeat cells und "uncover" them, the logic here determines
+     * When you purchase a new cell, the logic here determines
      * which specific cell will be procedurally generated (type & properties).
-     * @param i y-coordinate (bigger = lower)
-     * @param j x-coordinate (bigger = more right)
+     * Should not be purely randomly chosen, depends on what cells you have already.
+     * This will be quite complex and make or break good gameplay.
      */
-    function setCellContent(i: number, j: number) {
-        // should not be purely randomly chosen, depends on what cells you have already
-        // this will be quite complex and make or break good gameplay
-        let content: CellContent
+    function getNextCellContent(): CellContent {
+        /* let content: CellContent */
 
-        /* if (i > 20 || j > 20) {
-            gridCell.value[i][j].content = { type: 'empty' }
-            return
-        } */
-        //content = gridCellContentDeterministic[i][j]
-        const res = ['red', 'green', 'blue'] as const
+        // probability distribution needed for type (gen, genDer, upgrade)
+        // pd not static, depends on what cells you have already (and what level-up effects or prestige upgrades you have)
+        // also failsafes/overrides (sometimes its impossible to get a type)
+
+        //start: generator -> pd: genDer (0.5), upgrade (0.5)
+        if (Math.random() > 0.5) {
+            return makeUpgrade('adjacent', 'boostGeneratorGain', 0.2, { amount: 10, resource: 'green' }, 10)
+        } else {
+            return makeGeneratorDerivative('adjacent', 'boostGeneratorGain', 0.05)
+        }
+
+        /* const res = ['red', 'green', 'blue'] as const
         const rand = randInt(5)
         switch (rand) {
             case 0:
@@ -389,7 +336,7 @@
                 content = { type: 'empty' }
         }
 
-        gridCell.value[i][j].content = content
+        return content */
     }
 
     /**
@@ -556,8 +503,68 @@
         if (resource.value[cell.content.resource] < cell.content.cost) return
         resource.value[cell.content.resource] -= cell.content.cost
         // dynamically set the content of the cell when you have unlocked it
-        setCellContent(cell.coord.row, cell.coord.col)
-        unhideSurroundingCells(cell.coord.row, cell.coord.col)
+        //setCellContent(cell.coord.row, cell.coord.col)
+        //unhideSurroundingCells(cell.coord.row, cell.coord.col)
+    }
+
+    /**
+     * Get all adjacent (surrounding) cells of the currently shown cells.
+     */
+    function getAdjacentCells(): Set<Cell> {
+        const adjacentCells = new Set<Cell>()
+        const delta: Coordinate[] = [
+            { row: -1, col: 0 }, // Up
+            { row: 1, col: 0 }, // Down
+            { row: 0, col: -1 }, // Left
+            { row: 0, col: 1 } // Right
+        ]
+
+        const shownCells = gridCell.value.flat().filter(cell => !cell.hidden)
+
+        for (const cell of shownCells) {
+            for (const d of delta) {
+                const row = cell.coord.row + d.row
+                const col = cell.coord.col + d.col
+
+                // check if the neighbor is within bounds
+                if (row >= 0 && col >= 0 && row < gridCell.value.length && col < gridCell.value[row].length) {
+                    // check if the neighbor is hidden
+                    if (gridCell.value[row][col].hidden) {
+                        adjacentCells.add(gridCell.value[row][col])
+                    }
+                }
+            }
+        }
+
+        // convert the set of cells to an array of cells
+        return adjacentCells
+    }
+
+    let selectionCells: Set<Cell> = new Set()
+    let nextCellContent: CellContent | undefined = $state(undefined)
+
+    function handleGetCell(): void {
+        if (selectionCells.size !== 0) return
+        // unhide all surrounding cells and fade em in
+        selectionCells = getAdjacentCells()
+        for (const cell of selectionCells) {
+            const m = 1
+            cell.relX = Math.random() * m - m / 2
+            cell.relY = Math.random() * m - m / 2
+            cell.hidden = false
+        }
+        nextCellContent = getNextCellContent()
+    }
+
+    function handleSelectCell(cell: Cell): void {
+        if (typeof nextCellContent === 'undefined') return
+        insertCellContent(cell.coord, nextCellContent)
+        nextCellContent = undefined
+
+        selectionCells.delete(cell)
+        // hide the other selection cells
+        selectionCells.forEach(cell => (cell.hidden = true))
+        selectionCells.clear()
     }
 </script>
 
@@ -590,12 +597,14 @@
     </button>
 {/snippet}
 
-{#snippet generatorCell(generator: GeneratorI)}
+{#snippet generatorCell(generator: GeneratorI, disabledClick = false)}
     {@const gainMetric = `+${formatNumber(generator.gain.current, 2)} ${square[generator.gain.resource]}`}
     {@const costMetric = generator.cost ? `/ -${formatNumber(generator.cost.current, 2)} ${square[generator.cost.resource]}` : ''}
     <button
         class="full"
+        class:disabledClick
         onclick={() => {
+            if (disabledClick) return
             if (!generator.active && actionPoints <= 0) return
             generator.active = !generator.active
             //if (!generatorActive[resourceName] && actionPoints <= 0) return
@@ -626,11 +635,13 @@
     </button>
 {/snippet}
 
-{#snippet generatorDerivativeCell(generator: GeneratorDerivativeI)}
+{#snippet generatorDerivativeCell(generator: GeneratorDerivativeI, disabledClick = false)}
     {@const metric = generator.effect.type === 'boostGeneratorGain' ? 'gain' : generator.effect.type === 'boostGeneratorSpeed' ? 'speed' : 'unknown'}
     <button
         class="full"
+        class:disabledClick
         onclick={() => {
+            if (disabledClick) return
             if (!generator.active && actionPoints <= 0) return
             generator.active = !generator.active
         }}
@@ -667,10 +678,10 @@
     </button>
 {/snippet}
 
-{#snippet upgradeCell(cellGeneric: Cell)}
+{#snippet upgradeCell(cellGeneric: Cell, disabledClick = false)}
     {#if cellGeneric.content.type === 'upgrade'}
         {@const cell = cellGeneric as Cell & { content: UpgradeI }}
-        <UpgradeCellComponent {cell} class="full">
+        <UpgradeCellComponent {cell} {disabledClick} class="full">
             <div class="flexCenter flexColumn">
                 <span style="font-size: 1.5rem; display: flex; gap: 0.5rem; justify-content: center;"> &#120140; </span>
                 {#if cell.content.maxBuy}
@@ -709,10 +720,9 @@
         <div class="grid">
             {#each gridCell.value as row, i}
                 {#each row as cell, j}
-                    {@const content = cell.content}
                     <div>
                         {#if !cell.hidden || LORCA_OVERRIDE.value}
-                            <div class="full" in:fly={{ duration: 1000, x: cell.relX * 40, y: cell.relY * 40, easing: quartOut }}>
+                            <div class="cell full" in:fly={{ duration: 1000, x: cell.relX * 40, y: cell.relY * 40, easing: quartOut }}>
                                 {#if cell.content.type === 'locked' && !LORCA_OVERRIDE.value}
                                     {@render lockedCell(cell)}
                                 {:else if cell.content.type === 'combat'}
@@ -721,10 +731,12 @@
                                     {@render generatorCell(cell.content)}
                                 {:else if cell.content.type === 'generatorDerivative'}
                                     {@render generatorDerivativeCell(cell.content)}
-                                {:else if content.type === 'upgrade'}
+                                {:else if cell.content.type === 'upgrade'}
                                     {@render upgradeCell(cell)}
                                 {:else}
-                                    <div class="cell-unlocked"></div>
+                                    <button class="cell-empty" onclick={() => handleSelectCell(cell)}>
+                                        <span style="font-size: 1.5rem; color: rgba(0,0,0,0.8);">+</span>
+                                    </button>
                                 {/if}
                             </div>
                         {/if}
@@ -746,14 +758,48 @@
             Level: {level.value}
             ({derivedGrid.expInLevel} / {derivedGrid.expToNextLevel} XP)
             <button onclick={handleLevelUp}>Level Up</button> Auto?
-            <button onclick={populateCells}>Reset Grid</button>
-            <button onclick={() => unlockWholeGrid()}> Unlock whole grid </button>
-            <button onclick={() => unlockAdditionalTest()}> Unlock new cell </button>
+
+            <button onclick={handleGetCell}>Get Cell</button>
+            {#if nextCellContent}
+                <div class="cell-preview">
+                    {#if nextCellContent.type === 'generator'}
+                        {@render generatorCell(nextCellContent)}
+                    {:else if nextCellContent.type === 'generatorDerivative'}
+                        {@render generatorDerivativeCell(nextCellContent, true)}
+                    {:else if nextCellContent.type === 'upgrade'}
+                        {@const cell = {
+                            id: 'fake',
+                            coord: { row: 0, col: 0 },
+                            hidden: false,
+                            content: nextCellContent,
+                            dependencies: [],
+                            relX: 0,
+                            relY: 0
+                        }}
+                        {@render upgradeCell(cell, true)}
+                    {/if}
+                </div>
+            {/if}
         </div>
     </div>
 </div>
 
+<div style="position: absolute; top: 0; left: 0; display: flex;">
+    <button
+        onclick={() => {
+            selectionCells.clear()
+            populateCells()
+        }}>
+        Reset Grid
+    </button>
+    <button onclick={() => unlockWholeGrid()}> Unlock whole grid </button>
+    <button onclick={() => unlockAdditionalTest()}> Unlock new cell </button>
+</div>
+
 <style>
+    * {
+        --cell-size: 80px;
+    }
     #display {
         z-index: -1;
         position: fixed;
@@ -779,22 +825,28 @@
     .grid {
         display: grid;
         gap: 0.5rem;
-        --size: 80px;
-        grid-template-columns: repeat(9, var(--size));
-        grid-template-rows: repeat(9, var(--size));
+        grid-template-columns: repeat(9, var(--cell-size));
+        grid-template-rows: repeat(9, var(--cell-size));
+    }
+    .cell {
+        background: var(--background-color);
+    }
+    .cell-preview {
+        width: var(--cell-size);
+        height: var(--cell-size);
     }
 
-    .cell-unlocked {
+    .cell-empty {
         width: 100%;
         height: 100%;
         display: flex;
         justify-content: center;
         align-items: center;
-        background: var(--dp01);
+        background: var(--text-medium-emphasis);
         border: 1px solid var(--dp08);
         box-sizing: border-box;
-
-        /* outline: 1px solid rgba(0, 0, 0, 0.6); */
+        box-shadow: inset 0 0 8px 4px rgba(0, 0, 0, 0.6);
+        outline: 2px solid black;
 
         border-left: rgba(255, 255, 255, 0.2);
         border-right: rgba(0, 0, 0, 0.4);
