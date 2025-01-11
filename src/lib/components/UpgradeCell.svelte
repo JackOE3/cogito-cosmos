@@ -1,25 +1,26 @@
 <script lang="ts">
-    import { buyUpgrade } from '$lib/gamelogic/buy-upgrade-v2'
-    import { resource, type UpgradeI } from '$lib/store'
+    import { buyUpgrade } from '$lib/gamelogic/buy-upgrade-cell'
+    import { resource, type Coordinate, type UpgradeI } from '$lib/store'
     import type { Snippet } from 'svelte'
     import { tooltip } from './tooltips/tooltip.svelte'
     import UpgradeCellTooltip from './tooltips/UpgradeCellTooltip.svelte'
 
     type Props = {
         upgrade: UpgradeI
+        coord: Coordinate
         buyMaxUpgrades?: boolean // setContext/getContext better?
         style?: string
         class?: string
         children?: Snippet
     }
 
-    let { upgrade, buyMaxUpgrades = false, style, class: className, children }: Props = $props()
+    let { upgrade, coord, buyMaxUpgrades = false, style, class: className, children }: Props = $props()
 
-    const canAfford = $derived(resource.value[upgrade.resource] >= upgrade.cost)
+    const canAfford = $derived(resource.value[upgrade.cost.resource] >= upgrade.cost.current)
     const isMaxed = $derived(upgrade.maxBuy !== undefined && upgrade.count >= upgrade.maxBuy)
 
     function handleUpgradeClicked(): void {
-        buyUpgrade(upgrade, resource.value)(buyMaxUpgrades)
+        buyUpgrade(upgrade, coord, resource.value)(buyMaxUpgrades)
     }
 </script>
 

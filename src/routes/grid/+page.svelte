@@ -19,6 +19,7 @@
         type GeneratorDerivativeI,
         type GeneratorI,
         type GeneratorResource,
+        type Coordinate,
         type LockedI,
         type Multiplier,
         type ResourceMetric,
@@ -30,6 +31,7 @@
     import { Tween } from 'svelte/motion'
     import UpgradeCellComponent from '$lib/components/UpgradeCell.svelte'
     import { movable } from '$lib/gamelogic/movable.svelte'
+    import { applyCellEffects } from '$lib/gamelogic/cell-effects'
 
     const unicodeChars = {
         upwardsPairedArrows: '&#8648;',
@@ -119,7 +121,7 @@
             for (let j = 0; j < N_COLS; j++) {
                 gridCell.value[i][j] = {
                     id: uuidv4(),
-                    location: { row: i, col: j },
+                    coord: { row: i, col: j },
                     hidden: true /*  */,
                     content: getLockedCell(i, j) ?? { type: 'empty' },
                     relX: 0,
@@ -241,20 +243,6 @@
         }
     }
 
-    function getAffectedCells(rowIdx: number, colIdx: number, stencil: Stencil): CellContent[] {
-        switch (stencil) {
-            case 'adjacent':
-                return [
-                    gridCell.value[rowIdx][colIdx - 1].content,
-                    gridCell.value[rowIdx][colIdx + 1].content,
-                    gridCell.value[rowIdx - 1][colIdx].content,
-                    gridCell.value[rowIdx + 1][colIdx].content
-                ]
-            default:
-                return []
-        }
-    }
-
     function makeGeneratorDerivative(row: number, col: number, stencil: Stencil, effect: DerivativeEffect, boost: number): GeneratorDerivativeI {
         return {
             type: 'generatorDerivative',
@@ -270,6 +258,36 @@
             progress: 0
         }
     }
+    function makeUpgrade(
+        row: number,
+        col: number,
+        stencil: Stencil,
+        effect: DerivativeEffect,
+        boost: number,
+        cost: {
+            amount: number
+            resource: GeneratorResource
+        },
+        maxBuy?: number
+    ): UpgradeI {
+        return {
+            type: 'upgrade',
+            id: uuidv4(),
+            effect,
+            stencil,
+            cost: {
+                base: cost.amount,
+                current: cost.amount,
+                multipliers: [],
+                resource: cost.resource
+            },
+            costMultiplier: 1.2,
+            boost,
+            count: 0,
+            maxBuy
+        }
+    }
+
     function makeAddAttackUpgrade(addAttack: number, cost: number, resource: GeneratorResource, maxBuy?: number): UpgradeI {
         return {
             type: 'upgrade',
@@ -307,18 +325,13 @@
         resource: GeneratorResource,
         maxBuy?: number
     ): UpgradeI {
-        const titleDict: Record<GeneratorResource, string> = {
-            red: 'R++',
-            green: 'G++',
-            blue: 'B++'
-        }
         return {
             type: 'upgrade',
             id: uuidv4(),
             upgradeType: 'addGeneratorGain',
             forGeneratorResource,
             addGain,
-            title: `<span style="font-size:1.5rem">${square[forGeneratorResource]}&#8648;</span>`,
+            title: `<span style="font-size:1.5rem">&#120140; ${square[forGeneratorResource]} &#8648;</span>`,
             description: [`Get more ${square[forGeneratorResource]} each time a ${forGeneratorResource} bar is filled.`],
             cost,
             resource,
@@ -355,41 +368,6 @@
         }
     }
 
-    const getTotalMult = (mults: Multiplier[]) => mults.reduce((acc, mult) => mult.value * acc, 1)
-
-    function boostGeneratorGain(cell: CellContent, amount: number, id: string): void {
-        if (cell.type !== 'generator') return
-        // find the multiplier corresponding to the id from the cell which causes it
-        const mult = cell.gain.multipliers.find(mult => mult.id === id)
-        if (!mult) cell.gain.multipliers.push({ id, value: 1 + amount })
-        else mult.value += amount
-
-        // update the currently boosted value of the target
-        let gainMult = getTotalMult(cell.gain.multipliers)
-        cell.gain.current = cell.gain.base * gainMult
-    }
-    function boostGeneratorSpeed(cell: CellContent, amount: number, id: string): void {
-        if (cell.type !== 'generator') return
-        // find the multiplier corresponding to the id from the cell which causes it
-        const mult = cell.speed.multipliers.find(mult => mult.id === id)
-        if (!mult) cell.speed.multipliers.push({ id, value: 1 + amount })
-        else mult.value += amount
-
-        // update the currently boosted value of the target
-        let speedMult = getTotalMult(cell.speed.multipliers)
-        cell.speed.current = cell.speed.base * speedMult
-    }
-
-    const boostCallbacks: Record<DerivativeEffect, (cell: CellContent, amount: number, id: string) => void> = {
-        boostGeneratorGain,
-        boostGeneratorSpeed
-    }
-
-    function getDescForBoost(effect: DerivativeEffect, stencil: Stencil, boost: number): string {
-        const what = effect === 'boostGeneratorGain' ? 'gain' : effect === 'boostGeneratorSpeed' ? 'speed ' : ''
-        return `Boost the ${what} of ${stencil} basic generators <br> by ${formatWhole(boost * 100)}% per level.`
-    }
-
     /**
      * deterministic cell content for rapid prototyping
      */
@@ -399,6 +377,9 @@
         function atRelLocation(row: number, col: number, content: CellContent): void {
             gridCellContent[center + row][center + col] = content
         }
+
+        atRelLocation(-1, 0, makeUpgrade(-1, 0, 'adjacent', 'boostGeneratorGain', 0.5, { amount: 10, resource: 'green' }, 10))
+        atRelLocation(0, -1, makeUpgrade(0, -1, 'adjacent', 'boostGeneratorSpeed', 0.1, { amount: 5, resource: 'green' }, 20))
 
         atRelLocation(0, 0, makeGenerator(1000, { amount: 1, resource: 'green' }))
         atRelLocation(0, 1, makeGenerator(1000, { amount: 1, resource: 'red' }, { amount: 2, resource: 'green' }))
@@ -556,12 +537,7 @@
                     resource.value[generator.cost.resource] -= generator.cost.current
                 }
 
-                // get affected cells via the stencil
-                const affectedCells = getAffectedCells(cell.location.row, cell.location.col, generator.stencil)
-                // apply the corresponding effect onto all affected cells
-                for (const cell of affectedCells) {
-                    boostCallbacks[generator.effect](cell, generator.boost, generator.id)
-                }
+                applyCellEffects(cell.coord, generator.stencil, generator.effect, generator.boost, generator.id)
 
                 //generator.applyEffect()
                 generator.currentExp -= generator.requiredExp
@@ -631,8 +607,8 @@
         if (resource.value[cell.content.resource] < cell.content.cost) return
         resource.value[cell.content.resource] -= cell.content.cost
         // dynamically set the content of the cell when you have unlocked it
-        setCellContent(cell.location.row, cell.location.col)
-        unhideSurroundingCells(cell.location.row, cell.location.col)
+        setCellContent(cell.coord.row, cell.coord.col)
+        unhideSurroundingCells(cell.coord.row, cell.coord.col)
     }
 </script>
 
@@ -702,6 +678,7 @@
 {/snippet}
 
 {#snippet generatorDerivativeCell(generator: GeneratorDerivativeI)}
+    {@const metric = generator.effect === 'boostGeneratorGain' ? 'gain' : generator.effect === 'boostGeneratorSpeed' ? 'speed' : 'unknown'}
     <button
         class="full"
         onclick={() => {
@@ -713,7 +690,8 @@
             data: `
             Derivative Generator ${generator.active ? '[...]' : ''}<hr>
             Level: ${formatWhole(generator.level)} - ${formatNumber(generator.currentExp, 1)}/${formatNumber(generator.requiredExp, 1)} XP - ${formatNumber(generator.expPerSec, 1)} XP/s <br>
-            ${getDescForBoost(generator.effect, generator.stencil, generator.boost)} <br>
+            Boost the ${metric} of basic generators <br> by ${formatWhole(generator.boost * 100)}% per level. <br>
+            Area of Effect: ${generator.stencil} <br>
             Total Effect: ${formatNumber(1 + generator.boost * generator.level, 2)}x <br>
             <span style="color: var(--text-medium-emphasis)">Uses 1 AP while active.</span>
             `
@@ -740,10 +718,10 @@
     </button>
 {/snippet}
 
-{#snippet upgradeCell(upgrade: UpgradeI)}
-    <UpgradeCellComponent {upgrade} class="full">
+{#snippet upgradeCell(upgrade: UpgradeI, coord: Coordinate)}
+    <UpgradeCellComponent {upgrade} {coord} class="full">
         <div class="flexCenter flexColumn">
-            <span>{@html upgrade.title}</span>
+            <span style="font-size: 1.5rem; display: flex; gap: 0.5rem; justify-content: center;"> &#120140; </span>
             {#if upgrade.maxBuy}
                 ({upgrade.count}/{upgrade.maxBuy})
             {:else}
@@ -791,7 +769,7 @@
                                 {:else if cell.content.type === 'generatorDerivative'}
                                     {@render generatorDerivativeCell(cell.content)}
                                 {:else if cell.content.type === 'upgrade'}
-                                    {@render upgradeCell(cell.content)}
+                                    {@render upgradeCell(cell.content, cell.coord)}
                                 {:else}
                                     <div class="cell-unlocked"></div>
                                 {/if}

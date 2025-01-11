@@ -15,21 +15,21 @@ export const level = makeState(1)
 export type GeneratorResource = 'red' | 'green' | 'blue'
 
 type ContentI = {
-    type: string
+    readonly type: string
 }
 
 export interface EmptyI extends ContentI {
-    type: 'empty'
+    readonly type: 'empty'
 }
 
 export interface LockedI extends ContentI {
-    type: 'locked'
+    readonly type: 'locked'
     cost: number
     resource: GeneratorResource
 }
 
 export interface CombatI extends ContentI {
-    type: 'combat'
+    readonly type: 'combat'
     HP: number
     maxHP: number
     active: boolean
@@ -39,7 +39,7 @@ export interface CombatI extends ContentI {
 }
 
 export type Multiplier = {
-    id: string
+    readonly id: string
     value: number
 }
 export type ResourceMetric = {
@@ -63,11 +63,29 @@ export interface GeneratorI extends ContentI {
     progress: number
 }
 
+export type Stencil =
+    | 'adjacent'
+    | '3x3'
+    | '5x5'
+    | 'row'
+    | 'column'
+    | 'cross'
+    | 'diagonals'
+    | 'all'
+    | 'upperHalf'
+    | 'lowerHalf'
+    | 'leftHalf'
+    | 'rightHalf'
+    | 'lowerLeftQuadrant'
+    | 'lowerRightQuadrant'
+    | 'upperLeftQuadrant'
+    | 'upperRightQuadrant'
+
 export type DerivativeEffect = 'boostGeneratorGain' | 'boostGeneratorSpeed'
-export type Stencil = 'adjacent' | '3x3'
+
 export interface GeneratorDerivativeI extends ContentI {
     readonly type: 'generatorDerivative'
-    id: string
+    readonly id: string
     effect: DerivativeEffect
     stencil: Stencil
     cost?: ResourceMetric
@@ -81,20 +99,22 @@ export interface GeneratorDerivativeI extends ContentI {
 }
 
 export type UpgradeType = 'addAttack' | 'multAttack' | 'addGeneratorGain' | 'addGeneratorSpeed'
-export interface UpgradeBaseI extends ContentI {
-    type: 'upgrade'
-    id: string
-    upgradeType: UpgradeType
-    title: string
+export interface UpgradeI extends ContentI {
+    readonly type: 'upgrade'
+    readonly id: string
+    //upgradeType: UpgradeType
+    effect: DerivativeEffect
+    stencil: Stencil
+    //title: string
     description?: string[]
-    cost: number
-    resource: GeneratorResource
+    cost: ResourceMetric
     costMultiplier: number
+    boost: number
     count: number
     maxBuy?: number
 }
 // Specific types for each `upgradeType` with required additional properties
-export interface GeneratorGainUpgrade extends UpgradeBaseI {
+/* export interface GeneratorGainUpgrade extends UpgradeBaseI {
     upgradeType: 'addGeneratorGain'
     forGeneratorResource: GeneratorResource
     addGain: number
@@ -113,17 +133,17 @@ export interface MultAttackUpgrade extends UpgradeBaseI {
     multAttack: number
 }
 
-export type UpgradeI = GeneratorGainUpgrade | GeneratorSpeedUpgrade | AddAttackUpgrade | MultAttackUpgrade
+export type UpgradeI = GeneratorGainUpgrade | GeneratorSpeedUpgrade | AddAttackUpgrade | MultAttackUpgrade */
 
 export type CellContent = EmptyI | LockedI | CombatI | GeneratorI | GeneratorDerivativeI | UpgradeI
 
-export type Location = {
+export type Coordinate = {
     row: number
     col: number
 }
 export type Cell = {
-    id: string
-    location: Location
+    readonly id: string
+    coord: Coordinate
     hidden: boolean
     content: CellContent
     relX: number
