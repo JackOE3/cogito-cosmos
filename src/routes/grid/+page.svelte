@@ -288,86 +288,6 @@
         }
     }
 
-    function makeAddAttackUpgrade(addAttack: number, cost: number, resource: GeneratorResource, maxBuy?: number): UpgradeI {
-        return {
-            type: 'upgrade',
-            id: uuidv4(),
-            upgradeType: 'addAttack',
-            addAttack,
-            title: `<span style="font-size:1.5rem">&#9876;&#8648;</span>`,
-            description: ['Increase your attack power. (additive)'],
-            cost,
-            resource,
-            costMultiplier: 1.3,
-            count: 0,
-            maxBuy
-        }
-    }
-    function makeMultAttackUpgrade(multAttack: number, cost: number, resource: GeneratorResource, maxBuy?: number): UpgradeI {
-        return {
-            type: 'upgrade',
-            id: uuidv4(),
-            upgradeType: 'multAttack',
-            multAttack,
-            title: `<span style="font-size:1.5rem">&#9876;&#8670;</span>`,
-            description: ['Multiply your attack power.'],
-            cost,
-            resource,
-            costMultiplier: 1.3,
-            count: 0,
-            maxBuy
-        }
-    }
-    function makeAddGeneratorGainUpgrade(
-        forGeneratorResource: GeneratorResource,
-        addGain: number,
-        cost: number,
-        resource: GeneratorResource,
-        maxBuy?: number
-    ): UpgradeI {
-        return {
-            type: 'upgrade',
-            id: uuidv4(),
-            upgradeType: 'addGeneratorGain',
-            forGeneratorResource,
-            addGain,
-            title: `<span style="font-size:1.5rem">&#120140; ${square[forGeneratorResource]} &#8648;</span>`,
-            description: [`Get more ${square[forGeneratorResource]} each time a ${forGeneratorResource} bar is filled.`],
-            cost,
-            resource,
-            costMultiplier: 1.3,
-            count: 0,
-            maxBuy
-        }
-    }
-    function makeAddGeneratorSpeedUpgrade(
-        forGeneratorResource: GeneratorResource,
-        addSpeed: number,
-        cost: number,
-        resource: GeneratorResource,
-        maxBuy?: number
-    ): UpgradeI {
-        const titleDict: Record<GeneratorResource, string> = {
-            red: 'R>>',
-            green: 'G>>',
-            blue: 'B>>'
-        }
-        return {
-            type: 'upgrade',
-            id: uuidv4(),
-            upgradeType: 'addGeneratorSpeed',
-            forGeneratorResource,
-            addSpeed,
-            title: `<span style="font-size:1.5rem">${square[forGeneratorResource]}&#10227;</span>`,
-            description: [`Increase the speed of the ${forGeneratorResource} bar.`],
-            cost,
-            resource,
-            costMultiplier: 1.3,
-            count: 0,
-            maxBuy
-        }
-    }
-
     /**
      * deterministic cell content for rapid prototyping
      */
@@ -394,8 +314,6 @@
         return gridCellContent
     }
 
-    const gridCellContentDeterministic = setDeterministicCellContent()
-
     /**
      * When you defeat cells und "uncover" them, the logic here determines
      * which specific cell will be procedurally generated (type & properties).
@@ -420,18 +338,6 @@
                 break
             case 1:
                 content = makeCombat(10 + randInt(100))
-                break
-            case 2:
-                content = makeAddGeneratorGainUpgrade(res[randInt(2)], 1 + randInt(4), randInt(1e3), res[randInt(2)], randInt(1e2))
-                break
-            case 3:
-                content = makeAddGeneratorSpeedUpgrade(res[randInt(2)], 1 + randInt(4), randInt(1e3), res[randInt(2)], randInt(1e2))
-                break
-            case 4:
-                content = makeAddAttackUpgrade(1 + randInt(4), randInt(1e2), res[randInt(2)], randInt(1e2))
-                break
-            case 5:
-                content = makeMultAttackUpgrade(1 + randInt(10) / 10, randInt(1e2), res[randInt(2)], randInt(1e2))
                 break
             default:
                 content = { type: 'empty' }
