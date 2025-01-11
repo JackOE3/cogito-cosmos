@@ -15,23 +15,22 @@
         type Cell,
         type CellContent,
         type CombatI,
-        type DerivativeEffect,
         type GeneratorDerivativeI,
         type GeneratorI,
         type GeneratorResource,
         type Coordinate,
         type LockedI,
-        type Multiplier,
         type ResourceMetric,
         type Stencil,
-        type UpgradeI
+        type UpgradeI,
+        type EffectType
     } from '$lib/store'
     import { cubicOut, quartOut } from 'svelte/easing'
     import { fly } from 'svelte/transition'
     import { Tween } from 'svelte/motion'
     import UpgradeCellComponent from '$lib/components/UpgradeCell.svelte'
     import { movable } from '$lib/gamelogic/movable.svelte'
-    import { applyCellEffects } from '$lib/gamelogic/cell-effects'
+    import { applyCellEffects, applyEffect, getAllAffectedCells } from '$lib/gamelogic/cell-effects'
 
     const unicodeChars = {
         upwardsPairedArrows: '&#8648;',
@@ -54,43 +53,43 @@
     function getLockedCell(i: number, j: number): LockedI {
         const lockedCellContent: LockedI[][] = Array.from({ length: N_ROWS }, () => new Array(N_COLS).fill(undefined))
 
-        function atRelLocation(row: number, col: number, requirement: { cost: number; resource: GeneratorResource }): void {
+        function insertCellContent(row: number, col: number, requirement: { cost: number; resource: GeneratorResource }): void {
             lockedCellContent[center + row][center + col] = { type: 'locked', ...requirement }
         }
 
-        atRelLocation(-3, 0, { cost: 1e3, resource: 'blue' })
-        atRelLocation(-3, 1, { cost: 2e3, resource: 'green' })
+        insertCellContent(-3, 0, { cost: 1e3, resource: 'blue' })
+        insertCellContent(-3, 1, { cost: 2e3, resource: 'green' })
 
-        atRelLocation(-2, -1, { cost: 200, resource: 'red' })
-        atRelLocation(-2, 0, { cost: 1e3, resource: 'green' })
-        atRelLocation(-2, 1, { cost: 200, resource: 'blue' })
-        atRelLocation(-2, 2, { cost: 500, resource: 'green' })
+        insertCellContent(-2, -1, { cost: 200, resource: 'red' })
+        insertCellContent(-2, 0, { cost: 1e3, resource: 'green' })
+        insertCellContent(-2, 1, { cost: 200, resource: 'blue' })
+        insertCellContent(-2, 2, { cost: 500, resource: 'green' })
 
-        atRelLocation(-1, -2, { cost: 50, resource: 'red' })
-        atRelLocation(-1, -1, { cost: 200, resource: 'green' })
-        atRelLocation(-1, 0, { cost: 10, resource: 'blue' })
-        atRelLocation(-1, 1, { cost: 50, resource: 'green' })
-        atRelLocation(-1, 2, { cost: 100, resource: 'green' })
-        atRelLocation(-1, 3, { cost: 5e3, resource: 'green' })
+        insertCellContent(-1, -2, { cost: 50, resource: 'red' })
+        insertCellContent(-1, -1, { cost: 200, resource: 'green' })
+        insertCellContent(-1, 0, { cost: 10, resource: 'blue' })
+        insertCellContent(-1, 1, { cost: 50, resource: 'green' })
+        insertCellContent(-1, 2, { cost: 100, resource: 'green' })
+        insertCellContent(-1, 3, { cost: 5e3, resource: 'green' })
 
-        atRelLocation(0, -3, { cost: 1e3, resource: 'green' })
-        atRelLocation(0, -2, { cost: 100, resource: 'blue' })
-        atRelLocation(0, -1, { cost: 50, resource: 'green' })
+        insertCellContent(0, -3, { cost: 1e3, resource: 'green' })
+        insertCellContent(0, -2, { cost: 100, resource: 'blue' })
+        insertCellContent(0, -1, { cost: 50, resource: 'green' })
 
-        atRelLocation(0, 1, { cost: 5, resource: 'green' })
-        atRelLocation(0, 2, { cost: 5, resource: 'blue' })
-        atRelLocation(0, 3, { cost: 1e3, resource: 'green' })
+        insertCellContent(0, 1, { cost: 5, resource: 'green' })
+        insertCellContent(0, 2, { cost: 5, resource: 'blue' })
+        insertCellContent(0, 3, { cost: 1e3, resource: 'green' })
 
-        atRelLocation(1, -2, { cost: 100, resource: 'red' })
-        atRelLocation(1, -1, { cost: 50, resource: 'blue' })
-        atRelLocation(1, 0, { cost: 10, resource: 'red' })
-        atRelLocation(1, 1, { cost: 5, resource: 'red' })
+        insertCellContent(1, -2, { cost: 100, resource: 'red' })
+        insertCellContent(1, -1, { cost: 50, resource: 'blue' })
+        insertCellContent(1, 0, { cost: 10, resource: 'red' })
+        insertCellContent(1, 1, { cost: 5, resource: 'red' })
 
-        atRelLocation(2, -1, { cost: 1e3, resource: 'green' })
-        atRelLocation(2, 0, { cost: 200, resource: 'red' })
+        insertCellContent(2, -1, { cost: 1e3, resource: 'green' })
+        insertCellContent(2, 0, { cost: 200, resource: 'red' })
 
-        atRelLocation(3, 0, { cost: 500, resource: 'red' })
-        atRelLocation(3, 1, { cost: 1e3, resource: 'red' })
+        insertCellContent(3, 0, { cost: 500, resource: 'red' })
+        insertCellContent(3, 1, { cost: 1e3, resource: 'red' })
 
         return lockedCellContent[i][j]
 
@@ -122,8 +121,9 @@
                 gridCell.value[i][j] = {
                     id: uuidv4(),
                     coord: { row: i, col: j },
-                    hidden: true /*  */,
+                    hidden: true,
                     content: getLockedCell(i, j) ?? { type: 'empty' },
+                    dependencies: [],
                     relX: 0,
                     relY: 0
                 }
@@ -131,8 +131,6 @@
         }
         setStartingCell()
     }
-
-    //if (typeof gridCell.value[center][center] === 'undefined') populateCells()
 
     if (gridCell.value.flat().some(cell => typeof cell === 'undefined')) {
         populateCells()
@@ -243,38 +241,56 @@
         }
     }
 
-    function makeGeneratorDerivative(row: number, col: number, stencil: Stencil, effect: DerivativeEffect, boost: number): GeneratorDerivativeI {
+    function makeGeneratorDerivative(stencil: Stencil, effectType: EffectType, effectValue: number): GeneratorDerivativeI {
         return {
             type: 'generatorDerivative',
-            id: uuidv4(),
-            effect,
-            stencil,
+            effect: {
+                type: effectType,
+                stencil,
+                value: {
+                    base: effectValue,
+                    current: effectValue,
+                    multipliers: []
+                }
+            },
             currentExp: 0,
-            requiredExp: 1,
-            expPerSec: 1,
+            requiredExp: {
+                base: 1,
+                current: 1,
+                multipliers: []
+            },
+            expPerSec: {
+                base: 1,
+                current: 1,
+                multipliers: []
+            },
             level: 0,
-            boost,
             active: false,
             progress: 0
         }
     }
     function makeUpgrade(
-        row: number,
-        col: number,
         stencil: Stencil,
-        effect: DerivativeEffect,
-        boost: number,
+        effectType: EffectType,
+        effectValue: number,
         cost: {
             amount: number
             resource: GeneratorResource
         },
         maxBuy?: number
     ): UpgradeI {
+        // depending on coord and stencil, update the dependency arrays of affected cells with the id for this cell
         return {
             type: 'upgrade',
-            id: uuidv4(),
-            effect,
-            stencil,
+            effect: {
+                type: effectType,
+                stencil,
+                value: {
+                    base: effectValue,
+                    current: effectValue,
+                    multipliers: []
+                }
+            },
             cost: {
                 base: cost.amount,
                 current: cost.amount,
@@ -282,36 +298,66 @@
                 resource: cost.resource
             },
             costMultiplier: 1.2,
-            boost,
             count: 0,
             maxBuy
+        }
+    }
+
+    function insertCellContent(relCoord: Coordinate, content: CellContent): void {
+        const coord: Coordinate = {
+            row: center + relCoord.row,
+            col: center + relCoord.col
+        }
+        gridCell.value[coord.row][coord.col].content = content
+
+        // update the dependency arrays of affected cells for future reference (eg. when adding a new cell)
+        if ('effect' in content) {
+            const cellId = gridCell.value[coord.row][coord.col].id
+            const affectedCells = getAllAffectedCells(coord, content.effect.stencil)
+            for (const cell of affectedCells) {
+                cell.dependencies.push(cellId)
+            }
+        }
+        // if this cell is already affected by other cells, apply their effects to it
+        const cell = gridCell.value[coord.row][coord.col]
+        if (cell.dependencies.length > 0) {
+            for (const id of cell.dependencies) {
+                // find the cell from its id
+                const cellDep = gridCell.value.flat().find(cell => cell.id === id)
+                if (typeof cellDep === 'undefined') continue
+                // check if type of cellDep has an effect property
+                if (!('effect' in cellDep.content)) continue
+                // console.log('found dependency:', $state.snapshot(cellDep))
+
+                let times = 0
+                if (cellDep.content.type === 'generatorDerivative') times = cellDep.content.level
+                else if (cellDep.content.type === 'upgrade') times = cellDep.content.count
+
+                applyEffect[cellDep.content.effect.type](cell, cellDep.content.effect.value.current * times, id)
+                /* if (cellDep.content.effect.type === 'boostGeneratorGain') {
+                    boostGeneratorGain(cell, cellDep.content.effect.value.current * cellDep.content.level, id)
+
+                } */
+            }
         }
     }
 
     /**
      * deterministic cell content for rapid prototyping
      */
-    function setDeterministicCellContent(): CellContent[][] {
-        const gridCellContent: CellContent[][] = Array.from({ length: N_ROWS }, () => new Array(N_COLS).fill({ type: 'empty' }))
+    function setDeterministicCellContent(): void {
+        insertCellContent({ row: -1, col: 0 }, makeUpgrade('adjacent', 'boostGeneratorGain', 0.5, { amount: 10, resource: 'green' }, 10))
+        insertCellContent({ row: 0, col: -1 }, makeUpgrade('row', 'boostGeneratorSpeed', 0.1, { amount: 5, resource: 'green' }, 20))
 
-        function atRelLocation(row: number, col: number, content: CellContent): void {
-            gridCellContent[center + row][center + col] = content
-        }
+        insertCellContent({ row: 0, col: 0 }, makeGenerator(1000, { amount: 1, resource: 'green' }))
+        insertCellContent({ row: 0, col: 1 }, makeGenerator(1000, { amount: 1, resource: 'red' }, { amount: 2, resource: 'green' }))
+        insertCellContent({ row: 0, col: 2 }, makeGeneratorDerivative('rightHalf', 'boostGeneratorGain', 0.1))
+        insertCellContent({ row: -1, col: 3 }, makeGeneratorDerivative('adjacent', 'boostGeneratorGain', 0.1))
+        insertCellContent({ row: 1, col: 0 }, makeGeneratorDerivative('adjacent', 'boostGeneratorSpeed', 1))
 
-        atRelLocation(-1, 0, makeUpgrade(-1, 0, 'adjacent', 'boostGeneratorGain', 0.5, { amount: 10, resource: 'green' }, 10))
-        atRelLocation(0, -1, makeUpgrade(0, -1, 'row', 'boostGeneratorSpeed', 0.1, { amount: 5, resource: 'green' }, 20))
-
-        atRelLocation(0, 0, makeGenerator(1000, { amount: 1, resource: 'green' }))
-        atRelLocation(0, 1, makeGenerator(1000, { amount: 1, resource: 'red' }, { amount: 2, resource: 'green' }))
-        atRelLocation(0, 2, makeGeneratorDerivative(0, 2, 'rightHalf', 'boostGeneratorGain', 0.1))
-        atRelLocation(-1, 3, makeGeneratorDerivative(-1, 3, 'adjacent', 'boostGeneratorGain', 0.1))
-        atRelLocation(1, 0, makeGeneratorDerivative(1, 0, 'adjacent', 'boostGeneratorSpeed', 1))
-
-        atRelLocation(0, 3, makeGenerator(1000, { amount: 1, resource: 'blue' }))
-        atRelLocation(1, 3, makeGenerator(1000, { amount: 1, resource: 'blue' }))
-        atRelLocation(1, 2, makeGenerator(1000, { amount: 1, resource: 'blue' }))
-
-        return gridCellContent
+        insertCellContent({ row: 0, col: 3 }, makeGenerator(1000, { amount: 1, resource: 'blue' }))
+        insertCellContent({ row: 1, col: 3 }, makeGenerator(1000, { amount: 1, resource: 'blue' }))
+        insertCellContent({ row: 1, col: 2 }, makeGenerator(1000, { amount: 1, resource: 'blue' }))
     }
 
     /**
@@ -432,8 +478,8 @@
         /* console.log(deltaTimeMillis) */
         for (const cell of generatorDerivativeCellsActive) {
             const generator = cell.content as GeneratorDerivativeI
-            generator.currentExp += (generator.expPerSec * deltaTimeMillis) / 1000
-            while (generator.currentExp >= generator.requiredExp) {
+            generator.currentExp += (generator.expPerSec.current * deltaTimeMillis) / 1000
+            while (generator.currentExp >= generator.requiredExp.current) {
                 if (generator.cost) {
                     if (resource.value[generator.cost.resource] < generator.cost.current) {
                         generator.progress = 0
@@ -443,11 +489,11 @@
                     resource.value[generator.cost.resource] -= generator.cost.current
                 }
 
-                applyCellEffects(cell.coord, generator.stencil, generator.effect, generator.boost, generator.id)
+                applyCellEffects(cell)
 
                 //generator.applyEffect()
-                generator.currentExp -= generator.requiredExp
-                generator.requiredExp *= 1.15
+                generator.currentExp -= generator.requiredExp.current
+                generator.requiredExp.current *= 1.15
                 generator.level++
             }
         }
@@ -499,13 +545,10 @@
     }
 
     function unlockWholeGrid(): void {
-        const gridCellContentDeterministic = setDeterministicCellContent()
-        for (let i = 0; i < N_ROWS; i++) {
-            for (let j = 0; j < N_ROWS; j++) {
-                /* setCellContent(i, j) */
-                gridCell.value[i][j].content = gridCellContentDeterministic[i][j]
-            }
-        }
+        setDeterministicCellContent()
+    }
+    function unlockAdditionalTest(): void {
+        insertCellContent({ row: 0, col: 4 }, makeGenerator(1000, { amount: 1, resource: 'red' }))
     }
 
     function handleLockedCell(cell: Cell): void {
@@ -584,7 +627,7 @@
 {/snippet}
 
 {#snippet generatorDerivativeCell(generator: GeneratorDerivativeI)}
-    {@const metric = generator.effect === 'boostGeneratorGain' ? 'gain' : generator.effect === 'boostGeneratorSpeed' ? 'speed' : 'unknown'}
+    {@const metric = generator.effect.type === 'boostGeneratorGain' ? 'gain' : generator.effect.type === 'boostGeneratorSpeed' ? 'speed' : 'unknown'}
     <button
         class="full"
         onclick={() => {
@@ -595,19 +638,19 @@
         use:tooltip={() => ({
             data: `
             Derivative Generator ${generator.active ? '[...]' : ''}<hr>
-            Level: ${formatWhole(generator.level)} - ${formatNumber(generator.currentExp, 1)}/${formatNumber(generator.requiredExp, 1)} XP - ${formatNumber(generator.expPerSec, 1)} XP/s <br>
-            Boost the ${metric} of basic generators <br> by ${formatWhole(generator.boost * 100)}% per level. <br>
-            Area of Effect: ${generator.stencil} <br>
-            Total Effect: ${formatNumber(1 + generator.boost * generator.level, 2)}x <br>
+            Level: ${formatWhole(generator.level)} - ${formatNumber(generator.currentExp, 1)}/${formatNumber(generator.requiredExp.current, 1)} XP - ${formatNumber(generator.expPerSec.current, 1)} XP/s <br>
+            Boost the ${metric} of basic generators <br> by ${formatWhole(generator.effect.value.current * 100)}% per level. <br>
+            Area of Effect: ${generator.effect.stencil} <br>
+            Total Effect: ${formatNumber(1 + generator.effect.value.current * generator.level, 2)}x <br>
             <span style="color: var(--text-medium-emphasis)">Uses 1 AP while active.</span>
             `
         })}>
         <span style="font-size: 1.5rem; display: flex; gap: 0.5rem; justify-content: center;">
             &#120126;
             <span>
-                {#if generator.effect === 'boostGeneratorGain'}
+                {#if generator.effect.type === 'boostGeneratorGain'}
                     {@html unicodeChars.upwardsPairedArrows}
-                {:else if generator.effect === 'boostGeneratorSpeed'}
+                {:else if generator.effect.type === 'boostGeneratorSpeed'}
                     {@html unicodeChars.clockwiseGappedCircleArrow}
                 {/if}
             </span>
@@ -618,23 +661,26 @@
                 --heightProgBar="0.5rem"
                 --barColor="white"
                 --progBarBgColor="var(--dp24)"
-                --progress="{(generator.currentExp / generator.requiredExp) * 100}%">
+                --progress="{(generator.currentExp / generator.requiredExp.current) * 100}%">
             </ProgBar>
         {/if}
     </button>
 {/snippet}
 
-{#snippet upgradeCell(upgrade: UpgradeI, coord: Coordinate)}
-    <UpgradeCellComponent {upgrade} {coord} class="full">
-        <div class="flexCenter flexColumn">
-            <span style="font-size: 1.5rem; display: flex; gap: 0.5rem; justify-content: center;"> &#120140; </span>
-            {#if upgrade.maxBuy}
-                ({upgrade.count}/{upgrade.maxBuy})
-            {:else}
-                ({upgrade.count})
-            {/if}
-        </div>
-    </UpgradeCellComponent>
+{#snippet upgradeCell(cellGeneric: Cell)}
+    {#if cellGeneric.content.type === 'upgrade'}
+        {@const cell = cellGeneric as Cell & { content: UpgradeI }}
+        <UpgradeCellComponent {cell} class="full">
+            <div class="flexCenter flexColumn">
+                <span style="font-size: 1.5rem; display: flex; gap: 0.5rem; justify-content: center;"> &#120140; </span>
+                {#if cell.content.maxBuy}
+                    ({cell.content.count}/{cell.content.maxBuy})
+                {:else}
+                    ({cell.content.count})
+                {/if}
+            </div>
+        </UpgradeCellComponent>
+    {/if}
 {/snippet}
 
 {#snippet combatCell(i: number, j: number, cell: CombatI)}
@@ -663,6 +709,7 @@
         <div class="grid">
             {#each gridCell.value as row, i}
                 {#each row as cell, j}
+                    {@const content = cell.content}
                     <div>
                         {#if !cell.hidden || LORCA_OVERRIDE.value}
                             <div class="full" in:fly={{ duration: 1000, x: cell.relX * 40, y: cell.relY * 40, easing: quartOut }}>
@@ -674,8 +721,8 @@
                                     {@render generatorCell(cell.content)}
                                 {:else if cell.content.type === 'generatorDerivative'}
                                     {@render generatorDerivativeCell(cell.content)}
-                                {:else if cell.content.type === 'upgrade'}
-                                    {@render upgradeCell(cell.content, cell.coord)}
+                                {:else if content.type === 'upgrade'}
+                                    {@render upgradeCell(cell)}
                                 {:else}
                                     <div class="cell-unlocked"></div>
                                 {/if}
@@ -701,6 +748,7 @@
             <button onclick={handleLevelUp}>Level Up</button> Auto?
             <button onclick={populateCells}>Reset Grid</button>
             <button onclick={() => unlockWholeGrid()}> Unlock whole grid </button>
+            <button onclick={() => unlockAdditionalTest()}> Unlock new cell </button>
         </div>
     </div>
 </div>

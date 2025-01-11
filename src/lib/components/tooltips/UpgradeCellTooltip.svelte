@@ -1,6 +1,6 @@
 <script lang="ts">
     import { formatNumber, formatWhole, square } from '$lib/gamelogic/utils'
-    import type { DerivativeEffect, UpgradeI } from '$lib/store'
+    import type { EffectType, UpgradeI } from '$lib/store'
 
     type Props = {
         data: UpgradeI
@@ -12,9 +12,9 @@
     // export let rect: DOMRect
     const style = `top: ${top}px; left: ${left}px;`
 
-    const descriptionDict: Record<DerivativeEffect, string> = {
-        boostGeneratorGain: `Boost the gain of basic generators <br> by ${formatWhole(upgrade.boost * 100)}% per upgrade.`,
-        boostGeneratorSpeed: `Boost the speed of basic generators <br> by ${formatWhole(upgrade.boost * 100)}% per upgrade.`
+    const descriptionDict: Partial<Record<EffectType, string>> = {
+        boostGeneratorGain: `Boost the gain of basic generators <br> by ${formatWhole(upgrade.effect.value.current * 100)}% per upgrade.`,
+        boostGeneratorSpeed: `Boost the speed of basic generators <br> by ${formatWhole(upgrade.effect.value.current * 100)}% per upgrade.`
     }
 </script>
 
@@ -24,9 +24,9 @@
         {#if upgrade.description}
             {@html upgrade.description.join('<br>')} <br />
         {/if}
-        {@html descriptionDict[upgrade.effect]} <br />
-        Area of Effect: {upgrade.stencil} <br />
-        Total Effect: {formatNumber(1 + upgrade.boost * upgrade.count, 2)}x <br />
+        {@html descriptionDict[upgrade.effect.type]} <br />
+        Area of Effect: {upgrade.effect.stencil} <br />
+        Total Effect: {formatNumber(1 + upgrade.effect.value.current * upgrade.count, 2)}x <br />
         {#if upgrade.maxBuy !== undefined && upgrade.count >= upgrade.maxBuy}
             <span style="color: var(--text-medium-emphasis)">This upgrade is maxed.</span>
         {:else}

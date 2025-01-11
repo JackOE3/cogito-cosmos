@@ -1,12 +1,14 @@
-import { type Resources, type UpgradeI, type Coordinate } from '$lib/store'
+import { type Resources, type Cell } from '$lib/store'
 import { applyCellEffects } from './cell-effects'
 
 type returnSignature = (buyMaxUpgrades: boolean) => void
 
-export function buyUpgrade(upgrade: UpgradeI, coord: Coordinate, resource: Resources): returnSignature {
+export function buyUpgrade(cell: Cell, resource: Resources): returnSignature {
     // - upgrades is scoped here -
 
     return function (buyMaxUpgrades = false): void {
+        if (cell.content.type !== 'upgrade') return
+        const upgrade = cell.content
         if (typeof upgrade === 'undefined') return
 
         const res = resource[upgrade.cost.resource]
@@ -19,7 +21,7 @@ export function buyUpgrade(upgrade: UpgradeI, coord: Coordinate, resource: Resou
             resource[upgrade.cost.resource] -= upgrade.cost.current
             upgrade.cost.current *= upgrade.costMultiplier
             upgrade.count++
-            applyCellEffects(coord, upgrade.stencil, upgrade.effect, upgrade.boost, upgrade.id)
+            applyCellEffects(cell)
         } else {
             // PURCHASE MAX:
             const cost = upgrade.cost.current
@@ -31,7 +33,7 @@ export function buyUpgrade(upgrade: UpgradeI, coord: Coordinate, resource: Resou
             resource[upgrade.cost.resource] -= totalCost
             upgrade.cost.current *= Math.pow(costMult, numUpgradesAffordable)
             upgrade.count += numUpgradesAffordable
-            applyCellEffects(coord, upgrade.stencil, upgrade.effect, upgrade.boost * numUpgradesAffordable, upgrade.id)
+            applyCellEffects(cell, numUpgradesAffordable)
             // alert("Upgrades affordable: " + numUpgradesAffordable + ", Total Prize: " + totalPrice)
         }
     }

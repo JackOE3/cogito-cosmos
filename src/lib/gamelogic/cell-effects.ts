@@ -1,6 +1,12 @@
-import { gridCell, type CellContent, type DerivativeEffect, type Multiplier, type Stencil, type Coordinate } from '$lib/store'
+import { gridCell, type Stencil, type Coordinate, type Metric, type Cell, type EffectType } from '$lib/store'
 
-function getAffectedCells(coord: Coordinate, stencil: Stencil): CellContent[] {
+/**
+ * Applies the stencil centered on the current cell to get an array of all affected cells.
+ * @param coord coordinate of the current cell
+ * @param stencil what type of stencil is applied
+ * @returns an array of all affected cells
+ */
+export function getAllAffectedCells(coord: Coordinate, stencil: Stencil): Cell[] {
     const row = coord.row
     const col = coord.col
     switch (stencil) {
@@ -11,7 +17,7 @@ function getAffectedCells(coord: Coordinate, stencil: Stencil): CellContent[] {
                 [-1, 0], // Up
                 [1, 0] // Down
             ]
-            return coords.map(([dx, dy]) => gridCell.value[row + dx][col + dy].content)
+            return coords.map(([dx, dy]) => gridCell.value[row + dx][col + dy])
         }
         case '3x3': {
             const coords = [
@@ -24,7 +30,7 @@ function getAffectedCells(coord: Coordinate, stencil: Stencil): CellContent[] {
                 [1, 0],
                 [1, 1] // Bottom-left, Bottom, Bottom-right
             ]
-            return coords.map(([dx, dy]) => gridCell.value[row + dx][col + dy].content)
+            return coords.map(([dx, dy]) => gridCell.value[row + dx][col + dy])
         }
         case '5x5': {
             const coords = []
@@ -36,15 +42,15 @@ function getAffectedCells(coord: Coordinate, stencil: Stencil): CellContent[] {
                     }
                 }
             }
-            return coords.map(([dx, dy]) => gridCell.value[row + dx][col + dy].content)
+            return coords.map(([dx, dy]) => gridCell.value[row + dx][col + dy])
         }
         case 'row': {
             // Extract all cells in the specified row
-            return gridCell.value[row].map(cell => cell.content)
+            return gridCell.value[row]
         }
         case 'column': {
             // Extract all cells in the specified column
-            return gridCell.value.map(row => row[col].content)
+            return gridCell.value.map(row => row[col])
         }
         case 'diagonals': {
             // = like a bishop moves in chess
@@ -62,7 +68,7 @@ function getAffectedCells(coord: Coordinate, stencil: Stencil): CellContent[] {
 
                 // Continue moving in the direction until out of bounds
                 while (rowIdx >= 0 && rowIdx < gridCell.value.length && colIdx >= 0 && colIdx < gridCell.value[rowIdx].length) {
-                    crossCells.push(gridCell.value[rowIdx][colIdx].content)
+                    crossCells.push(gridCell.value[rowIdx][colIdx])
                     rowIdx += dx
                     colIdx += dy
                 }
@@ -74,65 +80,103 @@ function getAffectedCells(coord: Coordinate, stencil: Stencil): CellContent[] {
             return gridCell.value
                 .slice(0, row) // does not include row
                 .flat()
-                .map(cell => cell.content)
         }
         case 'lowerHalf': {
             return gridCell.value
                 .slice(row + 1) // does not include row
                 .flat()
-                .map(cell => cell.content)
         }
         case 'leftHalf': {
             const lefty = gridCell.value.map(row => row.slice(0, col))
-            return lefty.flat().map(cell => cell.content)
+            return lefty.flat()
         }
         case 'rightHalf': {
             const righty = gridCell.value.map(row => row.slice(col + 1))
-            return righty.flat().map(cell => cell.content)
+            return righty.flat()
         }
         case 'all': {
-            return gridCell.value.flat().map(cell => cell.content)
+            return gridCell.value.flat()
         }
         default:
             return []
     }
 }
 
-const getTotalMult = (mults: Multiplier[]) => mults.reduce((acc, mult) => mult.value * acc, 1)
-
-function boostGeneratorGain(cell: CellContent, value: number, id: string): void {
-    if (cell.type !== 'generator') return
+/**
+ *  Updates the affected metric of the target.
+ */
+function updateAffectedCell(metric: Metric, value: number, id: string): void {
     // find the multiplier corresponding to the id from the cell which causes it
-    const mult = cell.gain.multipliers.find(mult => mult.id === id)
-    if (!mult) cell.gain.multipliers.push({ id, value: 1 + value })
+    const mult = metric.multipliers.find(mult => mult.id === id)
+
+    // update the multiplier corresponding to the id
+    if (!mult) metric.multipliers.push({ id, value: 1 + value })
     else mult.value += value
 
-    // update the currently boosted value of the target
-    const gainMult = getTotalMult(cell.gain.multipliers)
-    cell.gain.current = cell.gain.base * gainMult
-}
-function boostGeneratorSpeed(cell: CellContent, value: number, id: string): void {
-    if (cell.type !== 'generator') return
-    // find the multiplier corresponding to the id from the cell which causes it
-    const mult = cell.speed.multipliers.find(mult => mult.id === id)
-    if (!mult) cell.speed.multipliers.push({ id, value: 1 + value })
-    else mult.value += value
-
-    // update the currently boosted value of the target
-    const speedMult = getTotalMult(cell.speed.multipliers)
-    cell.speed.current = cell.speed.base * speedMult
+    // update the current value of the metric
+    const totalMult = metric.multipliers.reduce((acc, mult) => mult.value * acc, 1)
+    metric.current = metric.base * totalMult
 }
 
-const boostCallbacks: Record<DerivativeEffect, (cell: CellContent, value: number, id: string) => void> = {
+export function boostGeneratorGain(cell: Cell, value: number, id: string): void {
+    if (cell.content.type !== 'generator') return
+    updateAffectedCell(cell.content.gain, value, id)
+}
+function boostGeneratorSpeed(cell: Cell, value: number, id: string): void {
+    if (cell.content.type !== 'generator') return
+    updateAffectedCell(cell.content.speed, value, id)
+}
+function boostDerivativeGeneratorExpGain(cell: Cell, value: number, id: string): void {
+    if (cell.content.type !== 'generatorDerivative') return
+    updateAffectedCell(cell.content.expPerSec, value, id)
+}
+function decreaseDerivativeGeneratorExpRequirement(cell: Cell, value: number, id: string): void {
+    if (cell.content.type !== 'generatorDerivative') return
+    updateAffectedCell(cell.content.requiredExp, value, id)
+}
+function decreaseUpgradeCost(cell: Cell, value: number, id: string): void {
+    if (cell.content.type !== 'upgrade') return
+    updateAffectedCell(cell.content.cost, value, id)
+}
+function boostUpgradeEffect(cell: Cell, value: number, id: string): void {
+    if (cell.content.type !== 'upgrade') return
+    updateAffectedCell(cell.content.effect.value, value, id)
+}
+function increaseAreaOfEffect(cell: Cell, value: number, id: string): void {
+    const content = cell.content
+    if (content.type !== 'upgrade' && content.type !== 'generatorDerivative') return
+    if (content.effect.stencil === '3x3') content.effect.stencil = '5x5'
+    // TODO: propagate the effects of the affected cells to their targets
+    const affectedCells = getAllAffectedCells(cell.coord, content.effect.stencil)
+    for (const targetCell of affectedCells) {
+        applyEffect[content.effect.type](targetCell, content.effect.value.current, id)
+    }
+}
+
+export const applyEffect: Record<EffectType, (cell: Cell, value: number, id: string) => void> = {
     boostGeneratorGain,
-    boostGeneratorSpeed
+    boostGeneratorSpeed,
+    boostDerivativeGeneratorExpGain,
+    decreaseDerivativeGeneratorExpRequirement,
+    decreaseUpgradeCost,
+    boostUpgradeEffect,
+    increaseAreaOfEffect
 }
 
-export function applyCellEffects(coord: Coordinate, stencil: Stencil, effect: DerivativeEffect, effectValue: number, id: string): void {
+/**
+ * Apply a cell's effect on its affected cells.
+ * @param cell The cell to process.
+ * @param times How many times to apply the effect.
+ * @returns
+ */
+export function applyCellEffects(parentCell: Cell, times = 1): void {
+    const content = parentCell.content
+    if (content.type !== 'upgrade' && content.type !== 'generatorDerivative') return
+
     // get affected cells via the stencil
-    const affectedCells = getAffectedCells(coord, stencil)
+    const affectedCells = getAllAffectedCells(parentCell.coord, content.effect.stencil)
     // apply the corresponding effect onto all affected cells
     for (const cell of affectedCells) {
-        boostCallbacks[effect](cell, effectValue, id)
+        applyEffect[content.effect.type](cell, content.effect.value.current * times, parentCell.id)
     }
 }

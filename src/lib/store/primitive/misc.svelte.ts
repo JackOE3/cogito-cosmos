@@ -42,10 +42,16 @@ export type Multiplier = {
     readonly id: string
     value: number
 }
-export type ResourceMetric = {
+
+/**
+ * This represents a numeric values which can be modified by multipliers from dynamic effects in the game. `base` is the starting value, and `current` is the dynamic value with all applied `multipliers`.
+ */
+export type Metric = {
     base: number
     current: number
     multipliers: Multiplier[]
+}
+export type ResourceMetric = Metric & {
     resource: GeneratorResource
 }
 
@@ -54,11 +60,7 @@ export interface GeneratorI extends ContentI {
     gain: ResourceMetric
     cost?: ResourceMetric
     readonly baseDurationMillis: number
-    speed: {
-        base: number
-        current: number
-        multipliers: Multiplier[]
-    }
+    speed: Metric
     active: boolean
     progress: number
 }
@@ -69,7 +71,6 @@ export type Stencil =
     | '5x5'
     | 'row'
     | 'column'
-    | 'cross'
     | 'diagonals'
     | 'all'
     | 'upperHalf'
@@ -81,59 +82,42 @@ export type Stencil =
     | 'upperLeftQuadrant'
     | 'upperRightQuadrant'
 
-export type DerivativeEffect = 'boostGeneratorGain' | 'boostGeneratorSpeed'
+export type EffectType =
+    | 'boostGeneratorGain'
+    | 'boostGeneratorSpeed'
+    | 'boostDerivativeGeneratorExpGain'
+    | 'decreaseDerivativeGeneratorExpRequirement'
+    | 'decreaseUpgradeCost'
+    | 'boostUpgradeEffect'
+    | 'increaseAreaOfEffect'
 
+export type CellEffect = {
+    type: EffectType
+    stencil: Stencil
+    value: Metric
+}
 export interface GeneratorDerivativeI extends ContentI {
     readonly type: 'generatorDerivative'
-    readonly id: string
-    effect: DerivativeEffect
-    stencil: Stencil
+    effect: CellEffect
     cost?: ResourceMetric
     level: number
-    boost: number
     currentExp: number
-    requiredExp: number
-    expPerSec: number
+    requiredExp: Metric
+    expPerSec: Metric
     active: boolean
     progress: number
 }
 
-export type UpgradeType = 'addAttack' | 'multAttack' | 'addGeneratorGain' | 'addGeneratorSpeed'
 export interface UpgradeI extends ContentI {
     readonly type: 'upgrade'
-    readonly id: string
-    //upgradeType: UpgradeType
-    effect: DerivativeEffect
-    stencil: Stencil
+    effect: CellEffect
     //title: string
     description?: string[]
     cost: ResourceMetric
     costMultiplier: number
-    boost: number
     count: number
     maxBuy?: number
 }
-// Specific types for each `upgradeType` with required additional properties
-/* export interface GeneratorGainUpgrade extends UpgradeBaseI {
-    upgradeType: 'addGeneratorGain'
-    forGeneratorResource: GeneratorResource
-    addGain: number
-}
-export interface GeneratorSpeedUpgrade extends UpgradeBaseI {
-    upgradeType: 'addGeneratorSpeed'
-    forGeneratorResource: GeneratorResource
-    addSpeed: number
-}
-export interface AddAttackUpgrade extends UpgradeBaseI {
-    upgradeType: 'addAttack'
-    addAttack: number
-}
-export interface MultAttackUpgrade extends UpgradeBaseI {
-    upgradeType: 'multAttack'
-    multAttack: number
-}
-
-export type UpgradeI = GeneratorGainUpgrade | GeneratorSpeedUpgrade | AddAttackUpgrade | MultAttackUpgrade */
 
 export type CellContent = EmptyI | LockedI | CombatI | GeneratorI | GeneratorDerivativeI | UpgradeI
 
@@ -146,6 +130,7 @@ export type Cell = {
     coord: Coordinate
     hidden: boolean
     content: CellContent
+    dependencies: string[]
     relX: number
     relY: number
 }
