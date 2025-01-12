@@ -1,4 +1,5 @@
 import { type Resources, type Cell } from '$lib/store'
+import { isDefined } from './utils'
 
 type returnSignature = (buyMaxUpgrades: boolean) => void
 
@@ -8,7 +9,7 @@ export function buyUpgrade(cell: Cell, resource: Resources): returnSignature {
     return function (buyMaxUpgrades = false): void {
         if (cell.content.type !== 'upgrade') return
         const upgrade = cell.content
-        if (typeof upgrade === 'undefined') return
+        if (!isDefined(upgrade)) return
 
         const res = resource[upgrade.cost.resource]
 

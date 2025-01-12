@@ -88,6 +88,12 @@ export function getOffset(el: HTMLElement): { left: number; top: number } {
         top: rect.top + window.scrollY
     }
 }
+
+/**
+ *  Type guard to inform TypeScript that the result will no longer include undefined
+ */
+export const isDefined = <T>(value: T | undefined): value is T => typeof value !== 'undefined'
+
 /**
  * Create a UUID.
  */

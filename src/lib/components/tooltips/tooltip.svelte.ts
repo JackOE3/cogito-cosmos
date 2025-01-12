@@ -1,5 +1,6 @@
 import { mount, unmount } from 'svelte'
 import Tooltip from './Tooltip.svelte'
+import { isDefined } from '$lib/gamelogic/utils'
 
 export enum Direction {
     TOP = 'top',
@@ -110,7 +111,7 @@ export function tooltip(element: HTMLElement, optionsFn: () => Options): void {
     function mouseMove(_event: MouseEvent): void {
         if (options.data === null || !mousePressed || !tooltipShown) return
         // onmount when tooltip is shown & mouse is pressed (= disable tooltip when panning)
-        if (typeof tooltipComponent !== 'undefined') unmount(tooltipComponent)
+        if (isDefined(tooltipComponent)) unmount(tooltipComponent)
         tooltipShown = false
     }
 

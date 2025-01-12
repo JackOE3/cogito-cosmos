@@ -1,5 +1,5 @@
 import { gridCell, type Stencil, type Coordinate, type Metric, type Cell, type EffectType, type CellEffect, type CellContent } from '$lib/store'
-import { formatWhole } from './utils'
+import { formatWhole, isDefined } from './utils'
 
 /**
  * If a coord is out of bounds, returns undefined instead of a cell.
@@ -9,10 +9,6 @@ function getCellAtCoord(coord: Coordinate): Cell | undefined {
     if (coord.col < 0 || coord.col >= gridCell.value[coord.row].length) return undefined
     return gridCell.value[coord.row][coord.col]
 }
-/**
- *  Type guard to inform TypeScript that the result will no longer include undefined
- */
-const isDefined = <T>(value: T | undefined): value is T => typeof value !== 'undefined'
 
 /**
  * Applies the stencil centered on the current cell to get an array of all affected cells.
@@ -125,7 +121,7 @@ function updateAffectedCell(metric: Metric, effect: CellEffect, id: string): boo
     const mult = metric.multipliers.find(mult => mult.id === id)
 
     let value = 0
-    if (typeof effect.value.currentCumulative !== 'undefined') {
+    if (isDefined(effect.value.currentCumulative)) {
         value = effect.value.currentCumulative
     } else value = effect.value.current
 
@@ -197,7 +193,7 @@ export const applyEffect: Record<EffectType, (cell: Cell, effect: CellEffect, id
  */
 function updateEffectValue(content: CellContent): void {
     if (!('effect' in content)) return
-    if (typeof content.effect.value.currentCumulative === 'undefined') return
+    if (!isDefined(content.effect.value.currentCumulative)) return
 
     let multiplicity = 1
     if ('level' in content) multiplicity = content.level

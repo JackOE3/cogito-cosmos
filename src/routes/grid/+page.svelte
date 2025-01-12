@@ -1,7 +1,7 @@
 <script lang="ts">
     import ProgBar from '$lib/components/misc/ProgBar.svelte'
     import { tooltip } from '$lib/components/tooltips/tooltip.svelte'
-    import { colors, formatNumber, formatWhole, randInt, square, uuidv4 } from '$lib/gamelogic/utils'
+    import { colors, formatNumber, formatWhole, isDefined, randInt, square, uuidv4 } from '$lib/gamelogic/utils'
     import {
         derivedGrid,
         fastFowardFactor,
@@ -73,7 +73,7 @@
         setStartingCell()
     }
 
-    if (gridCell.value.flat().some(cell => typeof cell === 'undefined')) {
+    if (gridCell.value.flat().some(cell => !isDefined(cell))) {
         populateCells()
     }
 
@@ -264,7 +264,7 @@
             for (const id of cell.dependencies) {
                 // find the cell from its id
                 const cellDep = gridCell.value.flat().find(cell => cell.id === id)
-                if (typeof cellDep === 'undefined') continue
+                if (!isDefined(cellDep)) continue
                 // check if type of cellDep has an effect property
                 if (!('effect' in cellDep.content)) continue
                 // console.log('found dependency:', $state.snapshot(cellDep))
@@ -572,7 +572,7 @@
         if (resource.value[item.cost.resource] < item.cost.current) return
 
         nextCellContent = getNextCellContent()
-        if (typeof nextCellContent === 'undefined') {
+        if (!isDefined(nextCellContent)) {
             console.log('Error: Undefined cell content.')
             return
         }
@@ -590,7 +590,7 @@
     }
 
     function handleSelectCell(cell: Cell): void {
-        if (typeof nextCellContent === 'undefined') return
+        if (!isDefined(nextCellContent)) return
         insertCellContent(cell.coord, nextCellContent)
         nextCellContent = undefined
 
