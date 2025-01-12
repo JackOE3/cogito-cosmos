@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { getEffectDescription } from '$lib/gamelogic/cell-effects.svelte'
-    import { formatNumber, formatWhole, square } from '$lib/gamelogic/utils'
+    import { getEffectDescription, getTotalEffectValue } from '$lib/gamelogic/cell-effects.svelte'
+    import { formatNumber, formatWhole, isDefined, square } from '$lib/gamelogic/utils'
     import type { UpgradeI } from '$lib/store'
 
     type Props = {
@@ -21,7 +21,7 @@
             {@html upgrade.description.join('<br>')} <br />
         {/if}
         {getEffectDescription(upgrade)} <br />
-        Total Effect: {formatNumber(1 + upgrade.effect.value.currentCumulative!, 2)}x <br />
+        Total Effect: {getTotalEffectValue(upgrade.effect)}x <br />
         Area of Effect: {upgrade.effect.stencil} <br />
         {#if upgrade.maxBuy !== undefined && upgrade.count >= upgrade.maxBuy}
             <span style="color: var(--text-medium-emphasis)">This upgrade is maxed.</span>

@@ -1,5 +1,5 @@
-import { gridCell, type Stencil, type Coordinate, type Metric, type Cell, type EffectType, type CellEffect, type CellContent } from '$lib/store'
-import { formatWhole, isDefined } from './utils'
+import { gridCell, type Stencil, type Coordinate, type Metric, type Cell, type EffectType, type CellEffect, type CellContent, type Formula } from '$lib/store'
+import { formatNumber, formatWhole, isDefined } from './utils'
 
 /**
  * If a coord is out of bounds, returns undefined instead of a cell.
@@ -120,14 +120,17 @@ function updateAffectedCell(metric: Metric, effect: CellEffect, id: string): boo
     // find the multiplier corresponding to the id from the cell which causes it
     const mult = metric.multipliers.find(mult => mult.id === id)
 
-    let value = 0
+    let value
     if (isDefined(effect.value.currentCumulative)) {
         value = effect.value.currentCumulative
     } else value = effect.value.current
 
+    // eg. +20% = 0.2 -> 1.2 when you multiply
+    if (effect.formula === 'additive') value += 1
+
     // update the multiplier corresponding to the id
-    if (!mult) metric.multipliers.push({ id, value: 1 + value })
-    else mult.value = 1 + value
+    if (!mult) metric.multipliers.push({ id, value })
+    else mult.value = value
 
     // update the current value of the metric
     const totalMult = metric.multipliers.reduce((acc, mult) => mult.value * acc, 1)
@@ -189,6 +192,14 @@ export const applyEffect: Record<EffectType, (cell: Cell, effect: CellEffect, id
 }
 
 /**
+ * Should return identity if multiplicity === 1.
+ */
+const formulaDict: Record<Formula, (value: number, multiplicity: number) => number> = {
+    additive: (value, multiplicity) => value * multiplicity,
+    multiplicative: (value, multiplicity) => Math.pow(value, multiplicity)
+}
+
+/**
  * Updates the currentCumulative effect value of the cell. This is required for upgrades or derivative generators where the effect value depends on their quantities (count/level).
  */
 function updateEffectValue(content: CellContent): void {
@@ -198,7 +209,9 @@ function updateEffectValue(content: CellContent): void {
     let multiplicity = 1
     if ('level' in content) multiplicity = content.level
     else if ('count' in content) multiplicity = content.count
-    content.effect.value.currentCumulative = content.effect.value.current * multiplicity
+    //content.effect.value.currentCumulative = content.effect.value.current * multiplicity
+    //console.log(content.effect.value.current, multiplicity)
+    content.effect.value.currentCumulative = formulaDict[content.effect.formula](content.effect.value.current, multiplicity)
 }
 /**
  * Apply a cell's effect on its target cells.
@@ -232,11 +245,18 @@ export function getEffectDescription(content: CellContent): string {
     const descriptionDict: Record<EffectType, string> = {
         boostGeneratorGain: `Boost the gain of basic generators by ${val}%${perThing}.`,
         boostGeneratorSpeed: `Boost the speed of basic generators by ${val}%${perThing}.`,
-        boostDerivativeGeneratorExpGain: `Boost the XP gain of derivative generators <br> by ${val}% per level.`,
-        decreaseDerivativeGeneratorExpRequirement: `Decrease the XP requirement to level up derivative <br> generators by ${val}% per level.`,
+        boostDerivativeGeneratorExpGain: `Boost the XP gain of derivative generators by ${val}% per level.`,
+        decreaseDerivativeGeneratorExpRequirement: `Decrease the XP requirement to level up derivative generators by ${val}% per level.`,
         decreaseUpgradeCost: `Decrease the cost of upgrades by ${val}% per level.`,
         boostUpgradeEffect: `Increase the potency of upgrades by ${val}% per level.`,
         increaseAreaOfEffect: `Increase the area of effect of other upgrades and derivative generators.`
     }
     return descriptionDict[content.effect.type]
+}
+
+export function getTotalEffectValue(effect: CellEffect): string {
+    if (!isDefined(effect.value.currentCumulative)) return 'currentCumulative not defined'
+    if (effect.formula === 'additive') return formatNumber(1 + effect.value.currentCumulative, 2)
+    else if (effect.formula === 'multiplicative') return formatNumber(effect.value.currentCumulative, 2)
+    return 'Unknown formula'
 }

@@ -25,14 +25,15 @@
         type EffectType,
         type CellShopItem,
         cellShopItems,
-        type CellEffect
+        type CellEffect,
+        type Formula
     } from '$lib/store'
     import { bounceOut, cubicOut, elasticOut, quartOut } from 'svelte/easing'
     import { fade, fly, scale } from 'svelte/transition'
     import { Tween } from 'svelte/motion'
     import UpgradeCellComponent from '$lib/components/UpgradeCell.svelte'
     import { movable } from '$lib/gamelogic/movable.svelte'
-    import { applyCellEffects, applyEffect, getAllAffectedCells, getEffectDescription } from '$lib/gamelogic/cell-effects.svelte'
+    import { applyCellEffects, applyEffect, getAllAffectedCells, getEffectDescription, getTotalEffectValue } from '$lib/gamelogic/cell-effects.svelte'
 
     const unicodeChars = {
         upwardsPairedArrows: '&#8648;',
@@ -182,7 +183,7 @@
         }
     }
 
-    function makeGeneratorDerivative(stencil: Stencil, effectType: EffectType, effectValue: number): GeneratorDerivativeI {
+    function makeGeneratorDerivative(stencil: Stencil, effectType: EffectType, effectValue: number, formula: Formula = 'additive'): GeneratorDerivativeI {
         return {
             type: 'generatorDerivative',
             effect: {
@@ -193,7 +194,8 @@
                     current: effectValue,
                     currentCumulative: 0,
                     multipliers: []
-                }
+                },
+                formula
             },
             currentExp: 0,
             requiredExp: {
@@ -219,6 +221,7 @@
             amount: number
             resource: GeneratorResource
         },
+        formula: Formula = 'additive',
         maxBuy?: number
     ): UpgradeI {
         // depending on coord and stencil, update the dependency arrays of affected cells with the id for this cell
@@ -232,7 +235,8 @@
                     current: effectValue,
                     currentCumulative: 0,
                     multipliers: []
-                }
+                },
+                formula
             },
             cost: {
                 base: cost.amount,
@@ -285,8 +289,8 @@
      * deterministic cell content for rapid prototyping
      */
     function setDeterministicCellContent(): void {
-        insertCellContent(relToCoord({ row: -1, col: 0 }), makeUpgrade('adjacent', 'boostGeneratorGain', 0.5, { amount: 10, resource: 'green' }, 10))
-        insertCellContent(relToCoord({ row: 0, col: -1 }), makeUpgrade('row', 'boostGeneratorSpeed', 0.1, { amount: 5, resource: 'green' }, 20))
+        insertCellContent(relToCoord({ row: -1, col: 0 }), makeUpgrade('adjacent', 'boostGeneratorGain', 0.5, { amount: 10, resource: 'green' }))
+        insertCellContent(relToCoord({ row: 0, col: -1 }), makeUpgrade('row', 'boostGeneratorSpeed', 0.1, { amount: 5, resource: 'green' }))
 
         insertCellContent(relToCoord({ row: 0, col: 0 }), makeGenerator(1000, { amount: 1, resource: 'green' }))
         insertCellContent(relToCoord({ row: 0, col: 1 }), makeGenerator(1000, { amount: 1, resource: 'red' }, { amount: 2, resource: 'green' }))
@@ -307,7 +311,7 @@
         yield makeGeneratorDerivative('3x3', 'boostGeneratorSpeed', 0.1)
         yield makeGenerator(4000, { amount: 1, resource: 'green' }, { amount: 10, resource: 'red' })
         yield makeGeneratorDerivative('row', 'boostUpgradeEffect', 0.2)
-        yield makeUpgrade('3x3', 'boostDerivativeGeneratorExpGain', 1, { amount: 10, resource: 'green' })
+        yield makeUpgrade('3x3', 'boostDerivativeGeneratorExpGain', 2, { amount: 10, resource: 'green' }, 'multiplicative')
         yield makeGeneratorDerivative('all', 'decreaseUpgradeCost', 1)
         yield makeUpgrade('upperHalf', 'decreaseDerivativeGeneratorExpRequirement', 1, { amount: 100, resource: 'red' })
     }
@@ -693,7 +697,7 @@
             Derivative Generator ${generator.active ? '[...]' : ''}<hr>
             Level: ${formatWhole(generator.level)} - ${formatNumber(generator.currentExp, 1)}/${formatNumber(generator.requiredExp.current, 1)} XP - ${formatNumber(generator.expPerSec.current, 1)} XP/s <br>
             ${getEffectDescription(generator)} <br>
-            Total Effect: ${formatNumber(1 + generator.effect.value.current * generator.level, 2)}x <br>
+            Total Effect: ${getTotalEffectValue(generator.effect)}x <br>
             Area of Effect: ${generator.effect.stencil} <br>
             <span style="color: var(--text-medium-emphasis)">Uses 1 AP while active.</span> <br>
             <span style="color: var(--text-medium-emphasis)">Click to toggle.</span>

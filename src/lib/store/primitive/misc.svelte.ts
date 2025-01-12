@@ -100,10 +100,12 @@ export type EffectType =
     | 'boostUpgradeEffect'
     | 'increaseAreaOfEffect'
 
+export type Formula = 'additive' | 'multiplicative'
 export type CellEffect = {
     type: EffectType
     stencil: Stencil
     value: Metric
+    formula: Formula
 }
 export interface GeneratorDerivativeI extends ContentI {
     readonly type: 'generatorDerivative'
