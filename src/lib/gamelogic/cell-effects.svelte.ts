@@ -1,4 +1,5 @@
 import { gridCell, type Stencil, type Coordinate, type Metric, type Cell, type EffectType, type CellEffect, type CellContent } from '$lib/store'
+import { formatWhole } from './utils'
 
 /**
  * If a coord is out of bounds, returns undefined instead of a cell.
@@ -204,7 +205,7 @@ function updateEffectValue(content: CellContent): void {
     content.effect.value.currentCumulative = content.effect.value.current * multiplicity
 }
 /**
- * Apply a cell's effect on its affected cells.
+ * Apply a cell's effect on its target cells.
  * @param cell The cell to process.
  * @param times How many times to apply the effect.
  */
@@ -219,8 +220,27 @@ export function applyCellEffects(parentCell: Cell): void {
         const applied = applyEffect[parentCell.content.effect.type](cell, parentCell.content.effect, parentCell.id)
         if (!applied) continue
 
+        //console.log($state.snapshot(cell.content))
         // recursive logic for propagating effects, eg. if an effect changes an effect.value of the target cell
-        console.log($state.snapshot(cell.content))
         applyCellEffects(cell) // scary af, lets just hope for the best.
     }
+}
+
+export function getEffectDescription(content: CellContent): string {
+    if (!('effect' in content)) return 'No Effect found.'
+    const val = formatWhole(content.effect.value.current * 100)
+    let perThing = ''
+    if (content.type === 'upgrade') perThing = ' per upgrade'
+    else if (content.type === 'generatorDerivative') perThing = ' per level'
+
+    const descriptionDict: Record<EffectType, string> = {
+        boostGeneratorGain: `Boost the gain of basic generators by ${val}%${perThing}.`,
+        boostGeneratorSpeed: `Boost the speed of basic generators by ${val}%${perThing}.`,
+        boostDerivativeGeneratorExpGain: `Boost the XP gain of derivative generators <br> by ${val}% per level.`,
+        decreaseDerivativeGeneratorExpRequirement: `Decrease the XP requirement to level up derivative <br> generators by ${val}% per level.`,
+        decreaseUpgradeCost: `Decrease the cost of upgrades by ${val}% per level.`,
+        boostUpgradeEffect: `Increase the potency of upgrades by ${val}% per level.`,
+        increaseAreaOfEffect: `Increase the area of effect of other upgrades and derivative generators.`
+    }
+    return descriptionDict[content.effect.type]
 }

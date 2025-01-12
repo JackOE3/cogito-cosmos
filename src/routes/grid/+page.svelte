@@ -24,14 +24,15 @@
         type UpgradeI,
         type EffectType,
         type CellShopItem,
-        cellShopItems
+        cellShopItems,
+        type CellEffect
     } from '$lib/store'
     import { bounceOut, cubicOut, elasticOut, quartOut } from 'svelte/easing'
     import { fade, fly, scale } from 'svelte/transition'
     import { Tween } from 'svelte/motion'
     import UpgradeCellComponent from '$lib/components/UpgradeCell.svelte'
     import { movable } from '$lib/gamelogic/movable.svelte'
-    import { applyCellEffects, applyEffect, getAllAffectedCells } from '$lib/gamelogic/cell-effects.svelte'
+    import { applyCellEffects, applyEffect, getAllAffectedCells, getEffectDescription } from '$lib/gamelogic/cell-effects.svelte'
 
     const unicodeChars = {
         upwardsPairedArrows: '&#8648;',
@@ -678,7 +679,6 @@
 {/snippet}
 
 {#snippet generatorDerivativeCell(generator: GeneratorDerivativeI, disabledClick = false)}
-    {@const metric = generator.effect.type === 'boostGeneratorGain' ? 'gain' : generator.effect.type === 'boostGeneratorSpeed' ? 'speed' : 'unknown'}
     <button
         class="full"
         class:disabledClick
@@ -692,9 +692,9 @@
             data: `
             Derivative Generator ${generator.active ? '[...]' : ''}<hr>
             Level: ${formatWhole(generator.level)} - ${formatNumber(generator.currentExp, 1)}/${formatNumber(generator.requiredExp.current, 1)} XP - ${formatNumber(generator.expPerSec.current, 1)} XP/s <br>
-            Boost the ${metric} of basic generators <br> by ${formatWhole(generator.effect.value.current * 100)}% per level. <br>
-            Area of Effect: ${generator.effect.stencil} <br>
+            ${getEffectDescription(generator)} <br>
             Total Effect: ${formatNumber(1 + generator.effect.value.current * generator.level, 2)}x <br>
+            Area of Effect: ${generator.effect.stencil} <br>
             <span style="color: var(--text-medium-emphasis)">Uses 1 AP while active.</span> <br>
             <span style="color: var(--text-medium-emphasis)">Click to toggle.</span>
             `

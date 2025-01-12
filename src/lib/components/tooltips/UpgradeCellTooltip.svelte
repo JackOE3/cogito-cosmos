@@ -1,6 +1,7 @@
 <script lang="ts">
+    import { getEffectDescription } from '$lib/gamelogic/cell-effects.svelte'
     import { formatNumber, formatWhole, square } from '$lib/gamelogic/utils'
-    import type { EffectType, UpgradeI } from '$lib/store'
+    import type { UpgradeI } from '$lib/store'
 
     type Props = {
         data: UpgradeI
@@ -11,11 +12,6 @@
 
     // export let rect: DOMRect
     const style = `top: ${top}px; left: ${left}px;`
-
-    const descriptionDict: Partial<Record<EffectType, string>> = $derived({
-        boostGeneratorGain: `Boost the gain of basic generators <br> by ${formatWhole(upgrade.effect.value.current * 100)}% per upgrade.`,
-        boostGeneratorSpeed: `Boost the speed of basic generators <br> by ${formatWhole(upgrade.effect.value.current * 100)}% per upgrade.`
-    })
 </script>
 
 <div class="tooltip" {style}>
@@ -24,9 +20,9 @@
         {#if upgrade.description}
             {@html upgrade.description.join('<br>')} <br />
         {/if}
-        {@html descriptionDict[upgrade.effect.type]} <br />
-        Area of Effect: {upgrade.effect.stencil} <br />
+        {getEffectDescription(upgrade)} <br />
         Total Effect: {formatNumber(1 + upgrade.effect.value.currentCumulative!, 2)}x <br />
+        Area of Effect: {upgrade.effect.stencil} <br />
         {#if upgrade.maxBuy !== undefined && upgrade.count >= upgrade.maxBuy}
             <span style="color: var(--text-medium-emphasis)">This upgrade is maxed.</span>
         {:else}
