@@ -26,8 +26,8 @@
         type CellShopItem,
         cellShopItems
     } from '$lib/store'
-    import { bounceIn, bounceOut, cubicOut, quartIn, quartOut, quintOut } from 'svelte/easing'
-    import { fade, fly } from 'svelte/transition'
+    import { bounceIn, bounceOut, cubicOut, elasticOut, quartIn, quartOut, quintOut } from 'svelte/easing'
+    import { fade, fly, scale } from 'svelte/transition'
     import { Tween } from 'svelte/motion'
     import UpgradeCellComponent from '$lib/components/UpgradeCell.svelte'
     import { movable } from '$lib/gamelogic/movable.svelte'
@@ -753,7 +753,7 @@
                         {#if !cell.hidden || LORCA_OVERRIDE.value}
                             <div
                                 class="cell full"
-                                in:fly={{ duration: 1000, x: cell.relX * 40, y: cell.relY * 40, easing: quartOut }}
+                                in:scale={{ delay: 400, duration: 1200, easing: elasticOut, start: 0.7 }}
                                 out:fade={{ duration: 400, easing: quartOut }}>
                                 {#if cell.content.type === 'locked' && !LORCA_OVERRIDE.value}
                                     {@render lockedCell(cell)}
