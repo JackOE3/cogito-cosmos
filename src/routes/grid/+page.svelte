@@ -33,7 +33,14 @@
     import { Tween } from 'svelte/motion'
     import UpgradeCellComponent from '$lib/components/UpgradeCell.svelte'
     import { movable } from '$lib/gamelogic/movable.svelte'
-    import { applyCellEffects, applyEffect, getAllAffectedCells, getEffectDescription, getTotalEffectValue } from '$lib/gamelogic/cell-effects.svelte'
+    import {
+        applyCellEffects,
+        applyEffect,
+        getAllAffectedCells,
+        getAreaOfEffectDescription,
+        getEffectDescription,
+        getTotalEffectValue
+    } from '$lib/gamelogic/cell-effects.svelte'
 
     const unicodeChars = {
         upwardsPairedArrows: '&#8648;',
@@ -608,6 +615,7 @@
     }
 
     import { crossfade } from 'svelte/transition'
+    import CellTooltip from '$lib/components/tooltips/CellTooltip.svelte'
     export const [send, receive] = crossfade({
         duration: 1500,
         easing: quartOut
@@ -644,8 +652,6 @@
 {/snippet}
 
 {#snippet generatorCell(generator: GeneratorI, disabledClick = false)}
-    {@const gainMetric = `+${formatNumber(generator.gain.current, 2)} ${square[generator.gain.resource]}`}
-    {@const costMetric = generator.cost ? `/ -${formatNumber(generator.cost.current, 2)} ${square[generator.cost.resource]}` : ''}
     <button
         class="full"
         class:disabledClick
@@ -653,19 +659,13 @@
             if (disabledClick) return
             if (!generator.active && actionPoints <= 0) return
             generator.active = !generator.active
-            //if (!generatorActive[resourceName] && actionPoints <= 0) return
-            //generatorActive[resourceName] = !generatorActive[resourceName]
         }}
         style="display: flex; flex-direction:column; justify-content: center; gap: 0.25rem; {generator.active
             ? `background: ${colors(0.2)[generator.gain.resource]}`
             : ''}"
         use:tooltip={() => ({
-            data: `
-            Basic Generator ${generator.active ? '[...]' : ''}<hr>
-            ${gainMetric} ${costMetric} every ${formatNumber(generator.baseDurationMillis / 1000 / generator.speed.current, 2)}s <br>
-            <span style="color: var(--text-medium-emphasis)">Uses 1 AP while active.</span> <br>
-            <span style="color: var(--text-medium-emphasis)">Click to toggle.</span>
-            `
+            data: generator,
+            Component: CellTooltip
         })}>
         <span style="font-size: 1.5rem; display: flex; gap: 0.5rem; justify-content: center;">
             &#120126; {@html square[generator.gain.resource]}
@@ -693,15 +693,8 @@
         }}
         style="display: flex; flex-direction:column; justify-content: center; gap: 0.25rem; {generator.active ? `background: rgba(255,255,255,0.3)` : ''}"
         use:tooltip={() => ({
-            data: `
-            Derivative Generator ${generator.active ? '[...]' : ''}<hr>
-            Level: ${formatWhole(generator.level)} - ${formatNumber(generator.currentExp, 1)}/${formatNumber(generator.requiredExp.current, 1)} XP - ${formatNumber(generator.expPerSec.current, 1)} XP/s <br>
-            ${getEffectDescription(generator)} <br>
-            Total Effect: ${getTotalEffectValue(generator.effect)}x <br>
-            Area of Effect: ${generator.effect.stencil} <br>
-            <span style="color: var(--text-medium-emphasis)">Uses 1 AP while active.</span> <br>
-            <span style="color: var(--text-medium-emphasis)">Click to toggle.</span>
-            `
+            data: generator,
+            Component: CellTooltip
         })}>
         <span style="font-size: 1.5rem; display: flex; gap: 0.5rem; justify-content: center;">
             &#120126;

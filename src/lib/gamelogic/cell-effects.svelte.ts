@@ -255,8 +255,47 @@ export function getEffectDescription(content: CellContent): string {
 }
 
 export function getTotalEffectValue(effect: CellEffect): string {
-    if (!isDefined(effect.value.currentCumulative)) return 'currentCumulative not defined'
+    if (!isDefined(effect.value.currentCumulative)) return 'currentCumulative is not defined'
     if (effect.formula === 'additive') return formatNumber(1 + effect.value.currentCumulative, 2)
     else if (effect.formula === 'multiplicative') return formatNumber(effect.value.currentCumulative, 2)
     return 'Unknown formula'
+}
+
+export function getAreaOfEffectDescription(stencil: Stencil): string {
+    if (!isDefined(stencil)) return 'stencil is not defined'
+    let desc: string
+    switch (stencil) {
+        case 'adjacent':
+            return 'Adjacent cells'
+        case '3x3':
+            return '3x3 grid'
+        case '5x5':
+            return '3x3 grid'
+        case 'all':
+            return 'All cells'
+        case 'row':
+            return 'All cells in this row'
+        case 'column':
+            return 'All cells in this column'
+        case 'diagonals':
+            return 'Both diagonals (like a bishop)'
+        case 'leftHalf':
+            return 'All cells on the left'
+        case 'rightHalf':
+            return 'All cells on the right'
+        case 'lowerHalf':
+            return 'All cells below'
+        case 'upperHalf':
+            return 'All cells above'
+        case 'lowerLeftQuadrant':
+            return 'All cells in lower left quadrant'
+        case 'lowerRightQuadrant':
+            return 'All cells in lower right quadrant'
+        case 'upperLeftQuadrant':
+            return 'All cells in upper left quadrant'
+        case 'upperRightQuadrant':
+            return 'All cells in upper right quadrant'
+        default:
+            return 'unknown stencil'
+    }
 }

@@ -3,7 +3,7 @@
     import { resource, type Cell, type UpgradeI } from '$lib/store'
     import type { Snippet } from 'svelte'
     import { tooltip } from './tooltips/tooltip.svelte'
-    import UpgradeCellTooltip from './tooltips/UpgradeCellTooltip.svelte'
+    import CellTooltip from './tooltips/CellTooltip.svelte'
     import { applyCellEffects } from '$lib/gamelogic/cell-effects.svelte'
 
     type Props = {
@@ -29,7 +29,7 @@
 </script>
 
 <button {style} class={className} class:disabledClick onclick={handleUpgradeClicked} class:disabled={(!canAfford || isMaxed) && !disabledClick}>
-    <div class="full" class:maxed={isMaxed} use:tooltip={() => ({ data: upgrade, Component: UpgradeCellTooltip })}>
+    <div class="full" class:maxed={isMaxed} use:tooltip={() => ({ data: upgrade, Component: CellTooltip })}>
         <!-- {upgrades[upgradeName].title} -->
         {@render children?.()}
     </div>
