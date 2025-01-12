@@ -138,6 +138,44 @@ export const N_ROWS = 9
 export const N_COLS = 9
 export const gridCell = makeState<Cell[][]>(Array.from({ length: N_ROWS }, () => new Array(N_COLS).fill(undefined)))
 
+export type CellShopItem = {
+    cost: ResourceMetric
+    costMultiplier: number
+    count: number
+}
+export const cellShopItems: CellShopItem[] = $state([
+    {
+        cost: {
+            base: 100,
+            current: 100,
+            resource: 'green',
+            multipliers: []
+        },
+        costMultiplier: 2,
+        count: 0
+    },
+    {
+        cost: {
+            base: 100,
+            current: 100,
+            resource: 'red',
+            multipliers: []
+        },
+        costMultiplier: 2,
+        count: 0
+    },
+    {
+        cost: {
+            base: 100,
+            current: 100,
+            resource: 'blue',
+            multipliers: []
+        },
+        costMultiplier: 2,
+        count: 0
+    }
+])
+
 //--------------------------------------------------------
 /**
  * Your current stage of Enlightenment

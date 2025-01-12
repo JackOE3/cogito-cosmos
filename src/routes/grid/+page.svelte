@@ -22,10 +22,12 @@
         type ResourceMetric,
         type Stencil,
         type UpgradeI,
-        type EffectType
+        type EffectType,
+        type CellShopItem,
+        cellShopItems
     } from '$lib/store'
-    import { cubicOut, quartOut } from 'svelte/easing'
-    import { fly } from 'svelte/transition'
+    import { bounceIn, bounceOut, cubicOut, quartIn, quartOut, quintOut } from 'svelte/easing'
+    import { fade, fly } from 'svelte/transition'
     import { Tween } from 'svelte/motion'
     import UpgradeCellComponent from '$lib/components/UpgradeCell.svelte'
     import { movable } from '$lib/gamelogic/movable.svelte'
@@ -542,11 +544,27 @@
 
     let selectionCells: Set<Cell> = new Set()
     let nextCellContent: CellContent | undefined = $state(undefined)
+    let cellSelectionActive = $state(false)
 
-    function handleGetCell(): void {
+    // gets rid of the selection when hot reloading
+    $effect(() => {
+        return () => {
+            selectionCells.forEach(cell => (cell.hidden = true))
+        }
+    })
+
+    function handleGetCell(item: CellShopItem): void {
         if (selectionCells.size !== 0) return
+        if (cellSelectionActive) return
+        // purchasing logic:
+        if (resource.value[item.cost.resource] < item.cost.current) return
+        resource.value[item.cost.resource] -= item.cost.current
+        item.cost.current *= item.costMultiplier
+        item.count++
+
         // unhide all surrounding cells and fade em in
         selectionCells = getAdjacentCells()
+        cellSelectionActive = true
         for (const cell of selectionCells) {
             const m = 1
             cell.relX = Math.random() * m - m / 2
@@ -565,7 +583,16 @@
         // hide the other selection cells
         selectionCells.forEach(cell => (cell.hidden = true))
         selectionCells.clear()
+        setTimeout(() => {
+            cellSelectionActive = false
+        }, 1500)
     }
+
+    import { crossfade } from 'svelte/transition'
+    export const [send, receive] = crossfade({
+        duration: 1500,
+        easing: quartOut
+    })
 </script>
 
 {#snippet basicCell(callback: () => void)}
@@ -617,7 +644,8 @@
             data: `
             Basic Generator ${generator.active ? '[...]' : ''}<hr>
             ${gainMetric} ${costMetric} every ${formatNumber(generator.baseDurationMillis / 1000 / generator.speed.current, 2)}s <br>
-            <span style="color: var(--text-medium-emphasis)">Uses 1 AP while active.</span>
+            <span style="color: var(--text-medium-emphasis)">Uses 1 AP while active.</span> <br>
+            <span style="color: var(--text-medium-emphasis)">Click to toggle.</span>
             `
         })}>
         <span style="font-size: 1.5rem; display: flex; gap: 0.5rem; justify-content: center;">
@@ -653,7 +681,8 @@
             Boost the ${metric} of basic generators <br> by ${formatWhole(generator.effect.value.current * 100)}% per level. <br>
             Area of Effect: ${generator.effect.stencil} <br>
             Total Effect: ${formatNumber(1 + generator.effect.value.current * generator.level, 2)}x <br>
-            <span style="color: var(--text-medium-emphasis)">Uses 1 AP while active.</span>
+            <span style="color: var(--text-medium-emphasis)">Uses 1 AP while active.</span> <br>
+            <span style="color: var(--text-medium-emphasis)">Click to toggle.</span>
             `
         })}>
         <span style="font-size: 1.5rem; display: flex; gap: 0.5rem; justify-content: center;">
@@ -722,7 +751,10 @@
                 {#each row as cell, j}
                     <div>
                         {#if !cell.hidden || LORCA_OVERRIDE.value}
-                            <div class="cell full" in:fly={{ duration: 1000, x: cell.relX * 40, y: cell.relY * 40, easing: quartOut }}>
+                            <div
+                                class="cell full"
+                                in:fly={{ duration: 1000, x: cell.relX * 40, y: cell.relY * 40, easing: quartOut }}
+                                out:fade={{ duration: 400, easing: quartOut }}>
                                 {#if cell.content.type === 'locked' && !LORCA_OVERRIDE.value}
                                     {@render lockedCell(cell)}
                                 {:else if cell.content.type === 'combat'}
@@ -730,12 +762,21 @@
                                 {:else if cell.content.type === 'generator'}
                                     {@render generatorCell(cell.content)}
                                 {:else if cell.content.type === 'generatorDerivative'}
-                                    {@render generatorDerivativeCell(cell.content)}
+                                    <div class="full" in:receive={{ key: 'cool' }}>
+                                        {@render generatorDerivativeCell(cell.content)}
+                                    </div>
                                 {:else if cell.content.type === 'upgrade'}
-                                    {@render upgradeCell(cell)}
+                                    <div class="full" in:receive={{ key: 'cool' }}>
+                                        {@render upgradeCell(cell)}
+                                    </div>
                                 {:else}
-                                    <button class="cell-empty" onclick={() => handleSelectCell(cell)}>
-                                        <span style="font-size: 1.5rem; color: rgba(0,0,0,0.8);">+</span>
+                                    <button
+                                        class="cell-empty"
+                                        onclick={() => handleSelectCell(cell)}
+                                        use:tooltip={() => ({
+                                            data: '<span style="color: var(--text-medium-emphasis)">Click to insert the new cell here.</span>'
+                                        })}>
+                                        <span style="font-size: 1.5rem; color: rgba(0,0,0,0.8);"> + </span>
                                     </button>
                                 {/if}
                             </div>
@@ -747,7 +788,7 @@
     </div>
 </div>
 
-<div style="display: flex; flex-direction:column; gap: 1.5rem; justify-content: center; align-items: center;">
+<div style="position: absolute; top: 60px; left: 50%; transform: translateX(-50%);">
     <div class="stats">
         <div style="background: var(--dp01); padding: 0.5rem;">
             {formatNumber(resource.value.red, 2)}
@@ -758,32 +799,78 @@
             Level: {level.value}
             ({derivedGrid.expInLevel} / {derivedGrid.expToNextLevel} XP)
             <button onclick={handleLevelUp}>Level Up</button> Auto?
-
-            <button onclick={handleGetCell}>Get Cell</button>
-            {#if nextCellContent}
-                <div class="cell-preview">
-                    {#if nextCellContent.type === 'generator'}
-                        {@render generatorCell(nextCellContent)}
-                    {:else if nextCellContent.type === 'generatorDerivative'}
-                        {@render generatorDerivativeCell(nextCellContent, true)}
-                    {:else if nextCellContent.type === 'upgrade'}
-                        {@const cell = {
-                            id: 'fake',
-                            coord: { row: 0, col: 0 },
-                            hidden: false,
-                            content: nextCellContent,
-                            dependencies: [],
-                            relX: 0,
-                            relY: 0
-                        }}
-                        {@render upgradeCell(cell, true)}
-                    {/if}
-                </div>
-            {/if}
         </div>
     </div>
 </div>
 
+<div
+    style="position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); background-color: var(--background-color); border: 1px solid var(--dp08);">
+    <div style="background: var(--dp01); padding: 0.5rem; display: flex; gap: 0.5rem;">
+        <div>
+            <div style="text-align: center; margin-bottom: 0.25rem;">Preview</div>
+            <div style="width: var(--cell-size); height: var(--cell-size);">
+                {#if nextCellContent}
+                    <div
+                        style="position:absolute; width: var(--cell-size); height: var(--cell-size); background: var(--background-color);"
+                        in:fly={{ duration: 1000, easing: bounceOut, y: -40, opacity: 1 }}
+                        out:send={{ key: 'cool' }}>
+                        {#if nextCellContent.type === 'generator'}
+                            {@render generatorCell(nextCellContent)}
+                        {:else if nextCellContent.type === 'generatorDerivative'}
+                            {@render generatorDerivativeCell(nextCellContent, true)}
+                        {:else if nextCellContent.type === 'upgrade'}
+                            {@const cell = {
+                                id: 'fake',
+                                coord: { row: 0, col: 0 },
+                                hidden: false,
+                                content: nextCellContent,
+                                dependencies: [],
+                                relX: 0,
+                                relY: 0
+                            }}
+                            {@render upgradeCell(cell, true)}
+                        {/if}
+                    </div>
+                {/if}
+                <div
+                    class="cell-empty"
+                    use:tooltip={() => ({
+                        data: 'When you buy a new cell, it will be previewed here. <br> What you get is random, however you can choose <br> where to insert the cell.'
+                    })}>
+                    <span style="font-size: 1.5rem; color: rgba(0,0,0,0.8);">?</span>
+                </div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 0.5rem; flex-direction: column; justify-content: space-between;">
+            <div
+                class="flexCenter"
+                style="flex-grow:1; font-weight: bold; font-size: .875rem; background: var(--dp01); border: 1px solid var(--dp08); position: relative;">
+                The Cell Shop
+                <span
+                    style="background: var(--dp24); width: 1rem; aspect-ratio: 1; padding: 0.125rem; position: absolute; right: 4px; top: 4px; font-weight: bold; font-size: .875rem; display: flex; justify-content: center; border-radius: 100%"
+                    use:tooltip={() => ({
+                        data: 'Here you can buy new cells to add to the grid. <br> There are multiple purchasing options below. <br> Each cost scales independently.'
+                    })}>
+                    ?
+                </span>
+            </div>
+            <div style="height: 60px; display: flex; gap: 0.5rem; flex-direction: row;">
+                {#each cellShopItems as item}
+                    <button
+                        style="width: 60px; display: flex; flex-direction: column; justify-content: center"
+                        class:disabled={resource.value[item.cost.resource] < item.cost.current || cellSelectionActive}
+                        onclick={() => handleGetCell(item)}
+                        use:tooltip={() => ({
+                            data: `Cost: ${formatWhole(item.cost.current)} ${square[item.cost.resource]} <br> <span style="color: var(--text-medium-emphasis);">Click to get a random cell.</span>`
+                        })}>
+                        {formatWhole(item.cost.current)}
+                        <span style="font-size: 1rem;">{@html square[item.cost.resource]}</span>
+                    </button>
+                {/each}
+            </div>
+        </div>
+    </div>
+</div>
 <div style="position: absolute; top: 0; left: 0; display: flex;">
     <button
         onclick={() => {
@@ -820,7 +907,7 @@
         background-color: var(--background-color);
         border: 1px solid var(--dp08);
         width: 400px;
-        margin-top: 40px;
+        /*  margin-top: 40px; */
     }
     .grid {
         display: grid;
@@ -846,7 +933,7 @@
         border: 1px solid var(--dp08);
         box-sizing: border-box;
         box-shadow: inset 0 0 8px 4px rgba(0, 0, 0, 0.6);
-        outline: 2px solid black;
+        outline: 1px solid black;
 
         border-left: rgba(255, 255, 255, 0.2);
         border-right: rgba(0, 0, 0, 0.4);
