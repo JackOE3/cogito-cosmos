@@ -622,18 +622,6 @@
     })
 </script>
 
-{#snippet basicCell(callback: () => void)}
-    <button
-        class="full"
-        onclick={() => callback()}
-        style="display: flex; flex-direction:column; justify-content: center; gap: 0.25rem;"
-        use:tooltip={() => ({
-            data: `Get some.`
-        })}>
-        <span>Basic</span>
-    </button>
-{/snippet}
-
 {#snippet lockedCell(cell: Cell)}
     {@const content = cell.content as LockedI}
     {@const tooltipText = `This tile is currently locked. ${content.cost !== 0 ? `<br> Requirement: ${content.cost} ${square[content.resource]}` : ''} <br> <span style="color: var(--text-medium-emphasis)">Click to unlock.</span>`}
