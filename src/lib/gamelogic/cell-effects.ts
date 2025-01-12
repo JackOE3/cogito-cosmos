@@ -1,6 +1,19 @@
 import { gridCell, type Stencil, type Coordinate, type Metric, type Cell, type EffectType } from '$lib/store'
 
 /**
+ * If a coord is out of bounds, returns undefined instead of a cell.
+ */
+function getCellAtCoord(coord: Coordinate): Cell | undefined {
+    if (coord.row < 0 || coord.row >= gridCell.value.length) return undefined
+    if (coord.col < 0 || coord.col >= gridCell.value[coord.row].length) return undefined
+    return gridCell.value[coord.row][coord.col]
+}
+/**
+ *  Type guard to inform TypeScript that the result will no longer include undefined
+ */
+const isDefined = <T>(value: T | undefined): value is T => typeof value !== 'undefined'
+
+/**
  * Applies the stencil centered on the current cell to get an array of all affected cells.
  * @param coord coordinate of the current cell
  * @param stencil what type of stencil is applied
@@ -17,7 +30,7 @@ export function getAllAffectedCells(coord: Coordinate, stencil: Stencil): Cell[]
                 [-1, 0], // Up
                 [1, 0] // Down
             ]
-            return coords.map(([dx, dy]) => gridCell.value[row + dx][col + dy])
+            return coords.map(([dx, dy]) => getCellAtCoord({ row: row + dx, col: col + dy })).filter(isDefined)
         }
         case '3x3': {
             const coords = [
@@ -30,7 +43,7 @@ export function getAllAffectedCells(coord: Coordinate, stencil: Stencil): Cell[]
                 [1, 0],
                 [1, 1] // Bottom-left, Bottom, Bottom-right
             ]
-            return coords.map(([dx, dy]) => gridCell.value[row + dx][col + dy])
+            return coords.map(([dx, dy]) => getCellAtCoord({ row: row + dx, col: col + dy })).filter(isDefined)
         }
         case '5x5': {
             const coords = []
@@ -42,7 +55,7 @@ export function getAllAffectedCells(coord: Coordinate, stencil: Stencil): Cell[]
                     }
                 }
             }
-            return coords.map(([dx, dy]) => gridCell.value[row + dx][col + dy])
+            return coords.map(([dx, dy]) => getCellAtCoord({ row: row + dx, col: col + dy })).filter(isDefined)
         }
         case 'row': {
             // Extract all cells in the specified row
