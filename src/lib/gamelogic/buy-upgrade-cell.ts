@@ -1,5 +1,4 @@
 import { type Resources, type Cell } from '$lib/store'
-import { applyCellEffects } from './cell-effects'
 
 type returnSignature = (buyMaxUpgrades: boolean) => void
 
@@ -21,7 +20,6 @@ export function buyUpgrade(cell: Cell, resource: Resources): returnSignature {
             resource[upgrade.cost.resource] -= upgrade.cost.current
             upgrade.cost.current *= upgrade.costMultiplier
             upgrade.count++
-            applyCellEffects(cell)
         } else {
             // PURCHASE MAX:
             const cost = upgrade.cost.current
@@ -33,7 +31,6 @@ export function buyUpgrade(cell: Cell, resource: Resources): returnSignature {
             resource[upgrade.cost.resource] -= totalCost
             upgrade.cost.current *= Math.pow(costMult, numUpgradesAffordable)
             upgrade.count += numUpgradesAffordable
-            applyCellEffects(cell, numUpgradesAffordable)
             // alert("Upgrades affordable: " + numUpgradesAffordable + ", Total Prize: " + totalPrice)
         }
     }

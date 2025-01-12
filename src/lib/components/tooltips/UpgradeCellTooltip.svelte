@@ -12,10 +12,10 @@
     // export let rect: DOMRect
     const style = `top: ${top}px; left: ${left}px;`
 
-    const descriptionDict: Partial<Record<EffectType, string>> = {
+    const descriptionDict: Partial<Record<EffectType, string>> = $derived({
         boostGeneratorGain: `Boost the gain of basic generators <br> by ${formatWhole(upgrade.effect.value.current * 100)}% per upgrade.`,
         boostGeneratorSpeed: `Boost the speed of basic generators <br> by ${formatWhole(upgrade.effect.value.current * 100)}% per upgrade.`
-    }
+    })
 </script>
 
 <div class="tooltip" {style}>
@@ -26,7 +26,7 @@
         {/if}
         {@html descriptionDict[upgrade.effect.type]} <br />
         Area of Effect: {upgrade.effect.stencil} <br />
-        Total Effect: {formatNumber(1 + upgrade.effect.value.current * upgrade.count, 2)}x <br />
+        Total Effect: {formatNumber(1 + upgrade.effect.value.currentCumulative!, 2)}x <br />
         {#if upgrade.maxBuy !== undefined && upgrade.count >= upgrade.maxBuy}
             <span style="color: var(--text-medium-emphasis)">This upgrade is maxed.</span>
         {:else}

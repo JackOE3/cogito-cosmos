@@ -1,4 +1,4 @@
-import { gridCell, type Stencil, type Coordinate, type Metric, type Cell, type EffectType } from '$lib/store'
+import { gridCell, type Stencil, type Coordinate, type Metric, type Cell, type EffectType, type CellEffect, type CellContent } from '$lib/store'
 
 /**
  * If a coord is out of bounds, returns undefined instead of a cell.
@@ -117,56 +117,71 @@ export function getAllAffectedCells(coord: Coordinate, stencil: Stencil): Cell[]
 
 /**
  *  Updates the affected metric of the target.
+ * @returns whether the value of the metric did change
  */
-function updateAffectedCell(metric: Metric, value: number, id: string): void {
+function updateAffectedCell(metric: Metric, effect: CellEffect, id: string): boolean {
     // find the multiplier corresponding to the id from the cell which causes it
     const mult = metric.multipliers.find(mult => mult.id === id)
 
+    let value = 0
+    if (typeof effect.value.currentCumulative !== 'undefined') {
+        value = effect.value.currentCumulative
+    } else value = effect.value.current
+
     // update the multiplier corresponding to the id
     if (!mult) metric.multipliers.push({ id, value: 1 + value })
-    else mult.value += value
+    else mult.value = 1 + value
 
     // update the current value of the metric
     const totalMult = metric.multipliers.reduce((acc, mult) => mult.value * acc, 1)
+    const last = metric.current
     metric.current = metric.base * totalMult
+    if (metric.current !== last) return true
+    else return false
 }
 
-export function boostGeneratorGain(cell: Cell, value: number, id: string): void {
-    if (cell.content.type !== 'generator') return
-    updateAffectedCell(cell.content.gain, value, id)
+export function boostGeneratorGain(cell: Cell, effect: CellEffect, id: string): boolean {
+    if (cell.content.type !== 'generator') return false
+    return updateAffectedCell(cell.content.gain, effect, id)
 }
-function boostGeneratorSpeed(cell: Cell, value: number, id: string): void {
-    if (cell.content.type !== 'generator') return
-    updateAffectedCell(cell.content.speed, value, id)
+function boostGeneratorSpeed(cell: Cell, effect: CellEffect, id: string): boolean {
+    if (cell.content.type !== 'generator') return false
+    return updateAffectedCell(cell.content.speed, effect, id)
 }
-function boostDerivativeGeneratorExpGain(cell: Cell, value: number, id: string): void {
-    if (cell.content.type !== 'generatorDerivative') return
-    updateAffectedCell(cell.content.expPerSec, value, id)
+function boostDerivativeGeneratorExpGain(cell: Cell, effect: CellEffect, id: string): boolean {
+    if (cell.content.type !== 'generatorDerivative') return false
+    return updateAffectedCell(cell.content.expPerSec, effect, id)
 }
-function decreaseDerivativeGeneratorExpRequirement(cell: Cell, value: number, id: string): void {
-    if (cell.content.type !== 'generatorDerivative') return
-    updateAffectedCell(cell.content.requiredExp, value, id)
+function decreaseDerivativeGeneratorExpRequirement(cell: Cell, effect: CellEffect, id: string): boolean {
+    if (cell.content.type !== 'generatorDerivative') return false
+    return updateAffectedCell(cell.content.requiredExp, effect, id)
 }
-function decreaseUpgradeCost(cell: Cell, value: number, id: string): void {
-    if (cell.content.type !== 'upgrade') return
-    updateAffectedCell(cell.content.cost, value, id)
+function decreaseUpgradeCost(cell: Cell, effect: CellEffect, id: string): boolean {
+    if (cell.content.type !== 'upgrade') return false
+    return updateAffectedCell(cell.content.cost, effect, id)
 }
-function boostUpgradeEffect(cell: Cell, value: number, id: string): void {
-    if (cell.content.type !== 'upgrade') return
-    updateAffectedCell(cell.content.effect.value, value, id)
+function boostUpgradeEffect(cell: Cell, effect: CellEffect, id: string): boolean {
+    if (cell.content.type !== 'upgrade') return false
+    return updateAffectedCell(cell.content.effect.value, effect, id)
 }
-function increaseAreaOfEffect(cell: Cell, value: number, id: string): void {
+function increaseAreaOfEffect(cell: Cell, effect: CellEffect, id: string): boolean {
     const content = cell.content
-    if (content.type !== 'upgrade' && content.type !== 'generatorDerivative') return
+    if (content.type !== 'upgrade' && content.type !== 'generatorDerivative') return false
     if (content.effect.stencil === '3x3') content.effect.stencil = '5x5'
     // TODO: propagate the effects of the affected cells to their targets
     const affectedCells = getAllAffectedCells(cell.coord, content.effect.stencil)
+    let changedSomething = false
     for (const targetCell of affectedCells) {
-        applyEffect[content.effect.type](targetCell, content.effect.value.current, id)
+        const applied = applyEffect[content.effect.type](targetCell, content.effect, id)
+        if (applied) changedSomething = true
     }
+    return changedSomething
 }
 
-export const applyEffect: Record<EffectType, (cell: Cell, value: number, id: string) => void> = {
+/**
+ * @returns Whether any effects were actually applied. Only returns true of the target value actually changed.
+ */
+export const applyEffect: Record<EffectType, (cell: Cell, effect: CellEffect, id: string) => boolean> = {
     boostGeneratorGain,
     boostGeneratorSpeed,
     boostDerivativeGeneratorExpGain,
@@ -177,19 +192,35 @@ export const applyEffect: Record<EffectType, (cell: Cell, value: number, id: str
 }
 
 /**
+ * Updates the currentCumulative effect value of the cell. This is required for upgrades or derivative generators where the effect value depends on their quantities (count/level).
+ */
+function updateEffectValue(content: CellContent): void {
+    if (!('effect' in content)) return
+    if (typeof content.effect.value.currentCumulative === 'undefined') return
+
+    let multiplicity = 1
+    if ('level' in content) multiplicity = content.level
+    else if ('count' in content) multiplicity = content.count
+    content.effect.value.currentCumulative = content.effect.value.current * multiplicity
+}
+/**
  * Apply a cell's effect on its affected cells.
  * @param cell The cell to process.
  * @param times How many times to apply the effect.
- * @returns
  */
-export function applyCellEffects(parentCell: Cell, times = 1): void {
-    const content = parentCell.content
-    if (content.type !== 'upgrade' && content.type !== 'generatorDerivative') return
+export function applyCellEffects(parentCell: Cell): void {
+    if (!('effect' in parentCell.content)) return
+    updateEffectValue(parentCell.content)
 
     // get affected cells via the stencil
-    const affectedCells = getAllAffectedCells(parentCell.coord, content.effect.stencil)
+    const affectedCells = getAllAffectedCells(parentCell.coord, parentCell.content.effect.stencil)
     // apply the corresponding effect onto all affected cells
     for (const cell of affectedCells) {
-        applyEffect[content.effect.type](cell, content.effect.value.current * times, parentCell.id)
+        const applied = applyEffect[parentCell.content.effect.type](cell, parentCell.content.effect, parentCell.id)
+        if (!applied) continue
+
+        // recursive logic for propagating effects, eg. if an effect changes an effect.value of the target cell
+        console.log($state.snapshot(cell.content))
+        applyCellEffects(cell) // scary af, lets just hope for the best.
     }
 }

@@ -26,13 +26,12 @@
         type CellShopItem,
         cellShopItems
     } from '$lib/store'
-    import { bounceIn, bounceOut, cubicOut, elasticOut, quartIn, quartOut, quintOut } from 'svelte/easing'
+    import { bounceOut, cubicOut, elasticOut, quartOut } from 'svelte/easing'
     import { fade, fly, scale } from 'svelte/transition'
     import { Tween } from 'svelte/motion'
     import UpgradeCellComponent from '$lib/components/UpgradeCell.svelte'
     import { movable } from '$lib/gamelogic/movable.svelte'
-    import { applyCellEffects, applyEffect, getAllAffectedCells } from '$lib/gamelogic/cell-effects'
-    import { preventDefault } from 'svelte/legacy'
+    import { applyCellEffects, applyEffect, getAllAffectedCells } from '$lib/gamelogic/cell-effects.svelte'
 
     const unicodeChars = {
         upwardsPairedArrows: '&#8648;',
@@ -46,7 +45,7 @@
     }
 
     function setStartingCell() {
-        insertCellContent({ row: center, col: center }, makeGenerator(2000, { amount: 1, resource: 'green' }))
+        insertCellContent({ row: center, col: center }, makeGenerator(2000, { amount: 1, resource: 'red' }))
     }
 
     function getRandomResource(): GeneratorResource {
@@ -191,6 +190,7 @@
                 value: {
                     base: effectValue,
                     current: effectValue,
+                    currentCumulative: 0,
                     multipliers: []
                 }
             },
@@ -229,6 +229,7 @@
                 value: {
                     base: effectValue,
                     current: effectValue,
+                    currentCumulative: 0,
                     multipliers: []
                 }
             },
@@ -267,15 +268,7 @@
                 if (!('effect' in cellDep.content)) continue
                 // console.log('found dependency:', $state.snapshot(cellDep))
 
-                let times = 0
-                if (cellDep.content.type === 'generatorDerivative') times = cellDep.content.level
-                else if (cellDep.content.type === 'upgrade') times = cellDep.content.count
-
-                applyEffect[cellDep.content.effect.type](cell, cellDep.content.effect.value.current * times, id)
-                /* if (cellDep.content.effect.type === 'boostGeneratorGain') {
-                    boostGeneratorGain(cell, cellDep.content.effect.value.current * cellDep.content.level, id)
-
-                } */
+                applyEffect[cellDep.content.effect.type](cell, cellDep.content.effect, id)
             }
         }
     }
@@ -306,24 +299,45 @@
     }
 
     /**
+     * For easy sequential content unlocks. No randomness here.
+     */
+    function* createIteratorCellContent(): Generator<CellContent, void, unknown> {
+        yield makeUpgrade('adjacent', 'boostGeneratorGain', 0.2, { amount: 2, resource: 'red' })
+        yield makeGeneratorDerivative('3x3', 'boostGeneratorSpeed', 0.1)
+        yield makeGenerator(4000, { amount: 1, resource: 'green' }, { amount: 10, resource: 'red' })
+        yield makeGeneratorDerivative('row', 'boostUpgradeEffect', 0.2)
+        yield makeUpgrade('3x3', 'boostDerivativeGeneratorExpGain', 1, { amount: 10, resource: 'green' })
+        yield makeGeneratorDerivative('all', 'decreaseUpgradeCost', 1)
+        yield makeUpgrade('upperHalf', 'decreaseDerivativeGeneratorExpRequirement', 1, { amount: 100, resource: 'red' })
+    }
+    const getCellContent = createIteratorCellContent()
+
+    /**
      * When you purchase a new cell, the logic here determines
      * which specific cell will be procedurally generated (type & properties).
      * Should not be purely randomly chosen, depends on what cells you have already.
      * This will be quite complex and make or break good gameplay.
      */
-    function getNextCellContent(): CellContent {
+    function getNextCellContent(): CellContent | undefined {
         /* let content: CellContent */
 
         // probability distribution needed for type (gen, genDer, upgrade)
         // pd not static, depends on what cells you have already (and what level-up effects or prestige upgrades you have)
         // also failsafes/overrides (sometimes its impossible to get a type)
 
+        const result = getCellContent.next()
+        if (!result.done) {
+            return result.value
+        } else {
+            return undefined
+        }
+
         //start: generator -> pd: genDer (0.5), upgrade (0.5)
-        if (Math.random() > 0.5) {
+        /* if (Math.random() > 0.5) {
             return makeUpgrade('adjacent', 'boostGeneratorGain', 0.2, { amount: 10, resource: 'green' }, 10)
         } else {
             return makeGeneratorDerivative('adjacent', 'boostGeneratorGain', 0.05)
-        }
+        } */
 
         /* const res = ['red', 'green', 'blue'] as const
         const rand = randInt(5)
@@ -437,13 +451,11 @@
                     }
                     resource.value[generator.cost.resource] -= generator.cost.current
                 }
-
-                applyCellEffects(cell)
-
-                //generator.applyEffect()
                 generator.currentExp -= generator.requiredExp.current
                 generator.requiredExp.current *= 1.15
                 generator.level++
+
+                applyCellEffects(cell)
             }
         }
 
@@ -556,8 +568,14 @@
     function handleGetCell(item: CellShopItem): void {
         if (selectionCells.size !== 0) return
         if (cellSelectionActive) return
-        // purchasing logic:
         if (resource.value[item.cost.resource] < item.cost.current) return
+
+        nextCellContent = getNextCellContent()
+        if (typeof nextCellContent === 'undefined') {
+            console.log('Error: Undefined cell content.')
+            return
+        }
+        // purchasing logic:
         resource.value[item.cost.resource] -= item.cost.current
         item.cost.current *= item.costMultiplier
         item.count++
@@ -566,12 +584,8 @@
         selectionCells = getAdjacentCells()
         cellSelectionActive = true
         for (const cell of selectionCells) {
-            const m = 1
-            cell.relX = Math.random() * m - m / 2
-            cell.relY = Math.random() * m - m / 2
             cell.hidden = false
         }
-        nextCellContent = getNextCellContent()
     }
 
     function handleSelectCell(cell: Cell): void {
@@ -760,7 +774,9 @@
                                 {:else if cell.content.type === 'combat'}
                                     {@render combatCell(i, j, cell.content)}
                                 {:else if cell.content.type === 'generator'}
-                                    {@render generatorCell(cell.content)}
+                                    <div class="full" in:receive={{ key: 'cool' }}>
+                                        {@render generatorCell(cell.content)}
+                                    </div>
                                 {:else if cell.content.type === 'generatorDerivative'}
                                     <div class="full" in:receive={{ key: 'cool' }}>
                                         {@render generatorDerivativeCell(cell.content)}
@@ -815,7 +831,7 @@
                         in:fly={{ duration: 1000, easing: bounceOut, y: -40, opacity: 1 }}
                         out:send={{ key: 'cool' }}>
                         {#if nextCellContent.type === 'generator'}
-                            {@render generatorCell(nextCellContent)}
+                            {@render generatorCell(nextCellContent, true)}
                         {:else if nextCellContent.type === 'generatorDerivative'}
                             {@render generatorDerivativeCell(nextCellContent, true)}
                         {:else if nextCellContent.type === 'upgrade'}
@@ -855,7 +871,7 @@
                 </span>
             </div>
             <div style="height: 60px; display: flex; gap: 0.5rem; flex-direction: row;">
-                {#each cellShopItems as item}
+                {#each cellShopItems.value as item}
                     <button
                         style="width: 60px; display: flex; flex-direction: column; justify-content: center"
                         class:disabled={resource.value[item.cost.resource] < item.cost.current || cellSelectionActive}

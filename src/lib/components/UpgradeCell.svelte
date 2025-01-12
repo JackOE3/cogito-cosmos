@@ -4,6 +4,7 @@
     import type { Snippet } from 'svelte'
     import { tooltip } from './tooltips/tooltip.svelte'
     import UpgradeCellTooltip from './tooltips/UpgradeCellTooltip.svelte'
+    import { applyCellEffects } from '$lib/gamelogic/cell-effects.svelte'
 
     type Props = {
         cell: Cell & { content: UpgradeI }
@@ -23,6 +24,7 @@
     function handleUpgradeClicked(): void {
         if (disabledClick) return
         buyUpgrade(cell, resource.value)(buyMaxUpgrades)
+        applyCellEffects(cell)
     }
 </script>
 

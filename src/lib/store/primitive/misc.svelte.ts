@@ -1,6 +1,5 @@
 import type { Tween } from 'svelte/motion'
 import { makeState } from '../customStore.svelte'
-import type { IUpgrade } from './upgrades.svelte'
 
 // SETTINGS (should not be reset when resetting the game)
 export const isDarkMode = makeState<boolean | 'notChecked'>('notChecked')
@@ -47,8 +46,18 @@ export type Multiplier = {
  * This represents a numeric values which can be modified by multipliers from dynamic effects in the game. `base` is the starting value, and `current` is the dynamic value with all applied `multipliers`.
  */
 export type Metric = {
-    base: number
+    /**
+     * Intrinstic (unmodified) value of this metric
+     */
+    readonly base: number
+    /**
+     * Base value with multipliers applied on top
+     */
     current: number
+    /**
+     * Current value with a multiplicity applied on top (eg. level of a generator or count of upgrade)
+     */
+    currentCumulative?: number
     multipliers: Multiplier[]
 }
 export type ResourceMetric = Metric & {
@@ -143,11 +152,21 @@ export type CellShopItem = {
     costMultiplier: number
     count: number
 }
-export const cellShopItems: CellShopItem[] = $state([
+export const cellShopItems = makeState<CellShopItem[]>([
     {
         cost: {
-            base: 100,
-            current: 100,
+            base: 5,
+            current: 5,
+            resource: 'red',
+            multipliers: []
+        },
+        costMultiplier: 4,
+        count: 0
+    },
+    {
+        cost: {
+            base: 10,
+            current: 10,
             resource: 'green',
             multipliers: []
         },
@@ -156,18 +175,8 @@ export const cellShopItems: CellShopItem[] = $state([
     },
     {
         cost: {
-            base: 100,
-            current: 100,
-            resource: 'red',
-            multipliers: []
-        },
-        costMultiplier: 2,
-        count: 0
-    },
-    {
-        cost: {
-            base: 100,
-            current: 100,
+            base: 10,
+            current: 10,
             resource: 'blue',
             multipliers: []
         },
