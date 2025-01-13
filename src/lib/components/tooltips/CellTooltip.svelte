@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { getAreaOfEffectDescription, getEffectDescription, getTotalEffectValue } from '$lib/gamelogic/cell-effects.svelte'
-    import { formatNumber, formatWhole, square } from '$lib/gamelogic/utils'
+    import { cellEffectDescription, getAreaOfEffectDescription, getTotalEffectValue } from '$lib/gamelogic/cell-effects.svelte'
+    import { formatFactor, formatNumber, formatWhole, square } from '$lib/gamelogic/utils'
     import type { CellContent } from '$lib/store'
 
     type Props = {
@@ -65,8 +65,16 @@
                 </li>
             {/if}
             {#if 'effect' in content}
-                <li>{getEffectDescription(content)}</li>
+                <li>{cellEffectDescription[content.effect.type]}</li>
                 <ul>
+                    <li>
+                        Effect: {content.effect.formula === 'additive' ? '+' : ''}{formatFactor(content.effect.value.current)}
+                        {#if 'currentCumulative' in content.effect.value}
+                            per
+                            {content.type === 'upgrade' ? 'upgrade' : content.type === 'generatorDerivative' ? 'level' : '[unknown type]'}
+                            ({content.effect.formula})
+                        {/if}
+                    </li>
                     <li>Total Effect: {getTotalEffectValue(content.effect)}x</li>
                     <li>Area of Effect: {getAreaOfEffectDescription(content.effect.stencil)}</li>
                 </ul>

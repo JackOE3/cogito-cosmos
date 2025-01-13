@@ -25,7 +25,6 @@
         type EffectType,
         type CellShopItem,
         cellShopItems,
-        type CellEffect,
         type Formula
     } from '$lib/store'
     import { bounceOut, cubicOut, elasticOut, quartOut } from 'svelte/easing'
@@ -33,14 +32,7 @@
     import { Tween } from 'svelte/motion'
     import UpgradeCellComponent from '$lib/components/UpgradeCell.svelte'
     import { movable } from '$lib/gamelogic/movable.svelte'
-    import {
-        applyCellEffects,
-        applyEffect,
-        getAllAffectedCells,
-        getAreaOfEffectDescription,
-        getEffectDescription,
-        getTotalEffectValue
-    } from '$lib/gamelogic/cell-effects.svelte'
+    import { applyCellEffects, applyEffect, getAllAffectedCells } from '$lib/gamelogic/cell-effects.svelte'
 
     const unicodeChars = {
         upwardsPairedArrows: '&#8648;',

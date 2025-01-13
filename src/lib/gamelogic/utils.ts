@@ -81,6 +81,11 @@ export function randInt(max: number): number {
     return Math.floor(Math.random() * (max + 1))
 }
 
+export function formatFactor(factor: number): string {
+    if (factor <= 2) return `${formatWhole(factor * 100)}%`
+    else return `${formatNumber(factor, 2)}x`
+}
+
 export function getOffset(el: HTMLElement): { left: number; top: number } {
     const rect = el.getBoundingClientRect()
     return {

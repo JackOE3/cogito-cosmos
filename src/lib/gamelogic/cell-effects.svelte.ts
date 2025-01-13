@@ -235,23 +235,14 @@ export function applyCellEffects(parentCell: Cell): void {
     }
 }
 
-export function getEffectDescription(content: CellContent): string {
-    if (!('effect' in content)) return 'No Effect found.'
-    const val = formatWhole(content.effect.value.current * 100)
-    let perThing = ''
-    if (content.type === 'upgrade') perThing = ' per upgrade'
-    else if (content.type === 'generatorDerivative') perThing = ' per level'
-
-    const descriptionDict: Record<EffectType, string> = {
-        boostGeneratorGain: `Boost the gain of basic generators by ${val}%${perThing}.`,
-        boostGeneratorSpeed: `Boost the speed of basic generators by ${val}%${perThing}.`,
-        boostDerivativeGeneratorExpGain: `Boost the XP gain of derivative generators by ${val}% per level.`,
-        decreaseDerivativeGeneratorExpRequirement: `Decrease the XP requirement to level up derivative generators by ${val}% per level.`,
-        decreaseUpgradeCost: `Decrease the cost of upgrades by ${val}% per level.`,
-        boostUpgradeEffect: `Increase the potency of upgrades by ${val}% per level.`,
-        increaseAreaOfEffect: `Increase the area of effect of other upgrades and derivative generators.`
-    }
-    return descriptionDict[content.effect.type]
+export const cellEffectDescription: Record<EffectType, string> = {
+    boostGeneratorGain: `Boosts the gain of basic generators.`,
+    boostGeneratorSpeed: `Boosts the speed of basic generators.`,
+    boostDerivativeGeneratorExpGain: `Boosts the XP gain of derivative generators.`,
+    decreaseDerivativeGeneratorExpRequirement: `Decreases the XP requirement to level up derivative generators.`,
+    decreaseUpgradeCost: `Decreases the cost of upgrades.`,
+    boostUpgradeEffect: `Increases the potency of upgrades.`,
+    increaseAreaOfEffect: `Increases the area of effect of other upgrades and derivative generators.`
 }
 
 export function getTotalEffectValue(effect: CellEffect): string {
