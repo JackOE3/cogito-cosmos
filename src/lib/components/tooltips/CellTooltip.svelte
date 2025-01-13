@@ -99,9 +99,10 @@
 </div>
 
 <style>
-    .background {
+    .tooltip {
         min-width: 280px;
         max-width: 280px;
+        box-sizing: border-box;
     }
     ul {
         list-style-type: '> ';

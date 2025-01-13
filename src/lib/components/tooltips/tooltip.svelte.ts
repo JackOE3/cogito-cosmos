@@ -25,7 +25,7 @@ export function tooltip(element: HTMLElement, optionsFn: () => Options): void {
 
     $effect(() => {
         element.addEventListener('mouseenter', mouseEnter)
-        /* element.addEventListener('mousemove', mouseMove) */
+        element.addEventListener('mousemove', mouseMove)
         element.addEventListener('mouseleave', mouseLeave)
         /*     element.addEventListener('mousedown', mouseDown)
         element.addEventListener('mouseup', mouseUp) */
@@ -39,7 +39,7 @@ export function tooltip(element: HTMLElement, optionsFn: () => Options): void {
         // will just remove and add event listeners and re-mount the tooltip blazingly fast
         return () => {
             element.removeEventListener('mouseenter', mouseEnter)
-            /* element.removeEventListener('mousemove', mouseMove) */
+            element.removeEventListener('mousemove', mouseMove)
             element.removeEventListener('mouseleave', mouseLeave)
             /* element.removeEventListener('mousedown', mouseDown)
                 element.removeEventListener('mouseup', mouseUp) */
@@ -48,6 +48,8 @@ export function tooltip(element: HTMLElement, optionsFn: () => Options): void {
     })
 
     const TooltipComponent = options.Component ?? Tooltip
+
+    let tooltipElement: Element | null
 
     let myProps = $state({
         data: options.data ?? null,
@@ -68,11 +70,20 @@ export function tooltip(element: HTMLElement, optionsFn: () => Options): void {
         /* console.log('mouseEnter', alreadyEntered) */
         if (alreadyEntered) return
         alreadyEntered = true
-
         if (options.data === null || mousePressed) return
 
-        let rect: DOMRect
+        mountTooltip()
+        positionTooltip()
+        // logic to reposition tooltip if it is out of bounds of the viewport
 
+        tooltipShown = true
+    }
+
+    function positionTooltip(): void {
+        tooltipElement = document.querySelector('.tooltip')
+        if (tooltipElement === null) return
+
+        let rect: DOMRect
         if (options.anchor === 'parentElement') {
             rect = element.parentElement?.getBoundingClientRect() ?? new DOMRect(0, 0, 0, 0)
         } else if (options.anchor === 'offsetParent') {
@@ -80,31 +91,24 @@ export function tooltip(element: HTMLElement, optionsFn: () => Options): void {
         } else {
             rect = element.getBoundingClientRect()
         }
+
         // if the page is scrolled, offset top by bodyRect.top
         const bodyRect = document.body.getBoundingClientRect()
 
-        myProps.top = rect.top - bodyRect.top
-        myProps.left = rect.right + PADDING_TO_ELEMENT
-
-        mountTooltip()
-
-        // logic to reposition tooltip if it is out of bounds of the viewport
-        const tooltipElement = document.querySelector('.tooltip')
         const viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
         const viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
-        if (tooltipElement) {
-            const tooltipRect = tooltipElement.getBoundingClientRect()
-            const overshootYBottom = Math.max(tooltipRect.bottom - viewportHeight + PADDING_TO_VIEWPORT, 0)
-            const overshootYTop = Math.min(tooltipRect.top - PADDING_TO_VIEWPORT, 0)
-            const overshootX = Math.max(tooltipRect.right - viewportWidth + PADDING_TO_VIEWPORT, 0)
-            console.log(viewportHeight, tooltipRect, rect, overshootYBottom, overshootX)
-            myProps = { ...myProps, top: myProps.top - overshootYBottom - overshootYTop }
-            if (overshootX) {
-                myProps = { ...myProps, left: rect.left - tooltipRect.width - PADDING_TO_ELEMENT }
-            }
-        }
 
-        tooltipShown = true
+        const tooltipRect = tooltipElement.getBoundingClientRect()
+        const overshootYBottom = Math.max(rect.top + tooltipRect.height - viewportHeight + PADDING_TO_VIEWPORT, 0)
+        const overshootYTop = Math.min(rect.top - PADDING_TO_VIEWPORT, 0)
+        const overshootX = Math.max(rect.right + tooltipRect.width - viewportWidth + PADDING_TO_VIEWPORT, 0)
+        //console.log(overshootYBottom, overshootYTop, overshootX)
+
+        const top = rect.top - bodyRect.top - overshootYBottom - overshootYTop
+        let left: number
+        if (overshootX) left = rect.left - tooltipRect.width - PADDING_TO_ELEMENT
+        else left = rect.right + PADDING_TO_ELEMENT
+        myProps = { ...myProps, top, left }
     }
 
     function mountTooltip(): void {
@@ -121,11 +125,18 @@ export function tooltip(element: HTMLElement, optionsFn: () => Options): void {
         unmount(tooltipComponent)
     }
 
-    function mouseMove(_event: MouseEvent): void {
-        if (options.data === null || !mousePressed || !tooltipShown) return
+    let rectX: number, rectY: number
+    function mouseMove(e: MouseEvent): void {
+        //if (options.data === null || !mousePressed || !tooltipShown) return
         // onmount when tooltip is shown & mouse is pressed (= disable tooltip when panning)
-        if (isDefined(tooltipComponent)) unmount(tooltipComponent)
-        tooltipShown = false
+        /* if (isDefined(tooltipComponent)) unmount(tooltipComponent)
+        tooltipShown = false */
+        const rect = element.getBoundingClientRect()
+        // avoid updating the position of element hasnt moved
+        if (rectX === rect.x && rectY === rect.y) return
+        rectX = rect.x
+        rectY = rect.y
+        positionTooltip()
     }
 
     function mouseDown(_event: MouseEvent): void {
