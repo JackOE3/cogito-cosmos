@@ -32,12 +32,7 @@
     import { Tween } from 'svelte/motion'
     import UpgradeCellComponent from '$lib/components/UpgradeCell.svelte'
     import { movable } from '$lib/gamelogic/movable.svelte'
-    import { applyCellEffects, applyEffect, getAllAffectedCells } from '$lib/gamelogic/cell-effects.svelte'
-
-    const unicodeChars = {
-        upwardsPairedArrows: '&#8648;',
-        clockwiseGappedCircleArrow: '&#10227;'
-    }
+    import { applyCellEffects, applyEffect, cellEffectSymbols, getAllAffectedCells } from '$lib/gamelogic/cell-effects.svelte'
 
     const center = Math.floor(N_ROWS / 2)
 
@@ -647,8 +642,9 @@
             data: generator,
             Component: CellTooltip
         })}>
-        <span style="font-size: 1.5rem; display: flex; gap: 0.5rem; justify-content: center;">
-            &#120126; {@html square[generator.gain.resource]}
+        <span class="cell-cover">
+            <span>&#120126;</span>
+            <span>{@html square[generator.gain.resource]}+</span>
         </span>
         {#if generator.active}
             <ProgBar
@@ -676,15 +672,9 @@
             data: generator,
             Component: CellTooltip
         })}>
-        <span style="font-size: 1.5rem; display: flex; gap: 0.5rem; justify-content: center;">
-            &#120126;
-            <span>
-                {#if generator.effect.type === 'boostGeneratorGain'}
-                    {@html unicodeChars.upwardsPairedArrows}
-                {:else if generator.effect.type === 'boostGeneratorSpeed'}
-                    {@html unicodeChars.clockwiseGappedCircleArrow}
-                {/if}
-            </span>
+        <span class="cell-cover">
+            <span>&part;&#120126;</span>
+            <span>{@html cellEffectSymbols[generator.effect.type]}</span>
         </span>
         {#if generator.active}
             <ProgBar
@@ -703,12 +693,10 @@
         {@const cell = cellGeneric as Cell & { content: UpgradeI }}
         <UpgradeCellComponent {cell} {disabledClick} class="full">
             <div class="flexCenter flexColumn">
-                <span style="font-size: 1.5rem; display: flex; gap: 0.5rem; justify-content: center;"> &#120140; </span>
-                {#if cell.content.maxBuy}
-                    ({cell.content.count}/{cell.content.maxBuy})
-                {:else}
-                    ({cell.content.count})
-                {/if}
+                <span class="cell-cover">
+                    <span>&#120140;</span>
+                    <span>{@html cellEffectSymbols[cell.content.effect.type]}</span>
+                </span>
             </div>
         </UpgradeCellComponent>
     {/if}
@@ -911,9 +899,12 @@
     .cell {
         background: var(--background-color);
     }
-    .cell-preview {
-        width: var(--cell-size);
-        height: var(--cell-size);
+    .cell-cover {
+        font-size: 1.25rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0rem;
+        justify-content: center;
     }
 
     .cell-empty {

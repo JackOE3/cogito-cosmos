@@ -244,6 +244,15 @@ export const cellEffectDescription: Record<EffectType, string> = {
     boostUpgradeEffect: `Increases the potency of upgrades.`,
     increaseAreaOfEffect: `Increases the area of effect of other upgrades and derivative generators.`
 }
+export const cellEffectSymbols: Record<EffectType, string> = {
+    boostGeneratorGain: `+&ShortUpArrow;`,
+    boostGeneratorSpeed: `&#10227;&ShortUpArrow;`,
+    boostDerivativeGeneratorExpGain: `XP&ShortUpArrow;`,
+    decreaseDerivativeGeneratorExpRequirement: `XP&DownTeeArrow;`,
+    decreaseUpgradeCost: `&dollar;&DownTeeArrow;`,
+    boostUpgradeEffect: `&#x2747;&ShortUpArrow;`,
+    increaseAreaOfEffect: `&#x21F2;&#x2747;`
+}
 
 export function getTotalEffectValue(effect: CellEffect): string {
     if (!isDefined(effect.value.currentCumulative)) return 'currentCumulative is not defined'

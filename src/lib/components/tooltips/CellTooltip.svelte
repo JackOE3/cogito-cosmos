@@ -63,6 +63,15 @@
                         1
                     )} XP/s
                 </li>
+            {:else if content.type === 'upgrade'}
+                <li>
+                    Count:
+                    {#if content.maxBuy}
+                        {content.count}/{content.maxBuy}
+                    {:else}
+                        {content.count}
+                    {/if}
+                </li>
             {/if}
             {#if 'effect' in content}
                 <li>{cellEffectDescription[content.effect.type]}</li>
@@ -91,7 +100,7 @@
 
 <style>
     .background {
-        min-width: 200px;
+        min-width: 280px;
         max-width: 280px;
     }
     ul {
