@@ -2,19 +2,21 @@ import { mount, unmount } from 'svelte'
 import Tooltip from './Tooltip.svelte'
 import { isDefined } from '$lib/gamelogic/utils'
 
-export enum Direction {
-    TOP = 'top',
-    RIGHT = 'right',
-    LEFT = 'left',
-    BOTTOM = 'bottom'
-}
-
 export type Options = {
     data?: unknown
     anchor?: string
-    direction?: Direction
     Component?: any
 }
+
+/**
+ * How far away from the border of the viewport a tooltip box must be at minimum.
+ */
+const PADDING_TO_VIEWPORT = 8
+
+/**
+ * How far away from the element which the tooltip is for.
+ */
+const PADDING_TO_ELEMENT = 8
 
 export function tooltip(element: HTMLElement, optionsFn: () => Options): void {
     let tooltipComponent: Record<string, any>
@@ -31,6 +33,7 @@ export function tooltip(element: HTMLElement, optionsFn: () => Options): void {
 
         // assign the new data if it has changed, this is needed for reactivity!
         myProps.data = optionsFn().data ?? null
+
         // cant differentiate if component has been unmounted (destroyed) or just updated...
         // anyhow, this will run before the the effect is run again, so it should be fine.
         // will just remove and add event listeners and re-mount the tooltip blazingly fast
@@ -46,7 +49,7 @@ export function tooltip(element: HTMLElement, optionsFn: () => Options): void {
 
     const TooltipComponent = options.Component ?? Tooltip
 
-    const myProps = $state({
+    let myProps = $state({
         data: options.data ?? null,
         top: 0,
         left: 0
@@ -60,8 +63,6 @@ export function tooltip(element: HTMLElement, optionsFn: () => Options): void {
      * so this flag has to be kept track of so the tooltip isnt mounted twice
      */
     let alreadyEntered = false
-
-    const PADDING = 8
 
     function mouseEnter(_event: MouseEvent): void {
         /* console.log('mouseEnter', alreadyEntered) */
@@ -79,18 +80,30 @@ export function tooltip(element: HTMLElement, optionsFn: () => Options): void {
         } else {
             rect = element.getBoundingClientRect()
         }
+        // if the page is scrolled, offset top by bodyRect.top
         const bodyRect = document.body.getBoundingClientRect()
 
-        if (options.direction === Direction.BOTTOM) {
-            myProps.top = rect.bottom - bodyRect.top + PADDING
-            myProps.left = rect.left
-        } else {
-            // Direction.RIGHT
-            myProps.top = rect.top - bodyRect.top
-            myProps.left = rect.right + PADDING
-        }
+        myProps.top = rect.top - bodyRect.top
+        myProps.left = rect.right + PADDING_TO_ELEMENT
 
         mountTooltip()
+
+        // logic to reposition tooltip if it is out of bounds of the viewport
+        const tooltipElement = document.querySelector('.tooltip')
+        const viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
+        const viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+        if (tooltipElement) {
+            const tooltipRect = tooltipElement.getBoundingClientRect()
+            const overshootYBottom = Math.max(tooltipRect.bottom - viewportHeight + PADDING_TO_VIEWPORT, 0)
+            const overshootYTop = Math.min(tooltipRect.top - PADDING_TO_VIEWPORT, 0)
+            const overshootX = Math.max(tooltipRect.right - viewportWidth + PADDING_TO_VIEWPORT, 0)
+            console.log(viewportHeight, tooltipRect, rect, overshootYBottom, overshootX)
+            myProps = { ...myProps, top: myProps.top - overshootYBottom - overshootYTop }
+            if (overshootX) {
+                myProps = { ...myProps, left: rect.left - tooltipRect.width - PADDING_TO_ELEMENT }
+            }
+        }
+
         tooltipShown = true
     }
 
