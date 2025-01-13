@@ -52,7 +52,7 @@ export type Metric = {
     /**
      * Intrinstic (unmodified) value of this metric
      */
-    readonly base: number
+    base: number
     /**
      * Base value with multipliers applied on top
      */

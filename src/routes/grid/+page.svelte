@@ -287,7 +287,7 @@
         yield makeGeneratorDerivative('all', 'decreaseUpgradeCost', 1)
         yield makeUpgrade('upperHalf', 'decreaseDerivativeGeneratorExpRequirement', 1, { amount: 100, resource: 'red' })
     }
-    const getCellContent = createIteratorCellContent()
+    let getCellContent: Generator<CellContent, void, unknown>
 
     /**
      * When you purchase a new cell, the logic here determines
@@ -301,7 +301,7 @@
         // probability distribution needed for type (gen, genDer, upgrade)
         // pd not static, depends on what cells you have already (and what level-up effects or prestige upgrades you have)
         // also failsafes/overrides (sometimes its impossible to get a type)
-
+        if (!isDefined(getCellContent)) return null
         const result = getCellContent.next()
         if (!result.done) {
             return result.value
@@ -429,7 +429,10 @@
                     resource.value[generator.cost.resource] -= generator.cost.current
                 }
                 generator.currentExp -= generator.requiredExp.current
+
+                generator.requiredExp.base *= 1.15
                 generator.requiredExp.current *= 1.15
+
                 generator.level++
 
                 applyCellEffects(cell)
@@ -493,7 +496,10 @@
         if (resource.value[cell.content.resource] < cell.content.cost) return
         resource.value[cell.content.resource] -= cell.content.cost
         // for start of game
-        if (cell.coord.row === centerRow && cell.coord.col === centerCol) setStartingCell()
+        if (cell.coord.row === centerRow && cell.coord.col === centerCol) {
+            setStartingCell()
+            getCellContent = createIteratorCellContent()
+        }
         // dynamically set the content of the cell when you have unlocked it
         //setCellContent(cell.coord.row, cell.coord.col)
         //unhideSurroundingCells(cell.coord.row, cell.coord.col)
@@ -610,7 +616,7 @@
         class:disabledClick
         onclick={() => {
             if (disabledClick) return
-            if (!generator.active && actionPoints.value <= 0) return
+            if (!generator.active && actionPoints <= 0) return
             generator.active = !generator.active
         }}
         style="display: flex; flex-direction:column; justify-content: center; gap: 0.25rem; {generator.active
@@ -642,7 +648,7 @@
         class:disabledClick
         onclick={() => {
             if (disabledClick) return
-            if (!generator.active && actionPoints.value <= 0) return
+            if (!generator.active && actionPoints <= 0) return
             generator.active = !generator.active
         }}
         style="display: flex; flex-direction:column; justify-content: center; gap: 0.25rem; {generator.active ? `background: rgba(255,255,255,0.3)` : ''}"

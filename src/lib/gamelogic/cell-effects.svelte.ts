@@ -1,5 +1,5 @@
 import { gridCell, type Stencil, type Coordinate, type Metric, type Cell, type EffectType, type CellEffect, type CellContent, type Formula } from '$lib/store'
-import { formatNumber, formatWhole, isDefined } from './utils'
+import { formatNumber, isDefined } from './utils'
 
 /**
  * If a coord is out of bounds, returns undefined instead of a cell.
@@ -127,6 +127,12 @@ function updateAffectedCell(metric: Metric, effect: CellEffect, id: string): boo
 
     // eg. +20% = 0.2 -> 1.2 when you multiply
     if (effect.formula === 'additive') value += 1
+
+    // determine if factor is inverse (-> didivde by it instead of multiplying its target value)
+    if (effect.type === 'decreaseUpgradeCost' || effect.type === 'decreaseDerivativeGeneratorExpRequirement') {
+        value = 1 / value
+        // console.log(value)
+    }
 
     // update the multiplier corresponding to the id
     if (!mult) metric.multipliers.push({ id, value })

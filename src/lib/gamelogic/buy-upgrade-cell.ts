@@ -20,6 +20,7 @@ export function buyUpgrade(cell: Cell, resource: Resources): returnSignature {
             // PURCHASE SINGLE:
             resource[upgrade.cost.resource] -= upgrade.cost.current
             upgrade.cost.current *= upgrade.costMultiplier
+            upgrade.cost.base *= upgrade.costMultiplier
             upgrade.count++
         } else {
             // PURCHASE MAX:
@@ -31,6 +32,7 @@ export function buyUpgrade(cell: Cell, resource: Resources): returnSignature {
 
             resource[upgrade.cost.resource] -= totalCost
             upgrade.cost.current *= Math.pow(costMult, numUpgradesAffordable)
+            upgrade.cost.base *= Math.pow(costMult, numUpgradesAffordable)
             upgrade.count += numUpgradesAffordable
             // alert("Upgrades affordable: " + numUpgradesAffordable + ", Total Prize: " + totalPrice)
         }
