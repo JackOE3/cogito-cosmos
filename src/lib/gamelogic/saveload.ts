@@ -150,13 +150,18 @@ function dataMigrate(fromStorage: SaveData): void {
     // check if data property exists?
     const propertiesFromStorage = Object.getOwnPropertyNames(fromStorage.data)
 
+    // these objects can change their properties dynamically, so we have to omit them from this process
+    const exceptions = ['nextCellContent', 'selectionCellIds']
+
+    // console.log(propertiesMaster, propertiesFromStorage)
+
     // check each property to make sure it exists on the save data, if not add it
     propertiesMaster.forEach(prop => {
+        //console.log('check', prop, typeof fromStorage.data[prop])
         if (typeof fromStorage.data[prop] === 'undefined') {
             console.log(`${prop} was undefined, adding it to saveData`)
             fromStorage.data[prop] = master.data[prop]
-        } else if (typeof fromStorage.data[prop] === 'object') {
-            // console.log(prop, 'is an object')
+        } else if (typeof fromStorage.data[prop] === 'object' && !exceptions.includes(prop)) {
             const innerPropertiesMaster = Object.getOwnPropertyNames(master.data[prop] as object)
             // console.log('innerProperties', innerProperties)
             innerPropertiesMaster.forEach(innerProp => {
@@ -174,7 +179,7 @@ function dataMigrate(fromStorage: SaveData): void {
             console.log(`${prop} should not be in saveData, deleting it from saveData`)
             fromStorage.data[prop] = master.data[prop]
             Reflect.deleteProperty(fromStorage.data, prop)
-        } else if (typeof master.data[prop] === 'object' && prop !== 'windowStack') {
+        } else if (typeof master.data[prop] === 'object' && prop !== 'windowStack' && !exceptions.includes(prop)) {
             const innerPropertiesFromStorage = Object.getOwnPropertyNames(fromStorage.data[prop] as object)
             innerPropertiesFromStorage.forEach(innerProp => {
                 if (typeof master.data[prop][innerProp] === 'undefined') {

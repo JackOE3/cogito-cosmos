@@ -1,5 +1,6 @@
 import type { Tween } from 'svelte/motion'
 import { makeState } from '../customStore.svelte'
+import { uuidv4 } from '$lib/gamelogic/utils'
 
 // SETTINGS (should not be reset when resetting the game)
 export const isDarkMode = makeState<boolean | 'notChecked'>('notChecked')
@@ -8,6 +9,8 @@ export const currentNotation = makeState<Notation>('default')
 export const totalTimePlayed = makeState(0)
 
 export const lastSaved = makeState(Date.now())
+
+//---------------------------------------------------
 
 export const level = makeState(1)
 
@@ -145,9 +148,40 @@ export type Cell = {
     relX: number
     relY: number
 }
-export const N_ROWS = 9
-export const N_COLS = 9
-export const gridCell = makeState<Cell[][]>(Array.from({ length: N_ROWS }, () => new Array(N_COLS).fill(undefined)))
+
+export const N_ROWS = makeState(9)
+export const N_COLS = makeState(9)
+
+const gridCellInitial: Cell[][] = []
+
+{
+    for (let i = 0; i < N_ROWS.value; i++) {
+        const row: Cell[] = []
+        for (let j = 0; j < N_COLS.value; j++) {
+            row.push({
+                id: uuidv4(),
+                coord: { row: i, col: j },
+                hidden: true,
+                content: { type: 'empty' },
+                dependencies: [],
+                relX: 0,
+                relY: 0
+            })
+        }
+        gridCellInitial.push(row)
+    }
+    const centerRow = Math.floor(N_ROWS.value / 2)
+    const centerCol = Math.floor(N_COLS.value / 2)
+
+    gridCellInitial[centerRow][centerCol].hidden = false
+    gridCellInitial[centerRow][centerCol].content = {
+        type: 'locked',
+        cost: 0,
+        resource: 'green'
+    }
+}
+
+export const gridCell = makeState<Cell[][]>(gridCellInitial)
 
 export type CellShopItem = {
     cost: ResourceMetric
@@ -187,7 +221,17 @@ export const cellShopItems = makeState<CellShopItem[]>([
     }
 ])
 
-//--------------------------------------------------------
+/**
+ * The maximum number of actions points you have available.
+ */
+export const maxActionPoints = makeState(3)
+
+export const selectionCellIds = makeState<string[]>([])
+export const nextCellContent = makeState<CellContent | null>(null)
+export const cellSelectionActive = makeState(false)
+
+// COGITO COSMOS:
+//------------------------------------------------------------------
 /**
  * Your current stage of Enlightenment
  */
