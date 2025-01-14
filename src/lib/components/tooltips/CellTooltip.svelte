@@ -1,7 +1,7 @@
 <script lang="ts">
     import { cellEffectDescription, getAreaOfEffectDescription, getTotalEffectValue } from '$lib/gamelogic/cell-effects.svelte'
     import { formatFactor, formatNumber, formatWhole, square } from '$lib/gamelogic/utils'
-    import type { CellContent } from '$lib/store'
+    import type { CellContent, EffectType } from '$lib/store'
 
     type Props = {
         data: CellContent
@@ -18,6 +18,8 @@
 
     // export let rect: DOMRect
     const style = `top: ${top}px; left: ${left}px;`
+
+    const effectsWhereYouDivide: EffectType[] = ['decreaseUpgradeCost', 'decreaseDerivativeGeneratorExpRequirement']
 </script>
 
 <div class="tooltip" {style}>
@@ -56,7 +58,33 @@
                     {@html gainMetric}
                     {@html costMetric} every {formatNumber(content.baseDurationMillis / 1000 / content.speed.current, 2)}s
                 </li>
-            {:else if content.type === 'generatorDerivative'}
+            {/if}
+            {#if 'effect' in content}
+                <li>
+                    <span style="font-weight: bold; font-size: .75rem;">
+                        {cellEffectDescription[content.effect.type]}
+                    </span>
+                </li>
+                <ul class="test">
+                    <li>
+                        Effect: {content.effect.formula === 'additive' ? '+' : ''}{formatFactor(content.effect.value.current)}
+                        {#if 'currentCumulative' in content.effect.value}
+                            per
+                            {content.type === 'upgrade' ? 'upgrade' : content.type === 'generatorDerivative' ? 'level' : '[unknown type]'}
+                            ({content.effect.formula})
+                        {/if}
+                    </li>
+                    <li>
+                        Total Effect: {getTotalEffectValue(content.effect)}x
+                        {#if effectsWhereYouDivide.includes(content.effect.type)}
+                            <br />
+                            <span style="color: var(--text-medium-emphasis)"> (The value is divided by this factor) </span>
+                        {/if}
+                    </li>
+                    <li>Area of Effect: {getAreaOfEffectDescription(content.effect.stencil)}</li>
+                </ul>
+            {/if}
+            {#if content.type === 'generatorDerivative'}
                 <li>
                     Level: {formatWhole(content.level)} - {formatNumber(content.currentExp, 1)}/{formatNumber(content.requiredExp.current, 1)} XP - {formatNumber(
                         content.expPerSec.current,
@@ -73,26 +101,13 @@
                     {/if}
                 </li>
             {/if}
-            {#if 'effect' in content}
-                <li>{cellEffectDescription[content.effect.type]}</li>
-                <ul>
-                    <li>
-                        Effect: {content.effect.formula === 'additive' ? '+' : ''}{formatFactor(content.effect.value.current)}
-                        {#if 'currentCumulative' in content.effect.value}
-                            per
-                            {content.type === 'upgrade' ? 'upgrade' : content.type === 'generatorDerivative' ? 'level' : '[unknown type]'}
-                            ({content.effect.formula})
-                        {/if}
-                    </li>
-                    <li>Total Effect: {getTotalEffectValue(content.effect)}x</li>
-                    <li>Area of Effect: {getAreaOfEffectDescription(content.effect.stencil)}</li>
-                </ul>
-            {/if}
             {#if content.type === 'generator' || content.type === 'generatorDerivative'}
-                <li style="color: var(--text-medium-emphasis)">Uses 1 AP while active.</li>
-                <li style="color: var(--text-medium-emphasis)">Click to toggle.</li>
+                <hr style="margin-left: -0.75rem; width: calc(100% + 0.75rem);" />
+                <li class="footer" style="color: var(--text-medium-emphasis)">Uses 1 AP while active</li>
+                <li class="footer" style="color: var(--text-medium-emphasis)">Click to toggle</li>
             {:else if content.type === 'upgrade'}
-                <li style="color: var(--text-medium-emphasis)">Click to purchase.</li>
+                <hr style="margin-left: -0.75rem; width: calc(100% + 0.75rem);" />
+                <li class="footer" style="color: var(--text-medium-emphasis)">Click to purchase</li>
             {/if}
         </ul>
     </div>
@@ -106,7 +121,6 @@
     }
     ul {
         list-style-type: '> ';
-        list-style-position: outside;
         padding: 0;
         margin: 0;
         padding-left: 0.75rem; /* Remove default indentation */
@@ -114,6 +128,9 @@
     li {
         margin-bottom: 0.25rem; /* Adds space between list items */
     }
+    /* li.footer {
+        list-style-type: '\2022  ';
+    } */
 
     /* Remove the margin for the last item */
     #tooltip-body > li:last-child {
