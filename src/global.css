@@ -66,6 +66,7 @@ html[data-theme='light'] {
 
 html {
     --error: #c62828;
+    --accent: #ce93d8;
     --high-emphasis: 87%;
     --medium-emphasis: 60%;
     --disabled: 38%;
@@ -95,6 +96,7 @@ body {
     box-sizing: border-box;
     cursor: move;
     user-select: none;
+    /* overflow: hidden; */
 }
 
 hr {

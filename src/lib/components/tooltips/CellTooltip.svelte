@@ -1,7 +1,7 @@
 <script lang="ts">
     import { cellEffectDescription, getAreaOfEffectDescription, getTotalEffectValue } from '$lib/gamelogic/cell-effects.svelte'
     import { formatFactor, formatNumber, formatWhole, square } from '$lib/gamelogic/utils'
-    import type { CellContent, EffectType } from '$lib/store'
+    import { resource, type CellContent, type EffectType } from '$lib/store'
 
     type Props = {
         data: CellContent
@@ -31,7 +31,14 @@
                     <span style="color: var(--text-medium-emphasis)">This upgrade is maxed.</span>
                 {:else}
                     <span>
-                        Cost: {formatNumber(content.cost.current, 2)}
+                        Cost:
+                        {#if resource.value[content.cost.resource] < content.cost.current}
+                            <span style="color: var(--text-disabled);">
+                                {formatNumber(content.cost.current, 2)}
+                            </span>
+                        {:else}
+                            {formatNumber(content.cost.current, 2)}
+                        {/if}
                         {@html square[content.cost.resource]}
                     </span>
                 {/if}
@@ -65,7 +72,7 @@
                         {cellEffectDescription[content.effect.type]}
                     </span>
                 </li>
-                <ul class="test">
+                <ul>
                     <li>
                         Effect: {content.effect.formula === 'additive' ? '+' : ''}{formatFactor(content.effect.value.current)}
                         {#if 'currentCumulative' in content.effect.value}
@@ -75,7 +82,10 @@
                         {/if}
                     </li>
                     <li>
-                        Total Effect: {getTotalEffectValue(content.effect)}x
+                        Total Effect:
+                        <span style="font-weight: bold; color: var(--accent);">
+                            {getTotalEffectValue(content.effect)}x
+                        </span>
                         {#if effectsWhereYouDivide.includes(content.effect.type)}
                             <br />
                             <span style="color: var(--text-medium-emphasis)"> (The value is divided by this factor) </span>
@@ -86,11 +96,16 @@
             {/if}
             {#if content.type === 'generatorDerivative'}
                 <li>
-                    Level: {formatWhole(content.level)} - {formatNumber(content.currentExp, 1)}/{formatNumber(content.requiredExp.current, 1)} XP - {formatNumber(
-                        content.expPerSec.current,
-                        1
-                    )} XP/s
+                    Level: {formatWhole(content.level)}
                 </li>
+                <ul>
+                    <li>
+                        To next level: {formatNumber(content.currentExp, 1)}/{formatNumber(content.requiredExp.current, 1)} XP
+                    </li>
+                    <li>
+                        XP gain: {formatNumber(content.expPerSec.current, 1)} XP/s
+                    </li>
+                </ul>
             {:else if content.type === 'upgrade'}
                 <li>
                     Count:
@@ -115,8 +130,8 @@
 
 <style>
     .tooltip {
-        min-width: 280px;
-        max-width: 280px;
+        min-width: 300px;
+        max-width: 300px;
         box-sizing: border-box;
     }
     ul {
@@ -128,9 +143,6 @@
     li {
         margin-bottom: 0.25rem; /* Adds space between list items */
     }
-    /* li.footer {
-        list-style-type: '\2022  ';
-    } */
 
     /* Remove the margin for the last item */
     #tooltip-body > li:last-child {
