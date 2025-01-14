@@ -227,6 +227,8 @@ export const cellShopItems = makeState<CellShopItem[]>([
     }
 ])
 
+export const showStencilHighlight = makeState(true)
+
 /**
  * The maximum number of actions points you have available.
  */

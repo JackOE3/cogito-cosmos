@@ -29,7 +29,8 @@
         maxActionPoints,
         selectionCellIds,
         cellSelectionActive,
-        nextCellContent
+        nextCellContent,
+        showStencilHighlight
     } from '$lib/store'
     import { bounceOut, cubicOut, elasticOut, quartOut } from 'svelte/easing'
     import { fade, fly, scale } from 'svelte/transition'
@@ -748,7 +749,7 @@
                                     </button>
                                 {/if}
                             </div>
-                            <div class="cell cell-highlight full" class:cell-highlighted={cell.highlighted}></div>
+                            <div class="cell cell-highlight full" class:cell-highlighted={cell.highlighted && showStencilHighlight.value}></div>
                         {/if}
                     </div>
                 {/each}
@@ -843,6 +844,9 @@
 <div style="position: absolute; top: 0; left: 0; display: flex;">
     <button onclick={() => unlockWholeGrid()}> Unlock whole grid </button>
     <button onclick={() => unlockAdditionalTest()}> Unlock new cell </button>
+    <button onclick={() => (showStencilHighlight.value = !showStencilHighlight.value)}>
+        Highlights: {showStencilHighlight.value ? 'ON' : 'OFF'}
+    </button>
 </div>
 
 <style>
