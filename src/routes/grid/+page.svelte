@@ -39,6 +39,7 @@
     import { applyCellEffects, applyEffect, cellEffectSymbols, getAllAffectedCells } from '$lib/gamelogic/cell-effects.svelte'
     import { crossfade } from 'svelte/transition'
     import CellTooltip from '$lib/components/tooltips/CellTooltip.svelte'
+    import { stencilHighlight } from '$lib/components/tooltips/stencilHighlight.svelte'
 
     const centerRow = $derived(Math.floor(N_ROWS.value / 2))
     const centerCol = $derived(Math.floor(N_COLS.value / 2))
@@ -543,7 +544,7 @@
     }
 
     function handleGetCell(item: CellShopItem): void {
-        console.log(selectionCellIds.value.length, cellSelectionActive.value)
+        // console.log(selectionCellIds.value.length, cellSelectionActive.value)
         if (selectionCellIds.value.length !== 0) return
         if (cellSelectionActive.value) return
 
@@ -712,10 +713,12 @@
         <div class="grid">
             {#each gridCell.value as row, i}
                 {#each row as cell, j}
-                    <div>
+                    <div style="position:relative">
                         {#if !cell.hidden || LORCA_OVERRIDE.value}
+                            {@const stencil = 'effect' in cell.content ? cell.content.effect.stencil : undefined}
                             <div
                                 class="cell full"
+                                use:stencilHighlight={() => ({ coord: cell.coord, stencil })}
                                 in:scale={{ delay: 400, duration: 1200, easing: elasticOut, start: 0.7 }}
                                 out:fade={{ duration: 400, easing: quartOut }}>
                                 {#if cell.content.type === 'locked' && !LORCA_OVERRIDE.value}
@@ -745,6 +748,7 @@
                                     </button>
                                 {/if}
                             </div>
+                            <div class="cell cell-highlight full" class:cell-highlighted={cell.highlighted}></div>
                         {/if}
                     </div>
                 {/each}
@@ -884,6 +888,20 @@
         flex-direction: column;
         gap: 0rem;
         justify-content: center;
+    }
+    .cell-highlight {
+        position: absolute;
+        top: 0;
+        left: 0;
+        background: transparent;
+        pointer-events: none;
+        box-sizing: border-box;
+        border-radius: 0;
+    }
+    .cell-highlighted {
+        background-color: var(--dp08);
+        /* outline: 2px white solid; */
+        border: 2px solid var(--accent);
     }
 
     .cell-empty {

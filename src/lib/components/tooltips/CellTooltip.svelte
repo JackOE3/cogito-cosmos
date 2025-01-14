@@ -130,6 +130,7 @@
 
 <style>
     .tooltip {
+        position: absolute;
         min-width: 300px;
         max-width: 300px;
         box-sizing: border-box;

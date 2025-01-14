@@ -95,12 +95,16 @@ export type Stencil =
     | 'upperRightQuadrant'
 
 export type EffectType =
+    // for generators
     | 'boostGeneratorGain'
     | 'boostGeneratorSpeed'
+    // for derivative generators
     | 'boostDerivativeGeneratorExpGain'
     | 'decreaseDerivativeGeneratorExpRequirement'
+    // for upgrades
     | 'decreaseUpgradeCost'
     | 'boostUpgradeEffect'
+    // for all cell types
     | 'increaseAreaOfEffect'
 
 export type Formula = 'additive' | 'multiplicative'
@@ -147,6 +151,7 @@ export type Cell = {
     dependencies: string[]
     relX: number
     relY: number
+    highlighted: boolean
 }
 
 export const N_ROWS = makeState(9)
@@ -165,7 +170,8 @@ const gridCellInitial: Cell[][] = []
                 content: { type: 'empty' },
                 dependencies: [],
                 relX: 0,
-                relY: 0
+                relY: 0,
+                highlighted: false
             })
         }
         gridCellInitial.push(row)

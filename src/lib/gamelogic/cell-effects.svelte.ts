@@ -242,13 +242,13 @@ export function applyCellEffects(parentCell: Cell): void {
 }
 
 export const cellEffectDescription: Record<EffectType, string> = {
-    boostGeneratorGain: `Boosts the gain of basic generators.`,
-    boostGeneratorSpeed: `Boosts the speed of basic generators.`,
-    boostDerivativeGeneratorExpGain: `Boosts the XP gain of derivative generators.`,
-    decreaseDerivativeGeneratorExpRequirement: `Decreases the XP requirement to level up derivative generators.`,
-    decreaseUpgradeCost: `Decreases the cost of upgrades.`,
-    boostUpgradeEffect: `Increases the potency of upgrades.`,
-    increaseAreaOfEffect: `Increases the area of effect of other upgrades and derivative generators.`
+    boostGeneratorGain: `Boosts the gain of basic generators`,
+    boostGeneratorSpeed: `Boosts the speed of basic generators`,
+    boostDerivativeGeneratorExpGain: `Boosts the XP gain of derivative generators`,
+    decreaseDerivativeGeneratorExpRequirement: `Decreases the XP requirement to level up derivative generators`,
+    decreaseUpgradeCost: `Decreases the cost of upgrades`,
+    boostUpgradeEffect: `Increases the potency of upgrades`,
+    increaseAreaOfEffect: `Increases the area of effect of other upgrades and derivative generators`
 }
 export const cellEffectSymbols: Record<EffectType, string> = {
     boostGeneratorGain: `+&ShortUpArrow;`,
@@ -269,7 +269,6 @@ export function getTotalEffectValue(effect: CellEffect): string {
 
 export function getAreaOfEffectDescription(stencil: Stencil): string {
     if (!isDefined(stencil)) return 'stencil is not defined'
-    let desc: string
     switch (stencil) {
         case 'adjacent':
             return 'Adjacent cells'

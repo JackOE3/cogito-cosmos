@@ -1,6 +1,5 @@
 import { mount, unmount } from 'svelte'
 import Tooltip from './Tooltip.svelte'
-import { isDefined } from '$lib/gamelogic/utils'
 
 export type Options = {
     data?: unknown
@@ -74,7 +73,6 @@ export function tooltip(element: HTMLElement, optionsFn: () => Options): void {
 
         mountTooltip()
         positionTooltip()
-        // logic to reposition tooltip if it is out of bounds of the viewport
 
         tooltipShown = true
     }
@@ -95,6 +93,7 @@ export function tooltip(element: HTMLElement, optionsFn: () => Options): void {
         // if the page is scrolled, offset top by bodyRect.top
         const bodyRect = document.body.getBoundingClientRect()
 
+        // logic to reposition tooltip if it is out of bounds of the viewport
         const viewportWidth = Math.max(document.documentElement.clientWidth, window.innerWidth || 0)
         const viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
 
