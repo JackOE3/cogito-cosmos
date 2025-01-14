@@ -485,9 +485,6 @@
     function unlockWholeGrid(): void {
         setDeterministicCellContent()
     }
-    function unlockAdditionalTest(): void {
-        insertCellContent({ row: 0, col: 4 }, makeGenerator(1000, { amount: 1, resource: 'red' }))
-    }
 
     function setStartingCell() {
         insertCellContent({ row: centerRow, col: centerCol }, makeGenerator(2000, { amount: 1, resource: 'red' }))
@@ -570,8 +567,13 @@
         }
     }
 
+    const pointerEventsEnabled = $state(gridCell.value.map(row => row.map(() => true)))
+
     function handleSelectCell(selectedCell: Cell): void {
         if (nextCellContent.value === null) return
+
+        pointerEventsEnabled[selectedCell.coord.row][selectedCell.coord.col] = false
+
         insertCellContent(selectedCell.coord, nextCellContent.value)
         nextCellContent.value = null
 
@@ -586,6 +588,7 @@
         selectionCellIds.value = []
         setTimeout(() => {
             cellSelectionActive.value = false
+            pointerEventsEnabled[selectedCell.coord.row][selectedCell.coord.col] = true
         }, 1500)
     }
 
@@ -719,6 +722,7 @@
                             {@const stencil = 'effect' in cell.content ? cell.content.effect.stencil : undefined}
                             <div
                                 class="cell full"
+                                class:no-pointer-events={!pointerEventsEnabled[i][j]}
                                 use:stencilHighlight={() => ({ coord: cell.coord, stencil })}
                                 in:scale={{ delay: 400, duration: 1200, easing: elasticOut, start: 0.7 }}
                                 out:fade={{ duration: 400, easing: quartOut }}>
@@ -796,7 +800,8 @@
                                 content: nextCellContent.value,
                                 dependencies: [],
                                 relX: 0,
-                                relY: 0
+                                relY: 0,
+                                highlighted: false
                             }}
                             {@render upgradeCell(cell, true)}
                         {/if}
@@ -843,8 +848,9 @@
 </div>
 <div style="position: absolute; top: 0; left: 0; display: flex;">
     <button onclick={() => unlockWholeGrid()}> Unlock whole grid </button>
-    <button onclick={() => unlockAdditionalTest()}> Unlock new cell </button>
-    <button onclick={() => (showStencilHighlight.value = !showStencilHighlight.value)}>
+    <button
+        use:tooltip={() => ({ data: 'When ON, this will highlight which cells <br> are affected by the cell you hover over.' })}
+        onclick={() => (showStencilHighlight.value = !showStencilHighlight.value)}>
         Highlights: {showStencilHighlight.value ? 'ON' : 'OFF'}
     </button>
 </div>
@@ -927,5 +933,8 @@
         border-width: 1px;
         border-radius: 0px;
         border-style: solid;
+    }
+    .no-pointer-events {
+        pointer-events: none;
     }
 </style>

@@ -8,16 +8,12 @@ export type Options = {
 }
 
 export function stencilHighlight(element: HTMLElement, optionsFn: () => Options): void {
-    if (!isDefined(optionsFn().stencil)) return
-
     let cellsToHightlight: Cell[]
     $effect(() => {
-        console.log($state.snapshot(optionsFn().coord))
-
+        if (!isDefined(optionsFn().stencil)) return
         cellsToHightlight = getAllAffectedCells(optionsFn().coord, optionsFn().stencil!).filter(cell => !cell.hidden)
         element.addEventListener('mouseenter', mouseEnter)
         element.addEventListener('mouseleave', mouseLeave)
-
         return () => {
             element.removeEventListener('mouseenter', mouseEnter)
             element.removeEventListener('mouseleave', mouseLeave)
