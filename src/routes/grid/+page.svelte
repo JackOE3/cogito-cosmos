@@ -30,7 +30,9 @@
         selectionCellIds,
         cellSelectionActive,
         nextCellContent,
-        showStencilHighlight
+        showStencilHighlight,
+        type EffectGenerator,
+        type EffectSkill
     } from '$lib/store'
     import { bounceOut, cubicOut, elasticOut, quartOut } from 'svelte/easing'
     import { fade, fly, scale } from 'svelte/transition'
@@ -158,7 +160,7 @@
             progress: 0
         }
     }
-    function makeSkill(stencil: Stencil, effectType: EffectType, effectValue: number, formula: Formula = 'additive'): Skill {
+    function makeSkill(stencil: Stencil, effectType: EffectGenerator, effectValue: number, formula: Formula = 'additive'): Skill {
         return {
             type: 'skill',
             effect: {
@@ -190,7 +192,7 @@
     }
     function makeUpgrade(
         stencil: Stencil,
-        effectType: EffectType,
+        effectType: EffectGenerator,
         effectValue: number,
         cost: {
             amount: number
@@ -247,7 +249,7 @@
                 // check if type of cellDep has an effect property
                 if (!('effect' in cellDep.content)) continue
                 // console.log('found dependency:', $state.snapshot(cellDep))
-                applyEffect[cellDep.content.effect.type](cell, cellDep.content.effect, id)
+                applyEffect(cellDep, cell)
             }
         }
     }

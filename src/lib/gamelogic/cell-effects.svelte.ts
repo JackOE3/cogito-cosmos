@@ -113,10 +113,66 @@ export function getAllAffectedCells(coord: Coordinate, stencil: Stencil): Cell[]
 }
 
 /**
- *  Updates the affected metric of the target.
- * @returns whether the value of the metric did change
+ *  Updates the affected cell with the effect of the specified cell.
+ *  @param from The cell which causes the effect.
+ *  @param target The cell which should be updated.
+ *  @returns Whether any effects were actually applied. Only returns true if the target value of the effect actually changed.
  */
-function updateAffectedCell(metric: Metric, effect: CellEffect, id: string): boolean {
+export function applyEffect(from: Cell, target: Cell): boolean {
+    if (!('effect' in from.content)) return false
+    let metric: Metric
+    const effect = from.content.effect
+    // multiple effects in the future? just make metric an array and remove all break statements!
+    switch (effect.type) {
+        case 'boostGeneratorGain': {
+            if (target.content.type !== 'generator') return false
+            metric = target.content.gain
+            break
+        }
+        case 'boostGeneratorSpeed': {
+            if (target.content.type !== 'generator') return false
+            metric = target.content.speed
+            break
+        }
+        case 'boostSkillExpGain': {
+            if (target.content.type !== 'skill') return false
+            metric = target.content.expPerSec
+            break
+        }
+        case 'decreaseSkillExpRequirement': {
+            if (target.content.type !== 'skill') return false
+            metric = target.content.requiredExp
+            break
+        }
+        case 'boostSkillEffect': {
+            if (target.content.type !== 'skill') return false
+            metric = target.content.effect.value
+            break
+        }
+        case 'decreaseUpgradeCost': {
+            if (target.content.type !== 'upgrade') return false
+            metric = target.content.cost
+            break
+        }
+        case 'boostUpgradeEffect': {
+            if (target.content.type !== 'upgrade') return false
+            metric = target.content.effect.value
+            break
+        }
+        case 'decreaseGeneratorCost': {
+            if (target.content.type !== 'generator') return false
+            if (!isDefined(target.content.cost)) return false
+            metric = target.content.cost
+            break
+        }
+        default: {
+            console.log(`Effect type ${effect.type} not implemented in applyEffect().`)
+            return false
+        }
+    }
+
+    const id = from.id
+
     // find the multiplier corresponding to the id from the cell which causes it
     const mult = metric.multipliers.find(mult => mult.id === id)
 
@@ -146,31 +202,7 @@ function updateAffectedCell(metric: Metric, effect: CellEffect, id: string): boo
     else return false
 }
 
-export function boostGeneratorGain(cell: Cell, effect: CellEffect, id: string): boolean {
-    if (cell.content.type !== 'generator') return false
-    return updateAffectedCell(cell.content.gain, effect, id)
-}
-function boostGeneratorSpeed(cell: Cell, effect: CellEffect, id: string): boolean {
-    if (cell.content.type !== 'generator') return false
-    return updateAffectedCell(cell.content.speed, effect, id)
-}
-function boostSkillExpGain(cell: Cell, effect: CellEffect, id: string): boolean {
-    if (cell.content.type !== 'skill') return false
-    return updateAffectedCell(cell.content.expPerSec, effect, id)
-}
-function decreaseSkillExpRequirement(cell: Cell, effect: CellEffect, id: string): boolean {
-    if (cell.content.type !== 'skill') return false
-    return updateAffectedCell(cell.content.requiredExp, effect, id)
-}
-function decreaseUpgradeCost(cell: Cell, effect: CellEffect, id: string): boolean {
-    if (cell.content.type !== 'upgrade') return false
-    return updateAffectedCell(cell.content.cost, effect, id)
-}
-function boostUpgradeEffect(cell: Cell, effect: CellEffect, id: string): boolean {
-    if (cell.content.type !== 'upgrade') return false
-    return updateAffectedCell(cell.content.effect.value, effect, id)
-}
-function increaseAreaOfEffect(cell: Cell, effect: CellEffect, id: string): boolean {
+/* function increaseAreaOfEffect(cell: Cell, effect: CellEffect, id: string): boolean {
     const content = cell.content
     if (content.type !== 'upgrade' && content.type !== 'skill') return false
     if (content.effect.stencil === '3x3') content.effect.stencil = '5x5'
@@ -182,20 +214,7 @@ function increaseAreaOfEffect(cell: Cell, effect: CellEffect, id: string): boole
         if (applied) changedSomething = true
     }
     return changedSomething
-}
-
-/**
- * @returns Whether any effects were actually applied. Only returns true of the target value actually changed.
- */
-export const applyEffect: Record<EffectType, (cell: Cell, effect: CellEffect, id: string) => boolean> = {
-    boostGeneratorGain,
-    boostGeneratorSpeed,
-    boostSkillExpGain,
-    decreaseSkillExpRequirement,
-    decreaseUpgradeCost,
-    boostUpgradeEffect,
-    increaseAreaOfEffect
-}
+} */
 
 /**
  * Should return identity if multiplicity === 1.
@@ -232,7 +251,8 @@ export function applyCellEffects(parentCell: Cell): void {
     const affectedCells = getAllAffectedCells(parentCell.coord, parentCell.content.effect.stencil)
     // apply the corresponding effect onto all affected cells
     for (const cell of affectedCells) {
-        const applied = applyEffect[parentCell.content.effect.type](cell, parentCell.content.effect, parentCell.id)
+        //const applied = applyEffect[parentCell.content.effect.type](cell, parentCell.content.effect, parentCell.id)
+        const applied = applyEffect(parentCell, cell)
         if (!applied) continue
 
         //console.log($state.snapshot(cell.content))
@@ -242,21 +262,31 @@ export function applyCellEffects(parentCell: Cell): void {
 }
 
 export const cellEffectDescription: Record<EffectType, string> = {
-    boostGeneratorGain: `Boosts the gain of basic generators`,
-    boostGeneratorSpeed: `Boosts the speed of basic generators`,
-    boostSkillExpGain: `Boosts the XP gain of derivative generators`,
-    decreaseSkillExpRequirement: `Decreases the XP requirement to level up derivative generators`,
+    boostGeneratorGain: `Boosts the gain of generators`,
+    decreaseGeneratorCost: 'Decrease the cost of generators',
+    boostGeneratorSpeed: `Boosts the speed of generators`,
+
+    boostSkillExpGain: `Boosts the XP gain of skills`,
+    decreaseSkillExpRequirement: `Decreases the XP requirement to level up skills`,
+    boostSkillEffect: 'Increases the potency of skills',
+
     decreaseUpgradeCost: `Decreases the cost of upgrades`,
     boostUpgradeEffect: `Increases the potency of upgrades`,
-    increaseAreaOfEffect: `Increases the area of effect of other upgrades and derivative generators`
+
+    increaseAreaOfEffect: `Increases the area of effect of other upgrades and skills`
 }
 export const cellEffectSymbols: Record<EffectType, string> = {
     boostGeneratorGain: `+&ShortUpArrow;`,
+    decreaseGeneratorCost: '&dollar;&DownTeeArrow;',
     boostGeneratorSpeed: `&#10227;&ShortUpArrow;`,
+
     boostSkillExpGain: `XP&ShortUpArrow;`,
     decreaseSkillExpRequirement: `XP&DownTeeArrow;`,
+    boostSkillEffect: '&#x2747;&ShortUpArrow;',
+
     decreaseUpgradeCost: `&dollar;&DownTeeArrow;`,
     boostUpgradeEffect: `&#x2747;&ShortUpArrow;`,
+
     increaseAreaOfEffect: `&#x21F2;&#x2747;`
 }
 

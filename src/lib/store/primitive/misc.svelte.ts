@@ -67,16 +67,6 @@ export type ResourceMetric = Metric & {
     resource: GeneratorResource
 }
 
-export interface ResourceGenerator extends Content {
-    readonly type: 'generator'
-    gain: ResourceMetric
-    cost?: ResourceMetric
-    readonly baseDurationMillis: number
-    speed: Metric
-    active: boolean
-    progress: number
-}
-
 export type Stencil =
     | 'adjacent'
     | '3x3'
@@ -94,26 +84,47 @@ export type Stencil =
     | 'upperLeftQuadrant'
     | 'upperRightQuadrant'
 
-export type EffectType =
-    // for generators
-    | 'boostGeneratorGain'
-    | 'boostGeneratorSpeed'
-    // for derivative generators
-    | 'boostSkillExpGain'
-    | 'decreaseSkillExpRequirement'
-    // for upgrades
-    | 'decreaseUpgradeCost'
-    | 'boostUpgradeEffect'
-    // for all cell types
-    | 'increaseAreaOfEffect'
+/**
+ * Effects for a generator
+ */
+export type EffectGenerator = 'boostGeneratorGain' | 'boostGeneratorSpeed' | 'decreaseGeneratorCost'
+
+/**
+ * Effects for a skill
+ */
+export type EffectSkill = 'boostSkillExpGain' | 'decreaseSkillExpRequirement' | 'boostSkillEffect'
+
+/**
+ * Effects for an upgrade
+ */
+export type EffectUpgrade = 'decreaseUpgradeCost' | 'boostUpgradeEffect'
+
+/**
+ * Effects for an upgrade
+ */
+export type EffectSpecial = 'increaseAreaOfEffect'
+
+export type EffectType = EffectGenerator | EffectSkill | EffectUpgrade | EffectSpecial
 
 export type Formula = 'additive' | 'multiplicative'
-export type CellEffect = {
+
+export interface CellEffect {
     type: EffectType
     stencil: Stencil
     value: Metric
     formula: Formula
 }
+
+export interface ResourceGenerator extends Content {
+    readonly type: 'generator'
+    gain: ResourceMetric
+    cost?: ResourceMetric
+    readonly baseDurationMillis: number
+    speed: Metric
+    active: boolean
+    progress: number
+}
+
 export interface Skill extends Content {
     readonly type: 'skill'
     effect: CellEffect
@@ -137,7 +148,7 @@ export interface Upgrade extends Content {
     maxBuy?: number
 }
 
-export type CellContent = Empty | Locked | Combat | ResourceGenerator | Skill | Upgrade
+export type CellContent = Empty | ResourceGenerator | Skill | Upgrade | Locked | Combat
 
 export type Coordinate = {
     row: number
