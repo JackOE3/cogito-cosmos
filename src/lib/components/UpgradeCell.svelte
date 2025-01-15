@@ -1,13 +1,13 @@
 <script lang="ts">
     import { buyUpgrade } from '$lib/gamelogic/buy-upgrade-cell'
-    import { resource, type Cell, type UpgradeI } from '$lib/store'
+    import { resource, type Cell, type Upgrade } from '$lib/store'
     import type { Snippet } from 'svelte'
     import { tooltip } from './tooltips/tooltip.svelte'
     import CellTooltip from './tooltips/CellTooltip.svelte'
     import { applyCellEffects } from '$lib/gamelogic/cell-effects.svelte'
 
     type Props = {
-        cell: Cell & { content: UpgradeI }
+        cell: Cell & { content: Upgrade }
         buyMaxUpgrades?: boolean // setContext/getContext better?
         disabledClick?: boolean
         style?: string

@@ -129,7 +129,7 @@ function updateAffectedCell(metric: Metric, effect: CellEffect, id: string): boo
     if (effect.formula === 'additive') value += 1
 
     // determine if factor is inverse (-> didivde by it instead of multiplying its target value)
-    if (effect.type === 'decreaseUpgradeCost' || effect.type === 'decreaseDerivativeGeneratorExpRequirement') {
+    if (effect.type === 'decreaseUpgradeCost' || effect.type === 'decreaseSkillExpRequirement') {
         value = 1 / value
         // console.log(value)
     }
@@ -154,12 +154,12 @@ function boostGeneratorSpeed(cell: Cell, effect: CellEffect, id: string): boolea
     if (cell.content.type !== 'generator') return false
     return updateAffectedCell(cell.content.speed, effect, id)
 }
-function boostDerivativeGeneratorExpGain(cell: Cell, effect: CellEffect, id: string): boolean {
-    if (cell.content.type !== 'generatorDerivative') return false
+function boostSkillExpGain(cell: Cell, effect: CellEffect, id: string): boolean {
+    if (cell.content.type !== 'skill') return false
     return updateAffectedCell(cell.content.expPerSec, effect, id)
 }
-function decreaseDerivativeGeneratorExpRequirement(cell: Cell, effect: CellEffect, id: string): boolean {
-    if (cell.content.type !== 'generatorDerivative') return false
+function decreaseSkillExpRequirement(cell: Cell, effect: CellEffect, id: string): boolean {
+    if (cell.content.type !== 'skill') return false
     return updateAffectedCell(cell.content.requiredExp, effect, id)
 }
 function decreaseUpgradeCost(cell: Cell, effect: CellEffect, id: string): boolean {
@@ -172,7 +172,7 @@ function boostUpgradeEffect(cell: Cell, effect: CellEffect, id: string): boolean
 }
 function increaseAreaOfEffect(cell: Cell, effect: CellEffect, id: string): boolean {
     const content = cell.content
-    if (content.type !== 'upgrade' && content.type !== 'generatorDerivative') return false
+    if (content.type !== 'upgrade' && content.type !== 'skill') return false
     if (content.effect.stencil === '3x3') content.effect.stencil = '5x5'
     // TODO: propagate the effects of the affected cells to their targets
     const affectedCells = getAllAffectedCells(cell.coord, content.effect.stencil)
@@ -190,8 +190,8 @@ function increaseAreaOfEffect(cell: Cell, effect: CellEffect, id: string): boole
 export const applyEffect: Record<EffectType, (cell: Cell, effect: CellEffect, id: string) => boolean> = {
     boostGeneratorGain,
     boostGeneratorSpeed,
-    boostDerivativeGeneratorExpGain,
-    decreaseDerivativeGeneratorExpRequirement,
+    boostSkillExpGain,
+    decreaseSkillExpRequirement,
     decreaseUpgradeCost,
     boostUpgradeEffect,
     increaseAreaOfEffect
@@ -244,8 +244,8 @@ export function applyCellEffects(parentCell: Cell): void {
 export const cellEffectDescription: Record<EffectType, string> = {
     boostGeneratorGain: `Boosts the gain of basic generators`,
     boostGeneratorSpeed: `Boosts the speed of basic generators`,
-    boostDerivativeGeneratorExpGain: `Boosts the XP gain of derivative generators`,
-    decreaseDerivativeGeneratorExpRequirement: `Decreases the XP requirement to level up derivative generators`,
+    boostSkillExpGain: `Boosts the XP gain of derivative generators`,
+    decreaseSkillExpRequirement: `Decreases the XP requirement to level up derivative generators`,
     decreaseUpgradeCost: `Decreases the cost of upgrades`,
     boostUpgradeEffect: `Increases the potency of upgrades`,
     increaseAreaOfEffect: `Increases the area of effect of other upgrades and derivative generators`
@@ -253,8 +253,8 @@ export const cellEffectDescription: Record<EffectType, string> = {
 export const cellEffectSymbols: Record<EffectType, string> = {
     boostGeneratorGain: `+&ShortUpArrow;`,
     boostGeneratorSpeed: `&#10227;&ShortUpArrow;`,
-    boostDerivativeGeneratorExpGain: `XP&ShortUpArrow;`,
-    decreaseDerivativeGeneratorExpRequirement: `XP&DownTeeArrow;`,
+    boostSkillExpGain: `XP&ShortUpArrow;`,
+    decreaseSkillExpRequirement: `XP&DownTeeArrow;`,
     decreaseUpgradeCost: `&dollar;&DownTeeArrow;`,
     boostUpgradeEffect: `&#x2747;&ShortUpArrow;`,
     increaseAreaOfEffect: `&#x21F2;&#x2747;`

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { formatNumber, formatWhole } from '$lib/gamelogic/utils'
-    import { unlocks, derivedState, upgradeCount, unlocked, resource, upgrades, generators, type GeneratorName, type Generator } from '$lib/store'
+    import { unlocks, derivedState, upgradeCount, unlocked, resource, upgrades, generators, type GeneratorName, type GeneratorOld } from '$lib/store'
     import { onMount } from 'svelte'
     import ProgBar from '../misc/ProgBar.svelte'
     import { tooltip } from '../tooltips/tooltip.svelte'
@@ -29,7 +29,7 @@
         I2: undefined
     }
 
-    function toggleGenerator(name: GeneratorName, generator: Generator): void {
+    function toggleGenerator(name: GeneratorName, generator: GeneratorOld): void {
         if (generator.active) {
             generator.active = false
         } else if (derivedState.numActiveGenerators < derivedState.numMaxActiveGenerators) {
@@ -71,7 +71,7 @@
             <div
                 style="display: flex; flex-direction: row; gap: 0.25rem; align-items: center;"
                 use:tooltip={() => ({
-                    data: `Generator: ${name} <br> Level: ${formatWhole(generator.lvl)} <hr> ${generatorDescription[name]} <br> Total: ${formatNumber(derivedState.generatorBoostFrom[name], 1)}x <hr> Currently gaining ${formatNumber(derivedState.generatorExpPerSec[name], 2)} Exp/s`
+                    data: `GeneratorOld: ${name} <br> Level: ${formatWhole(generator.lvl)} <hr> ${generatorDescription[name]} <br> Total: ${formatNumber(derivedState.generatorBoostFrom[name], 1)}x <hr> Currently gaining ${formatNumber(derivedState.generatorExpPerSec[name], 2)} Exp/s`
                 })}>
                 <!-- <span>{name}</span> -->
                 <label>

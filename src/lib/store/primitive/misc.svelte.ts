@@ -16,21 +16,21 @@ export const level = makeState(1)
 
 export type GeneratorResource = 'red' | 'green' | 'blue'
 
-type ContentI = {
+type Content = {
     readonly type: string
 }
 
-export interface EmptyI extends ContentI {
+export interface Empty extends Content {
     readonly type: 'empty'
 }
 
-export interface LockedI extends ContentI {
+export interface Locked extends Content {
     readonly type: 'locked'
     cost: number
     resource: GeneratorResource
 }
 
-export interface CombatI extends ContentI {
+export interface Combat extends Content {
     readonly type: 'combat'
     HP: number
     maxHP: number
@@ -67,7 +67,7 @@ export type ResourceMetric = Metric & {
     resource: GeneratorResource
 }
 
-export interface GeneratorI extends ContentI {
+export interface ResourceGenerator extends Content {
     readonly type: 'generator'
     gain: ResourceMetric
     cost?: ResourceMetric
@@ -99,8 +99,8 @@ export type EffectType =
     | 'boostGeneratorGain'
     | 'boostGeneratorSpeed'
     // for derivative generators
-    | 'boostDerivativeGeneratorExpGain'
-    | 'decreaseDerivativeGeneratorExpRequirement'
+    | 'boostSkillExpGain'
+    | 'decreaseSkillExpRequirement'
     // for upgrades
     | 'decreaseUpgradeCost'
     | 'boostUpgradeEffect'
@@ -114,8 +114,8 @@ export type CellEffect = {
     value: Metric
     formula: Formula
 }
-export interface GeneratorDerivativeI extends ContentI {
-    readonly type: 'generatorDerivative'
+export interface Skill extends Content {
+    readonly type: 'skill'
     effect: CellEffect
     cost?: ResourceMetric
     level: number
@@ -126,7 +126,7 @@ export interface GeneratorDerivativeI extends ContentI {
     progress: number
 }
 
-export interface UpgradeI extends ContentI {
+export interface Upgrade extends Content {
     readonly type: 'upgrade'
     effect: CellEffect
     //title: string
@@ -137,7 +137,7 @@ export interface UpgradeI extends ContentI {
     maxBuy?: number
 }
 
-export type CellContent = EmptyI | LockedI | CombatI | GeneratorI | GeneratorDerivativeI | UpgradeI
+export type CellContent = Empty | Locked | Combat | ResourceGenerator | Skill | Upgrade
 
 export type Coordinate = {
     row: number
@@ -299,7 +299,7 @@ type GeneratorTier = (typeof generatorTiers)[number] // 1 | 2
 // Create a type for all combinations
 export type GeneratorName = `${GeneratorType}${GeneratorTier}`
 
-export type Generator = { lvl: number; exp: number; unlocked: boolean; active: boolean }
+export type GeneratorOld = { lvl: number; exp: number; unlocked: boolean; active: boolean }
 
 // Generate all combinations
 const generatorNames = generatorTiers.flatMap(tier => generatorTypes.map(type => `${type}${tier}`))
@@ -315,5 +315,5 @@ export const generators = makeState(
                 active: false
             }
         ])
-    ) as Record<GeneratorName, Generator>
+    ) as Record<GeneratorName, GeneratorOld>
 )

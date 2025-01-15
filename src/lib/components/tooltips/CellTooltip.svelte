@@ -12,14 +12,14 @@
 
     let name: string = $state('Unnamed')
     if (content.type === 'upgrade') name = 'Upgrade'
-    else if (content.type === 'generator') name = 'Basic Generator'
-    else if (content.type === 'generatorDerivative') name = 'Derivative Generator'
+    else if (content.type === 'generator') name = 'Generator'
+    else if (content.type === 'skill') name = 'Skill'
     else if (content.type === 'locked') name = 'Locked'
 
     // export let rect: DOMRect
     const style = `top: ${top}px; left: ${left}px;`
 
-    const effectsWhereYouDivide: EffectType[] = ['decreaseUpgradeCost', 'decreaseDerivativeGeneratorExpRequirement']
+    const effectsWhereYouDivide: EffectType[] = ['decreaseUpgradeCost', 'decreaseSkillExpRequirement']
 </script>
 
 <div class="tooltip" {style}>
@@ -42,7 +42,7 @@
                         {@html square[content.cost.resource]}
                     </span>
                 {/if}
-            {:else if content.type === 'generator' || content.type === 'generatorDerivative'}
+            {:else if content.type === 'generator' || content.type === 'skill'}
                 {#if content.active}
                     <span>[Active]</span>
                 {:else}
@@ -77,7 +77,7 @@
                         Effect: {content.effect.formula === 'additive' ? '+' : ''}{formatFactor(content.effect.value.current)}
                         {#if 'currentCumulative' in content.effect.value}
                             per
-                            {content.type === 'upgrade' ? 'upgrade' : content.type === 'generatorDerivative' ? 'level' : '[unknown type]'}
+                            {content.type === 'upgrade' ? 'upgrade' : content.type === 'skill' ? 'level' : '[unknown type]'}
                             ({content.effect.formula})
                         {/if}
                     </li>
@@ -94,7 +94,7 @@
                     <li>Area of Effect: {getAreaOfEffectDescription(content.effect.stencil)}</li>
                 </ul>
             {/if}
-            {#if content.type === 'generatorDerivative'}
+            {#if content.type === 'skill'}
                 <li>
                     Level: {formatWhole(content.level)}
                 </li>
@@ -116,7 +116,7 @@
                     {/if}
                 </li>
             {/if}
-            {#if content.type === 'generator' || content.type === 'generatorDerivative'}
+            {#if content.type === 'generator' || content.type === 'skill'}
                 <hr style="margin-left: -0.75rem; width: calc(100% + 0.75rem);" />
                 <li class="footer" style="color: var(--text-medium-emphasis)">Uses 1 AP while active</li>
                 <li class="footer" style="color: var(--text-medium-emphasis)">Click to toggle</li>
@@ -134,6 +134,8 @@
         min-width: 300px;
         max-width: 300px;
         box-sizing: border-box;
+        background: rgba(19, 19, 19, 0.6);
+        backdrop-filter: blur(4px);
     }
     ul {
         list-style-type: '> ';

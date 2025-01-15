@@ -13,15 +13,15 @@
         resource,
         type Cell,
         type CellContent,
-        type CombatI,
-        type GeneratorDerivativeI,
-        type GeneratorI,
+        type Combat,
+        type Skill,
+        type ResourceGenerator,
         type GeneratorResource,
         type Coordinate,
-        type LockedI,
+        type Locked,
         type ResourceMetric,
         type Stencil,
-        type UpgradeI,
+        type Upgrade,
         type EffectType,
         type CellShopItem,
         cellShopItems,
@@ -117,7 +117,7 @@
         }
     }
 
-    function makeCombat(hp: number): CombatI {
+    function makeCombat(hp: number): Combat {
         return {
             type: 'combat',
             HP: hp,
@@ -141,7 +141,7 @@
             amount: number
             resource: GeneratorResource
         }
-    ): GeneratorI {
+    ): ResourceGenerator {
         let costGen: ResourceMetric | undefined = undefined
         if (cost) costGen = { base: cost.amount, current: cost.amount, multipliers: [], resource: cost.resource }
         return {
@@ -158,9 +158,9 @@
             progress: 0
         }
     }
-    function makeGeneratorDerivative(stencil: Stencil, effectType: EffectType, effectValue: number, formula: Formula = 'additive'): GeneratorDerivativeI {
+    function makeSkill(stencil: Stencil, effectType: EffectType, effectValue: number, formula: Formula = 'additive'): Skill {
         return {
-            type: 'generatorDerivative',
+            type: 'skill',
             effect: {
                 type: effectType,
                 stencil,
@@ -198,7 +198,7 @@
         },
         formula: Formula = 'additive',
         maxBuy?: number
-    ): UpgradeI {
+    ): Upgrade {
         // depending on coord and stencil, update the dependency arrays of affected cells with the id for this cell
         return {
             type: 'upgrade',
@@ -268,9 +268,9 @@
 
         insertCellContent(relToCenter({ row: 0, col: 0 }), makeGenerator(1000, { amount: 1, resource: 'green' }))
         insertCellContent(relToCenter({ row: 0, col: 1 }), makeGenerator(1000, { amount: 1, resource: 'red' }, { amount: 2, resource: 'green' }))
-        insertCellContent(relToCenter({ row: 0, col: 2 }), makeGeneratorDerivative('rightHalf', 'boostGeneratorGain', 0.1))
-        insertCellContent(relToCenter({ row: -1, col: 3 }), makeGeneratorDerivative('adjacent', 'boostGeneratorGain', 0.1))
-        insertCellContent(relToCenter({ row: 1, col: 0 }), makeGeneratorDerivative('adjacent', 'boostGeneratorSpeed', 1))
+        insertCellContent(relToCenter({ row: 0, col: 2 }), makeSkill('rightHalf', 'boostGeneratorGain', 0.1))
+        insertCellContent(relToCenter({ row: -1, col: 3 }), makeSkill('adjacent', 'boostGeneratorGain', 0.1))
+        insertCellContent(relToCenter({ row: 1, col: 0 }), makeSkill('adjacent', 'boostGeneratorSpeed', 1))
 
         insertCellContent(relToCenter({ row: 0, col: 3 }), makeGenerator(1000, { amount: 1, resource: 'blue' }))
         insertCellContent(relToCenter({ row: 1, col: 3 }), makeGenerator(1000, { amount: 1, resource: 'blue' }))
@@ -282,12 +282,12 @@
      */
     function* createIteratorCellContent(): Generator<CellContent, void, unknown> {
         yield makeUpgrade('adjacent', 'boostGeneratorGain', 0.2, { amount: 2, resource: 'red' })
-        yield makeGeneratorDerivative('3x3', 'boostGeneratorSpeed', 0.1)
+        yield makeSkill('3x3', 'boostGeneratorSpeed', 0.1)
         yield makeGenerator(4000, { amount: 1, resource: 'green' }, { amount: 10, resource: 'red' })
-        yield makeGeneratorDerivative('row', 'boostUpgradeEffect', 0.2)
-        yield makeUpgrade('3x3', 'boostDerivativeGeneratorExpGain', 2, { amount: 10, resource: 'green' }, 'multiplicative')
-        yield makeGeneratorDerivative('all', 'decreaseUpgradeCost', 1)
-        yield makeUpgrade('upperHalf', 'decreaseDerivativeGeneratorExpRequirement', 1, { amount: 100, resource: 'red' })
+        yield makeSkill('row', 'boostUpgradeEffect', 0.2)
+        yield makeUpgrade('3x3', 'boostSkillExpGain', 2, { amount: 10, resource: 'green' }, 'multiplicative')
+        yield makeSkill('all', 'decreaseUpgradeCost', 1)
+        yield makeUpgrade('upperHalf', 'decreaseSkillExpRequirement', 1, { amount: 100, resource: 'red' })
     }
     let getCellContent: Generator<CellContent, void, unknown>
 
@@ -315,7 +315,7 @@
         /* if (Math.random() > 0.5) {
             return makeUpgrade('adjacent', 'boostGeneratorGain', 0.2, { amount: 10, resource: 'green' }, 10)
         } else {
-            return makeGeneratorDerivative('adjacent', 'boostGeneratorGain', 0.05)
+            return makeSkill('adjacent', 'boostGeneratorGain', 0.05)
         } */
 
         /* const res = ['red', 'green', 'blue'] as const
@@ -337,7 +337,7 @@
     /**
      * Starts an Interval when attacking a combat cell with combat logic.
      */
-    function handleCombatCellClicked(i: number, j: number, cell: CombatI) {
+    function handleCombatCellClicked(i: number, j: number, cell: Combat) {
         if (cell.active) {
             console.log('cell is already active')
             cell.active = false
@@ -375,29 +375,28 @@
         }, 1000)
     }
 
-    const generatorCellsActive = $derived(
-        gridCell.value.flat().filter(cell => cell.content.type === 'generator' && cell.content.active)
-        /* .map(cell => cell.content as GeneratorI) */
-    )
-    const generatorDerivativeCellsActive = $derived(
-        gridCell.value.flat().filter(cell => cell.content.type === 'generatorDerivative' && cell.content.active)
-        /* .map(cell => cell.content as GeneratorDerivativeI) */
-    )
-
-    const numTotalGeneratorCellsActive = $derived(generatorCellsActive.length + generatorDerivativeCellsActive.length)
-
     const combatCellsActive = $derived(
         gridCell.value
             .flat()
             .filter(cell => cell.content.type === 'combat' && cell.content.active)
-            .map(cell => cell.content as CombatI)
+            .map(cell => cell.content as Combat)
     )
-    const numCombatCellsActive = $derived(combatCellsActive.length)
+
+    const generatorCellsActive = $derived(
+        gridCell.value.flat().filter(cell => cell.content.type === 'generator' && cell.content.active)
+        /* .map(cell => cell.content as ResourceGenerator) */
+    )
+    const skillCellsActive = $derived(
+        gridCell.value.flat().filter(cell => cell.content.type === 'skill' && cell.content.active)
+        /* .map(cell => cell.content as Skill) */
+    )
+
+    const numTotalCellsActive = $derived(generatorCellsActive.length + skillCellsActive.length + combatCellsActive.length)
 
     let animationId: number
 
     $effect(() => {
-        if (numTotalGeneratorCellsActive > 0) {
+        if (numTotalCellsActive > 0) {
             lastTime = null
             animationId = requestAnimationFrame(evolveProgressBars)
         }
@@ -418,31 +417,31 @@
 
         // this can show me the frame rate actually
         /* console.log(deltaTimeMillis) */
-        for (const cell of generatorDerivativeCellsActive) {
-            const generator = cell.content as GeneratorDerivativeI
-            generator.currentExp += (generator.expPerSec.current * deltaTimeMillis) / 1000
-            while (generator.currentExp >= generator.requiredExp.current) {
-                if (generator.cost) {
-                    if (resource.value[generator.cost.resource] < generator.cost.current) {
-                        generator.progress = 0
-                        generator.active = false
+        for (const cell of skillCellsActive) {
+            const skill = cell.content as Skill
+            skill.currentExp += (skill.expPerSec.current * deltaTimeMillis) / 1000
+            while (skill.currentExp >= skill.requiredExp.current) {
+                if (skill.cost) {
+                    if (resource.value[skill.cost.resource] < skill.cost.current) {
+                        skill.progress = 0
+                        skill.active = false
                         break
                     }
-                    resource.value[generator.cost.resource] -= generator.cost.current
+                    resource.value[skill.cost.resource] -= skill.cost.current
                 }
-                generator.currentExp -= generator.requiredExp.current
+                skill.currentExp -= skill.requiredExp.current
 
-                generator.requiredExp.base *= 1.15
-                generator.requiredExp.current *= 1.15
+                skill.requiredExp.base *= 1.15
+                skill.requiredExp.current *= 1.15
 
-                generator.level++
+                skill.level++
 
                 applyCellEffects(cell)
             }
         }
 
         for (const cell of generatorCellsActive) {
-            const generator = cell.content as GeneratorI
+            const generator = cell.content as ResourceGenerator
             generator.progress += (deltaTimeMillis / generator.baseDurationMillis) * generator.speed.current
             while (generator.progress >= 1) {
                 if (generator.cost) {
@@ -461,7 +460,7 @@
             }
         }
 
-        if (numTotalGeneratorCellsActive > 0) animationId = requestAnimationFrame(evolveProgressBars)
+        if (numTotalCellsActive > 0) animationId = requestAnimationFrame(evolveProgressBars)
     }
 
     /**
@@ -469,8 +468,7 @@
      */
     let actionPoints = $derived.by(() => {
         let points = maxActionPoints.value
-        points -= numTotalGeneratorCellsActive
-        points -= numCombatCellsActive
+        points -= numTotalCellsActive
         return points
     })
 
@@ -541,6 +539,9 @@
         return gridCell.value.flat().find(cell => id === cell.id)
     }
 
+    /**
+     * When you click to buy a new cell.
+     */
     function handleGetCell(item: CellShopItem): void {
         // console.log(selectionCellIds.value.length, cellSelectionActive.value)
         if (selectionCellIds.value.length !== 0) return
@@ -569,6 +570,9 @@
 
     const pointerEventsEnabled = $state(gridCell.value.map(row => row.map(() => true)))
 
+    /**
+     * When you click to insert the new cell somewhere.
+     */
     function handleSelectCell(selectedCell: Cell): void {
         if (nextCellContent.value === null) return
 
@@ -599,7 +603,7 @@
 </script>
 
 {#snippet lockedCell(cell: Cell)}
-    {@const content = cell.content as LockedI}
+    {@const content = cell.content as Locked}
     {@const tooltipText = `This tile is currently locked. ${content.cost !== 0 ? `<br> Requirement: ${content.cost} ${square[content.resource]}` : ''} <br> <span style="color: var(--text-medium-emphasis)">Click to unlock.</span>`}
 
     <button
@@ -615,7 +619,7 @@
     </button>
 {/snippet}
 
-{#snippet generatorCell(generator: GeneratorI, disabledClick = false)}
+{#snippet generatorCell(generator: ResourceGenerator, disabledClick = false)}
     <button
         class="full"
         class:disabledClick
@@ -632,7 +636,7 @@
             Component: CellTooltip
         })}>
         <span class="cell-cover">
-            <span>&#120126;</span>
+            <span>&Gopf;</span>
             <span>{@html square[generator.gain.resource]}+</span>
         </span>
         {#if generator.active}
@@ -647,31 +651,31 @@
     </button>
 {/snippet}
 
-{#snippet generatorDerivativeCell(generator: GeneratorDerivativeI, disabledClick = false)}
+{#snippet skillCell(skill: Skill, disabledClick = false)}
     <button
         class="full"
         class:disabledClick
         onclick={() => {
             if (disabledClick) return
-            if (!generator.active && actionPoints <= 0) return
-            generator.active = !generator.active
+            if (!skill.active && actionPoints <= 0) return
+            skill.active = !skill.active
         }}
-        style="display: flex; flex-direction:column; justify-content: center; gap: 0.25rem; {generator.active ? `background: rgba(255,255,255,0.3)` : ''}"
+        style="display: flex; flex-direction:column; justify-content: center; gap: 0.25rem; {skill.active ? `background: rgba(255,255,255,0.3)` : ''}"
         use:tooltip={() => ({
-            data: generator,
+            data: skill,
             Component: CellTooltip
         })}>
         <span class="cell-cover">
-            <span>&part;&#120126;</span>
-            <span>{@html cellEffectSymbols[generator.effect.type]}</span>
+            <span>&Sopf;</span>
+            <span>{@html cellEffectSymbols[skill.effect.type]}</span>
         </span>
-        {#if generator.active}
+        {#if skill.active}
             <ProgBar
                 --widthProgBar="100%"
                 --heightProgBar="0.5rem"
                 --barColor="white"
                 --progBarBgColor="var(--dp24)"
-                --progress="{(generator.currentExp / generator.requiredExp.current) * 100}%">
+                --progress="{(skill.currentExp / skill.requiredExp.current) * 100}%">
             </ProgBar>
         {/if}
     </button>
@@ -679,11 +683,11 @@
 
 {#snippet upgradeCell(cellGeneric: Cell, disabledClick = false)}
     {#if cellGeneric.content.type === 'upgrade'}
-        {@const cell = cellGeneric as Cell & { content: UpgradeI }}
+        {@const cell = cellGeneric as Cell & { content: Upgrade }}
         <UpgradeCellComponent {cell} {disabledClick} class="full">
             <div class="flexCenter flexColumn">
                 <span class="cell-cover">
-                    <span>&#120140;</span>
+                    <span>&Uopf;</span>
                     <span>{@html cellEffectSymbols[cell.content.effect.type]}</span>
                 </span>
             </div>
@@ -691,7 +695,7 @@
     {/if}
 {/snippet}
 
-{#snippet combatCell(i: number, j: number, cell: CombatI)}
+{#snippet combatCell(i: number, j: number, cell: Combat)}
     <button
         style="width: 100%; height: 100%; outline: none; position: relative; display: flex; flex-direction:column; justify-content: center; gap: 0.25rem; {cell.active
             ? 'background: rgba(255,0,0,0.2);'
@@ -734,9 +738,9 @@
                                     <div class="full" in:receive={{ key: 'cool' }}>
                                         {@render generatorCell(cell.content)}
                                     </div>
-                                {:else if cell.content.type === 'generatorDerivative'}
+                                {:else if cell.content.type === 'skill'}
                                     <div class="full" in:receive={{ key: 'cool' }}>
-                                        {@render generatorDerivativeCell(cell.content)}
+                                        {@render skillCell(cell.content)}
                                     </div>
                                 {:else if cell.content.type === 'upgrade'}
                                     <div class="full" in:receive={{ key: 'cool' }}>
@@ -790,8 +794,8 @@
                         out:send={{ key: 'cool' }}>
                         {#if nextCellContent.value.type === 'generator'}
                             {@render generatorCell(nextCellContent.value, true)}
-                        {:else if nextCellContent.value.type === 'generatorDerivative'}
-                            {@render generatorDerivativeCell(nextCellContent.value, true)}
+                        {:else if nextCellContent.value.type === 'skill'}
+                            {@render skillCell(nextCellContent.value, true)}
                         {:else if nextCellContent.value.type === 'upgrade'}
                             {@const cell = {
                                 id: 'fake',
