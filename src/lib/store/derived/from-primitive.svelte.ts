@@ -17,9 +17,7 @@ import {
     enlightenmentSubstage,
     generators,
     level,
-    gridCell,
-    type UpgradeCell,
-    type UpgradeI
+    gridCell
 } from '../primitive'
 import { checkBoolForNum } from '$lib/gamelogic/utils'
 
@@ -44,56 +42,6 @@ class Formulas {
     resourceLevel = (totalResource: number) => Math.floor(Math.log10(totalResource > 0 ? totalResource : 1))
 
     expToNextLevel = (level: number) => level * 10
-
-    attack = (upgrades: UpgradeI[]) => {
-        let result = 1
-        upgrades.forEach(cell => {
-            if (cell.upgradeType === 'addAttack') {
-                result += cell.count * cell.addAttack
-            }
-        })
-        upgrades.forEach(cell => {
-            if (cell.upgradeType === 'multAttack') {
-                result *= Math.pow(cell.multAttack, cell.count)
-            }
-        })
-        return result
-    }
-
-    generatorGainForResource = (upgrades: UpgradeI[]) => {
-        const gain = {
-            red: 1,
-            green: 1,
-            blue: 1
-        }
-        upgrades.forEach(cell => {
-            if (cell.upgradeType === 'addGeneratorGain') {
-                const resource = cell.forGeneratorResource
-                //console.log('generatorGainForResource', resource, cell.addGain)
-                gain[resource] += cell.count * cell.addGain
-            }
-        })
-        return gain
-    }
-
-    generatorDurationForResource = (upgrades: UpgradeI[]) => {
-        const speed = {
-            red: 1,
-            green: 1,
-            blue: 1
-        }
-        upgrades.forEach(cell => {
-            if (cell.upgradeType === 'addGeneratorSpeed') {
-                const resource = cell.forGeneratorResource
-                speed[resource] += 0.1 * cell.count
-            }
-        })
-        return {
-            red: 3000 / speed.red,
-            green: 3000 / speed.green,
-            blue: 3000 / speed.blue
-        }
-    }
 }
 export const formulas = new Formulas()
 
@@ -107,21 +55,6 @@ class DerivedGrid {
             .map(cell => cell.content)
             .filter(content => content.type === 'upgrade')
     )
-
-    /**
-     * Your total attack power.
-     */
-    attack = $derived(formulas.attack(this.upgradesInCellGrid))
-
-    /**
-     * How much a generator of a resource produces.
-     */
-    generatorGainForResource = $derived(formulas.generatorGainForResource(this.upgradesInCellGrid))
-
-    /**
-     * How fast a generator of a resource produces.
-     */
-    generatorDurationForResource = $derived(formulas.generatorDurationForResource(this.upgradesInCellGrid))
 
     resourceLevel = $derived({
         red: formulas.resourceLevel(resourceTotal.red),
