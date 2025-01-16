@@ -32,7 +32,10 @@
         nextCellContent,
         showStencilHighlight,
         type EffectGenerator,
-        type EffectSkill
+        type EffectSkill,
+        type EffectTier,
+        type EffectUpgrade,
+        type EffectWithTier
     } from '$lib/store'
     import { bounceOut, cubicOut, elasticOut, quartOut } from 'svelte/easing'
     import { fade, fly, scale } from 'svelte/transition'
@@ -160,11 +163,12 @@
             progress: 0
         }
     }
-    function makeSkill(stencil: Stencil, effectType: EffectGenerator, effectValue: number, formula: Formula = 'additive'): Skill {
+    function makeSkill(stencil: Stencil, effect: EffectWithTier, effectValue: number, formula: Formula = 'additive'): Skill {
         return {
             type: 'skill',
             effect: {
-                type: effectType,
+                type: effect.type,
+                tier: effect.tier,
                 stencil,
                 value: {
                     base: effectValue,
@@ -192,7 +196,7 @@
     }
     function makeUpgrade(
         stencil: Stencil,
-        effectType: EffectGenerator,
+        effect: EffectWithTier,
         effectValue: number,
         cost: {
             amount: number
@@ -205,7 +209,8 @@
         return {
             type: 'upgrade',
             effect: {
-                type: effectType,
+                type: effect.type,
+                tier: effect.tier,
                 stencil,
                 value: {
                     base: effectValue,
@@ -227,6 +232,11 @@
         }
     }
 
+    /**
+     * Insert the specified content into the cell at the specified coordinate.
+     * @param coord The coordinate of the cell to insert the content into.
+     * @param content The CellContent object to insert.
+     */
     function insertCellContent(coord: Coordinate, content: CellContent): void {
         gridCell.value[coord.row][coord.col].hidden = false
         gridCell.value[coord.row][coord.col].content = content
@@ -254,6 +264,9 @@
         }
     }
 
+    /**
+     * Helper function to convert relative coordinates (to the starting cell) into absolute grid coordinates.
+     */
     const relToCenter = (rel: Coordinate): Coordinate => {
         return {
             row: centerRow + rel.row,
@@ -262,17 +275,20 @@
     }
 
     /**
-     * deterministic cell content for rapid prototyping
+     * Deterministic cell content for rapid prototyping
      */
     function setDeterministicCellContent(): void {
-        insertCellContent(relToCenter({ row: -1, col: 0 }), makeUpgrade('adjacent', 'boostGeneratorGain', 0.5, { amount: 10, resource: 'green' }))
-        insertCellContent(relToCenter({ row: 0, col: -1 }), makeUpgrade('row', 'boostGeneratorSpeed', 0.1, { amount: 5, resource: 'green' }))
+        insertCellContent(
+            relToCenter({ row: -1, col: 0 }),
+            makeUpgrade('adjacent', { tier: 1, type: 'boostGeneratorGain' }, 0.5, { amount: 10, resource: 'green' })
+        )
+        insertCellContent(relToCenter({ row: 0, col: -1 }), makeUpgrade('row', { tier: 1, type: 'boostGeneratorSpeed' }, 0.1, { amount: 5, resource: 'green' }))
 
         insertCellContent(relToCenter({ row: 0, col: 0 }), makeGenerator(1000, { amount: 1, resource: 'green' }))
         insertCellContent(relToCenter({ row: 0, col: 1 }), makeGenerator(1000, { amount: 1, resource: 'red' }, { amount: 2, resource: 'green' }))
-        insertCellContent(relToCenter({ row: 0, col: 2 }), makeSkill('rightHalf', 'boostGeneratorGain', 0.1))
-        insertCellContent(relToCenter({ row: -1, col: 3 }), makeSkill('adjacent', 'boostGeneratorGain', 0.1))
-        insertCellContent(relToCenter({ row: 1, col: 0 }), makeSkill('adjacent', 'boostGeneratorSpeed', 1))
+        insertCellContent(relToCenter({ row: 0, col: 2 }), makeSkill('rightHalf', { tier: 1, type: 'boostGeneratorGain' }, 0.1))
+        insertCellContent(relToCenter({ row: -1, col: 3 }), makeSkill('adjacent', { tier: 1, type: 'boostGeneratorGain' }, 0.1))
+        insertCellContent(relToCenter({ row: 1, col: 0 }), makeSkill('adjacent', { tier: 1, type: 'boostGeneratorSpeed' }, 1))
 
         insertCellContent(relToCenter({ row: 0, col: 3 }), makeGenerator(1000, { amount: 1, resource: 'blue' }))
         insertCellContent(relToCenter({ row: 1, col: 3 }), makeGenerator(1000, { amount: 1, resource: 'blue' }))
@@ -283,13 +299,13 @@
      * For easy sequential content unlocks. No randomness here.
      */
     function* createIteratorCellContent(): Generator<CellContent, void, unknown> {
-        yield makeUpgrade('adjacent', 'boostGeneratorGain', 0.2, { amount: 2, resource: 'red' })
-        yield makeSkill('3x3', 'boostGeneratorSpeed', 0.1)
+        yield makeUpgrade('adjacent', { tier: 1, type: 'boostGeneratorGain' }, 0.2, { amount: 2, resource: 'red' })
+        yield makeSkill('3x3', { tier: 1, type: 'boostGeneratorSpeed' }, 0.1)
         yield makeGenerator(4000, { amount: 1, resource: 'green' }, { amount: 10, resource: 'red' })
-        yield makeSkill('row', 'boostUpgradeEffect', 0.2)
-        yield makeUpgrade('3x3', 'boostSkillExpGain', 2, { amount: 10, resource: 'green' }, 'multiplicative')
-        yield makeSkill('all', 'decreaseUpgradeCost', 1)
-        yield makeUpgrade('upperHalf', 'decreaseSkillExpRequirement', 1, { amount: 100, resource: 'red' })
+        yield makeSkill('row', { tier: 2, type: 'boostUpgradeEffect' }, 0.2)
+        yield makeUpgrade('3x3', { tier: 2, type: 'boostSkillExpGain' }, 2, { amount: 10, resource: 'green' }, 'multiplicative')
+        yield makeSkill('all', { tier: 2, type: 'decreaseUpgradeCost' }, 1)
+        yield makeUpgrade('upperHalf', { tier: 2, type: 'decreaseSkillExpRequirement' }, 1, { amount: 100, resource: 'red' })
     }
     let getCellContent: Generator<CellContent, void, unknown>
 
@@ -573,7 +589,7 @@
     const pointerEventsEnabled = $state(gridCell.value.map(row => row.map(() => true)))
 
     /**
-     * When you click to insert the new cell somewhere.
+     * When you click to insert the new cell somewhere, this function is called.
      */
     function handleSelectCell(selectedCell: Cell): void {
         if (nextCellContent.value === null) return

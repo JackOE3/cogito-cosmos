@@ -106,10 +106,26 @@ export type EffectSpecial = 'increaseAreaOfEffect'
 
 export type EffectType = EffectGenerator | EffectSkill | EffectUpgrade | EffectSpecial
 
+export type EffectTier = 1 | 2 | 3
+
+/**
+ * Helper type to contrain the possible effect types for every tier.
+ */
+export type EffectWithTier =
+    | {
+          tier: 1
+          type: EffectGenerator
+      }
+    | {
+          tier: 2
+          type: EffectSkill | EffectUpgrade
+      }
+
 export type Formula = 'additive' | 'multiplicative'
 
 export interface CellEffect {
     type: EffectType
+    tier: EffectTier
     stencil: Stencil
     value: Metric
     formula: Formula
