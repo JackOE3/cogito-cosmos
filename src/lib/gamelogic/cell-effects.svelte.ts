@@ -171,6 +171,13 @@ export function applyEffect(from: Cell, target: Cell): boolean {
         }
     }
 
+    // If the effect affects another effect value, determine if it is allowed based on the tier difference of the effects. This is to prevent circular dependencies of effects, which could cause an uncontrolled, explosive feedback loop.
+    // effectTierFrom has to be bigger than effectTierTarget for the effect to be applied
+    const effectTierFrom = from.content.effect.tier
+    let effectTierTarget = 0
+    if ('effect' in target.content) effectTierTarget = target.content.effect.tier
+    if (effectTierFrom <= effectTierTarget) return false
+
     const id = from.id
 
     // find the multiplier corresponding to the id from the cell which causes it
