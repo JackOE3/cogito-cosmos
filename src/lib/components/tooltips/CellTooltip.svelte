@@ -1,7 +1,7 @@
 <script lang="ts">
     import { cellEffectDescription, getAreaOfEffectDescription, getTotalEffectValue } from '$lib/gamelogic/cell-effects.svelte'
     import { formatFactor, formatNumber, formatWhole, square } from '$lib/gamelogic/utils'
-    import { resource, type CellContent, type EffectType } from '$lib/store'
+    import { resource, type CellContent, type EffectTier, type EffectType } from '$lib/store'
 
     type Props = {
         data: CellContent
@@ -10,11 +10,33 @@
     }
     const { data: content, top, left }: Props = $props()
 
-    let name: string = $state('Unnamed')
+    let name = $state('Unnamed')
     if (content.type === 'upgrade') name = 'Upgrade'
     else if (content.type === 'generator') name = 'Generator'
     else if (content.type === 'skill') name = 'Skill'
     else if (content.type === 'locked') name = 'Locked'
+
+    let prefix = $state('')
+    const prefixes: Record<EffectTier, string> = {
+        1: '',
+        2: 'Greater ',
+        3: 'Superior '
+    }
+
+    if ('effect' in content) {
+        prefix = prefixes[content.effect.tier]
+    }
+    const fullName = $derived(prefix + name)
+
+    const nameStyle = $derived.by(() => {
+        if (prefix === prefixes[2]) return 'color: #90CAF9;'
+        else if (prefix === prefixes[3]) return 'color: #EF9A9A;'
+        return ''
+    })
+    const effectDescAffix = $derived.by(() => {
+        if (prefix === prefixes[3]) return ' and <span style="color: #90CAF9;">greater upgrades</span>'
+        return ''
+    })
 
     // export let rect: DOMRect
     const style = `top: ${top}px; left: ${left}px;`
@@ -25,7 +47,7 @@
 <div class="tooltip" {style}>
     <div class="background">
         <div style="display: flex; justify-content: space-between;">
-            <span style="font-weight: bold; font-size: .875rem;">{name}</span>
+            <span style="font-weight: bold; font-size: .875rem; {nameStyle}">{fullName}</span>
             {#if content.type === 'upgrade'}
                 {#if content.maxBuy !== undefined && content.count >= content.maxBuy}
                     <span style="color: var(--text-medium-emphasis)">This upgrade is maxed.</span>
@@ -70,6 +92,7 @@
                 <li>
                     <span style="font-weight: bold; font-size: .75rem;">
                         {cellEffectDescription[content.effect.type]}
+                        {@html effectDescAffix}
                     </span>
                 </li>
                 <ul>

@@ -120,6 +120,10 @@ export type EffectWithTier =
           tier: 2
           type: EffectSkill | EffectUpgrade
       }
+    | {
+          tier: 3
+          type: EffectSkill | EffectUpgrade
+      }
 
 export type Formula = 'additive' | 'multiplicative'
 
