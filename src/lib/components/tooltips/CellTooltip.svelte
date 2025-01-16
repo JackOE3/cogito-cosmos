@@ -1,7 +1,7 @@
 <script lang="ts">
-    import { cellEffectDescription, getAreaOfEffectDescription, getTotalEffectValue } from '$lib/gamelogic/cell-effects.svelte'
-    import { formatFactor, formatNumber, formatWhole, square } from '$lib/gamelogic/utils'
-    import { resource, type CellContent, type EffectTier, type EffectType } from '$lib/store'
+    import { cellEffectDescription, getAreaOfEffectDescription, getStyleFromEffectTier, getTotalEffectValue } from '$lib/gamelogic/cell-effects.svelte'
+    import { capitalizeFirstLetter, formatFactor, formatNumber, formatWhole, square } from '$lib/gamelogic/utils'
+    import { resource, type CellContent, type EffectType } from '$lib/store'
 
     type Props = {
         data: CellContent
@@ -10,31 +10,22 @@
     }
     const { data: content, top, left }: Props = $props()
 
-    let name = $state('Unnamed')
-    if (content.type === 'upgrade') name = 'Upgrade'
-    else if (content.type === 'generator') name = 'Generator'
-    else if (content.type === 'skill') name = 'Skill'
-    else if (content.type === 'locked') name = 'Locked'
+    let name = $derived(capitalizeFirstLetter(content.type))
 
-    let prefix = $state('')
-    const prefixes: Record<EffectTier, string> = {
-        1: '',
-        2: 'Greater ',
-        3: 'Superior '
-    }
-
-    if ('effect' in content) {
-        prefix = prefixes[content.effect.tier]
-    }
-    const fullName = $derived(prefix + name)
-
-    const nameStyle = $derived.by(() => {
-        if (prefix === prefixes[2]) return 'color: #90CAF9;'
-        else if (prefix === prefixes[3]) return 'color: #EF9A9A;'
+    let prefix = $derived.by(() => {
+        if (!('effect' in content)) return ''
+        if (content.effect.tier === 2) return 'Greater '
+        else if (content.effect.tier === 3) return 'Superior '
         return ''
     })
+
+    const fullName = $derived(prefix + name)
+
+    const nameStyle = $derived(getStyleFromEffectTier(content))
+
     const effectDescAffix = $derived.by(() => {
-        if (prefix === prefixes[3]) return ' and <span style="color: #90CAF9;">greater upgrades</span>'
+        if (!('effect' in content)) return ''
+        if (content.effect.tier === 3) return ' and <span style="color: #90CAF9;">greater upgrades</span>'
         return ''
     })
 

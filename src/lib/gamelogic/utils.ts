@@ -94,6 +94,10 @@ export function getOffset(el: HTMLElement): { left: number; top: number } {
     }
 }
 
+export function capitalizeFirstLetter(val: string) {
+    return String(val).charAt(0).toUpperCase() + String(val).slice(1)
+}
+
 /**
  *  Type guard to inform TypeScript that the result will no longer include undefined
  */

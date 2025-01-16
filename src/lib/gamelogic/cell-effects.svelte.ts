@@ -1,4 +1,15 @@
-import { gridCell, type Stencil, type Coordinate, type Metric, type Cell, type EffectType, type CellEffect, type CellContent, type Formula } from '$lib/store'
+import {
+    gridCell,
+    type Stencil,
+    type Coordinate,
+    type Metric,
+    type Cell,
+    type EffectType,
+    type CellEffect,
+    type CellContent,
+    type Formula,
+    type EffectTier
+} from '$lib/store'
 import { formatNumber, isDefined } from './utils'
 
 /**
@@ -340,4 +351,11 @@ export function getAreaOfEffectDescription(stencil: Stencil): string {
         default:
             return 'unknown stencil'
     }
+}
+
+export function getStyleFromEffectTier(content: CellContent): string {
+    if (!('effect' in content)) return ''
+    if (content.effect.tier === 2) return 'color: #90CAF9;'
+    else if (content.effect.tier === 3) return 'color: #EF9A9A;'
+    return ''
 }

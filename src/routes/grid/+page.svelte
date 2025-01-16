@@ -42,7 +42,7 @@
     import { Tween } from 'svelte/motion'
     import UpgradeCellComponent from '$lib/components/UpgradeCell.svelte'
     import { movable } from '$lib/gamelogic/movable.svelte'
-    import { applyCellEffects, applyEffect, cellEffectSymbols, getAllAffectedCells } from '$lib/gamelogic/cell-effects.svelte'
+    import { applyCellEffects, applyEffect, cellEffectSymbols, getAllAffectedCells, getStyleFromEffectTier } from '$lib/gamelogic/cell-effects.svelte'
     import { crossfade } from 'svelte/transition'
     import CellTooltip from '$lib/components/tooltips/CellTooltip.svelte'
     import { stencilHighlight } from '$lib/components/tooltips/stencilHighlight.svelte'
@@ -670,6 +670,7 @@
 {/snippet}
 
 {#snippet skillCell(skill: Skill, disabledClick = false)}
+    {@const effectTierStyle = getStyleFromEffectTier(skill)}
     <button
         class="full"
         class:disabledClick
@@ -684,7 +685,7 @@
             Component: CellTooltip
         })}>
         <span class="cell-cover">
-            <span>&Sopf;</span>
+            <span style={effectTierStyle}>&Sopf;</span>
             <span>{@html cellEffectSymbols[skill.effect.type]}</span>
         </span>
         {#if skill.active}
@@ -702,11 +703,15 @@
 {#snippet upgradeCell(cellGeneric: Cell, disabledClick = false)}
     {#if cellGeneric.content.type === 'upgrade'}
         {@const cell = cellGeneric as Cell & { content: Upgrade }}
+        {@const effectTierStyle = getStyleFromEffectTier(cell.content)}
+
         <UpgradeCellComponent {cell} {disabledClick} class="full">
             <div class="flexCenter flexColumn">
                 <span class="cell-cover">
-                    <span>&Uopf;</span>
-                    <span>{@html cellEffectSymbols[cell.content.effect.type]}</span>
+                    <span style={effectTierStyle}>&Uopf;</span>
+                    <span>
+                        {@html cellEffectSymbols[cell.content.effect.type]}
+                    </span>
                 </span>
             </div>
         </UpgradeCellComponent>
