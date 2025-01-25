@@ -780,7 +780,11 @@
                                     </button>
                                 {/if}
                             </div>
-                            <div class="cell cell-highlight full" class:cell-highlighted={cell.highlighted && showStencilHighlight.value}></div>
+                            <div
+                                class="cell cell-highlight full"
+                                class:cell-highlighted-affected={cell.highlighted === 'affected' && showStencilHighlight.value}
+                                class:cell-highlighted-not-affected={cell.highlighted === 'notAffected' && showStencilHighlight.value}>
+                            </div>
                         {/if}
                     </div>
                 {/each}
@@ -935,10 +939,15 @@
         box-sizing: border-box;
         border-radius: 0;
     }
-    .cell-highlighted {
+    .cell-highlighted-affected {
         background-color: var(--dp08);
         /* outline: 2px white solid; */
         border: 2px solid var(--accent);
+    }
+    .cell-highlighted-not-affected {
+        background-color: var(--dp08);
+        /* outline: 2px white solid; */
+        border: 2px solid var(--dp24);
     }
 
     .cell-empty {

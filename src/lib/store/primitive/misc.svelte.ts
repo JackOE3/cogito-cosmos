@@ -50,11 +50,11 @@ export type Multiplier = {
  */
 export type Metric = {
     /**
-     * Intrinstic (unmodified) value of this metric
+     * Intrinstic (unmodified) value of this metric.
      */
     base: number
     /**
-     * Base value with multipliers applied on top
+     * Base value with multipliers from external sources applied on top. (eg other cells)
      */
     current: number
     /**
@@ -99,12 +99,9 @@ export type EffectSkill = 'boostSkillExpGain' | 'decreaseSkillExpRequirement' | 
  */
 export type EffectUpgrade = 'decreaseUpgradeCost' | 'boostUpgradeEffect'
 
-/**
- * Effects for an upgrade
- */
 export type EffectSpecial = 'increaseAreaOfEffect'
 
-export type EffectType = EffectGenerator | EffectSkill | EffectUpgrade | EffectSpecial
+export type EffectType = EffectGenerator | EffectSkill | EffectUpgrade
 
 export type EffectTier = 1 | 2 | 3
 
@@ -182,7 +179,7 @@ export type Cell = {
     dependencies: string[]
     relX: number
     relY: number
-    highlighted: boolean
+    highlighted: false | 'affected' | 'notAffected'
 }
 
 export const N_ROWS = makeState(9)
@@ -228,8 +225,8 @@ export type CellShopItem = {
 export const cellShopItems = makeState<CellShopItem[]>([
     {
         cost: {
-            base: 5,
-            current: 5,
+            base: 10,
+            current: 10,
             resource: 'red',
             multipliers: []
         },
@@ -243,7 +240,7 @@ export const cellShopItems = makeState<CellShopItem[]>([
             resource: 'green',
             multipliers: []
         },
-        costMultiplier: 2,
+        costMultiplier: 4,
         count: 0
     },
     {
@@ -253,7 +250,7 @@ export const cellShopItems = makeState<CellShopItem[]>([
             resource: 'blue',
             multipliers: []
         },
-        costMultiplier: 2,
+        costMultiplier: 4,
         count: 0
     }
 ])
