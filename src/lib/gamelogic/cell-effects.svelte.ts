@@ -66,12 +66,12 @@ export function getAllAffectedCells(coord: Coordinate, stencil: Stencil): Cell[]
             return coords.map(([dx, dy]) => getCellAtCoord({ row: row + dx, col: col + dy })).filter(isDefined)
         }
         case 'row': {
-            // Extract all cells in the specified row
-            return gridCell.value[row]
+            // Extract all cells in the specified row, except the origin cell
+            return gridCell.value[row].filter(cell => cell.coord.col !== coord.col)
         }
         case 'column': {
-            // Extract all cells in the specified column
-            return gridCell.value.map(row => row[col])
+            // Extract all cells in the specified column, except the origin cell
+            return gridCell.value.map(row => row[col]).filter(cell => cell.coord.row !== coord.row)
         }
         case 'diagonals': {
             // = like a bishop moves in chess
@@ -213,6 +213,15 @@ export function applyEffect(from: Cell, target: Cell): boolean {
     else mult.value = value
 
     // update the current value of the metric
+    const changed = recalculateMetric(metric)
+    return changed
+}
+
+/**
+ * @param metric A reference to the metric which should be recalculated.
+ * @returns Returns true if the value of the metric changed, else false.
+ */
+export function recalculateMetric(metric: Metric): boolean {
     const totalMult = metric.multipliers.reduce((acc, mult) => mult.value * acc, 1)
     const last = metric.current
     metric.current = metric.base * totalMult
@@ -323,7 +332,7 @@ export function getAreaOfEffectDescription(stencil: Stencil): string {
         case '3x3':
             return '3x3 grid'
         case '5x5':
-            return '3x3 grid'
+            return '5x5 grid'
         case 'all':
             return 'All cells'
         case 'row':
