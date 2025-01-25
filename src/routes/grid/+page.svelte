@@ -42,7 +42,14 @@
     import { Tween } from 'svelte/motion'
     import UpgradeCellComponent from '$lib/components/UpgradeCell.svelte'
     import { movable } from '$lib/gamelogic/movable.svelte'
-    import { applyCellEffects, applyEffect, cellEffectSymbols, getAllAffectedCells, getStyleFromEffectTier } from '$lib/gamelogic/cell-effects.svelte'
+    import {
+        applyCellEffects,
+        applyEffect,
+        cellEffectSymbols,
+        getAllAffectedCells,
+        getStyleFromEffectTier,
+        recalculateMetric
+    } from '$lib/gamelogic/cell-effects.svelte'
     import { crossfade } from 'svelte/transition'
     import CellTooltip from '$lib/components/tooltips/CellTooltip.svelte'
     import { stencilHighlight } from '$lib/components/tooltips/stencilHighlight.svelte'
@@ -449,8 +456,9 @@
                 }
                 skill.currentExp -= skill.requiredExp.current
 
-                skill.requiredExp.base *= 1.15
-                skill.requiredExp.current *= 1.15
+                skill.requiredExp.base += 1
+                recalculateMetric(skill.requiredExp)
+                // skill.requiredExp.current += 1
 
                 skill.level++
 
