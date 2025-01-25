@@ -229,6 +229,48 @@ export function recalculateMetric(metric: Metric): boolean {
     else return false
 }
 
+export function effectIsApplicable(effect: CellEffect, target: Cell): boolean {
+    switch (effect.type) {
+        case 'boostGeneratorGain': {
+            if (target.content.type !== 'generator') return false
+            return true
+        }
+        case 'boostGeneratorSpeed': {
+            if (target.content.type !== 'generator') return false
+            return true
+        }
+        case 'boostSkillExpGain': {
+            if (target.content.type !== 'skill') return false
+            return true
+        }
+        case 'decreaseSkillExpRequirement': {
+            if (target.content.type !== 'skill') return false
+            return true
+        }
+        case 'boostSkillEffect': {
+            if (target.content.type !== 'skill') return false
+            return true
+        }
+        case 'decreaseUpgradeCost': {
+            if (target.content.type !== 'upgrade') return false
+            return true
+        }
+        case 'boostUpgradeEffect': {
+            if (target.content.type !== 'upgrade') return false
+            return true
+        }
+        case 'decreaseGeneratorCost': {
+            if (target.content.type !== 'generator') return false
+            if (!isDefined(target.content.cost)) return false
+            return true
+        }
+        default: {
+            console.log(`Effect type ${effect.type} unknown (in function effectIsApplicable).`)
+            return false
+        }
+    }
+}
+
 /* function increaseAreaOfEffect(cell: Cell, effect: CellEffect, id: string): boolean {
     const content = cell.content
     if (content.type !== 'upgrade' && content.type !== 'skill') return false
