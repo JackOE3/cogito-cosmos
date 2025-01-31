@@ -1,7 +1,7 @@
 <script lang="ts">
     import ProgBar from '$lib/components/misc/ProgBar.svelte'
     import { tooltip } from '$lib/components/tooltips/tooltip.svelte'
-    import { colors, formatNumber, formatWhole, isDefined, randInt, square, uuidv4 } from '$lib/gamelogic/utils'
+    import { colors, formatNumber, formatWhole, isDefined, randomChoice, square } from '$lib/gamelogic/utils'
     import {
         derivedGrid,
         fastFowardFactor,
@@ -212,7 +212,6 @@
         formula: Formula = 'additive',
         maxBuy?: number
     ): Upgrade {
-        // depending on coord and stencil, update the dependency arrays of affected cells with the id for this cell
         return {
             type: 'upgrade',
             effect: {
@@ -316,6 +315,8 @@
     }
     let getCellContent: Generator<CellContent, void, unknown>
 
+    type ContentType = 'generator' | 'upgrade' | 'skill'
+
     /**
      * When you purchase a new cell, the logic here determines
      * which specific cell will be procedurally generated (type & properties).
@@ -325,9 +326,113 @@
     function getNextCellContent(): CellContent | null {
         /* let content: CellContent */
 
-        // probability distribution needed for type (gen, genDer, upgrade)
+        // probability distribution needed for type (generator, skill, upgrade)
         // pd not static, depends on what cells you have already (and what level-up effects or prestige upgrades you have)
-        // also failsafes/overrides (sometimes its impossible to get a type)
+        // also contraints/failsafes (sometimes its impossible to get a type)
+
+        let contentPossibilities: ContentType[] = ['generator', 'upgrade', 'skill']
+        if (upgradeCells.length === 0 && skillCells.length === 0) {
+            contentPossibilities = ['upgrade', 'skill']
+        } else if (upgradeCells.length === 0) {
+            contentPossibilities = ['upgrade']
+        } else if (skillCells.length === 0) {
+            contentPossibilities = ['skill']
+        }
+
+        let tierPossibilities: EffectTier[] = [1, 2]
+        const numUpgradesTier1 = upgradeCells.filter(cell => cell.content.effect.tier === 1).length
+        const numSkillsTier1 = skillCells.filter(cell => cell.content.effect.tier === 1).length
+        const numTier1 = numUpgradesTier1 + numSkillsTier1
+        const numUpgradesTier2 = upgradeCells.filter(cell => cell.content.effect.tier === 2).length
+        const numSkillsTier2 = skillCells.filter(cell => cell.content.effect.tier === 2).length
+        const numTier2 = numUpgradesTier2 + numSkillsTier2
+        if (numTier1 === 0) {
+            tierPossibilities = [1]
+        } else if (numTier2 === 0) {
+            tierPossibilities = [1, 2]
+        }
+
+        let effectPossibilitiesTier2: (EffectSkill | EffectUpgrade)[] = [
+            'boostSkillExpGain',
+            'decreaseSkillExpRequirement',
+            'boostSkillEffect',
+            'decreaseUpgradeCost',
+            'boostUpgradeEffect'
+        ]
+        if (numUpgradesTier1 === 0) {
+            effectPossibilitiesTier2 = effectPossibilitiesTier2.filter(effect => effect !== 'decreaseUpgradeCost' && effect !== 'boostUpgradeEffect')
+        }
+        if (numSkillsTier1 === 0) {
+            effectPossibilitiesTier2 = effectPossibilitiesTier2.filter(
+                effect => effect !== 'boostSkillExpGain' && effect !== 'decreaseSkillExpRequirement' && effect !== 'boostSkillEffect'
+            )
+        }
+
+        let stencilPossibilities: Stencil[] = ['adjacent', '3x3', '5x5', 'row', 'column']
+
+        const content = randomChoice(contentPossibilities)
+        switch (content) {
+            case 'generator': {
+                let resourcePossibilities: GeneratorResource[] = ['red', 'green', 'blue']
+                if (numGeneratorCells.green === 0) {
+                    resourcePossibilities = ['green']
+                } else if (numGeneratorCells.blue === 0) {
+                    resourcePossibilities = ['blue']
+                }
+                let resource = randomChoice(resourcePossibilities)
+                const haveAmountOfGenerators = numGeneratorCells[resource]
+                const baseGain = 1
+                const gain = baseGain * Math.pow(haveAmountOfGenerators + 1, 2)
+                return makeGenerator(1000, { amount: gain, resource })
+            }
+            case 'skill': {
+                const tier = randomChoice(tierPossibilities)
+                if (tier === 1) {
+                    const effects: EffectGenerator[] = ['boostGeneratorGain', 'boostGeneratorSpeed']
+                    const type = randomChoice(effects)
+                    return makeSkill('3x3', { tier: 1, type }, 0.1)
+                } else if (tier === 2 || tier === 3) {
+                    const type = randomChoice(effectPossibilitiesTier2)
+                    const stencil = randomChoice(stencilPossibilities)
+                    return makeSkill(stencil, { tier, type }, 0.1)
+                }
+                throw new Error('Wrong tier for skill:' + tier)
+            }
+            case 'upgrade': {
+                let resourcePossibilities: GeneratorResource[] = ['red', 'green', 'blue']
+                if (numGeneratorCells.green === 0) {
+                    resourcePossibilities = resourcePossibilities.filter(res => res !== 'green')
+                }
+                if (numGeneratorCells.blue === 0) {
+                    resourcePossibilities = resourcePossibilities.filter(res => res !== 'blue')
+                }
+                const resource = randomChoice(resourcePossibilities)
+                const tier = randomChoice(tierPossibilities)
+
+                // logic to determine cost
+                const haveAmountOfUpgrades = numUpgradeCells[resource]
+                const baseCostStart = 2
+                /**
+                 * How much the baseCost grows (is multiplied) for every new upgrade.
+                 */
+                const baseCostMult = 10
+                const baseCostComputed = baseCostStart * Math.pow(baseCostMult, haveAmountOfUpgrades)
+
+                const stencil = randomChoice(stencilPossibilities)
+                if (tier === 1) {
+                    const effects: EffectGenerator[] = ['boostGeneratorGain', 'boostGeneratorSpeed']
+                    const type = randomChoice(effects)
+                    return makeUpgrade(stencil, { tier: 1, type }, 0.2, { amount: baseCostComputed, resource })
+                } else if (tier === 2 || tier === 3) {
+                    const type = randomChoice(effectPossibilitiesTier2)
+                    return makeUpgrade(stencil, { tier, type }, 0.2, { amount: baseCostComputed, resource })
+                }
+                throw new Error('Wrong tier for upgrade:' + tier)
+            }
+        }
+
+        // red -> green -> blue (unlock order)
+
         if (!isDefined(getCellContent)) return null
         const result = getCellContent.next()
         if (!result.done) {
@@ -407,16 +512,41 @@
             .map(cell => cell.content as Combat)
     )
 
-    const generatorCellsActive = $derived(
-        gridCell.value.flat().filter(cell => cell.content.type === 'generator' && cell.content.active)
-        /* .map(cell => cell.content as ResourceGenerator) */
+    const generatorCells = $derived(
+        gridCell.value
+            .flat()
+            .filter(cell => cell.content.type === 'generator')
+            .map(cell => cell as Cell & { content: ResourceGenerator })
     )
-    const skillCellsActive = $derived(
-        gridCell.value.flat().filter(cell => cell.content.type === 'skill' && cell.content.active)
-        /* .map(cell => cell.content as Skill) */
+    const generatorCellsActive = $derived(generatorCells.filter(cell => cell.content.active))
+    const numGeneratorCells = $derived<Record<GeneratorResource, number>>({
+        red: generatorCells.filter(cell => cell.content.gain.resource === 'red').length,
+        green: generatorCells.filter(cell => cell.content.gain.resource === 'green').length,
+        blue: generatorCells.filter(cell => cell.content.gain.resource === 'blue').length
+    })
+
+    const skillCells = $derived(
+        gridCell.value
+            .flat()
+            .filter(cell => cell.content.type === 'skill')
+            .map(cell => cell as Cell & { content: Skill })
     )
+    const skillCellsActive = $derived(skillCells.filter(cell => cell.content.active))
 
     const numTotalCellsActive = $derived(generatorCellsActive.length + skillCellsActive.length + combatCellsActive.length)
+
+    const upgradeCells = $derived(
+        gridCell.value
+            .flat()
+            .filter(cell => cell.content.type === 'upgrade')
+            .map(cell => cell as Cell & { content: Upgrade })
+    )
+
+    const numUpgradeCells = $derived<Record<GeneratorResource, number>>({
+        red: upgradeCells.filter(cell => cell.content.cost.resource === 'red').length,
+        green: upgradeCells.filter(cell => cell.content.cost.resource === 'green').length,
+        blue: upgradeCells.filter(cell => cell.content.cost.resource === 'blue').length
+    })
 
     let animationId: number
 
