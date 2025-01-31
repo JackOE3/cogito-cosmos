@@ -98,6 +98,14 @@ export function capitalizeFirstLetter(val: string) {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1)
 }
 
+export function randomChoice<T>(array: T[]): T {
+    if (array.length === 0) {
+        throw new Error('Array cannot be empty')
+    }
+    const randomIndex = Math.floor(Math.random() * array.length)
+    return array[randomIndex]
+}
+
 /**
  *  Type guard to inform TypeScript that the result will no longer include undefined
  */

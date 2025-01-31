@@ -1,7 +1,7 @@
 <script lang="ts">
     import AutoButton from '$lib/components/AutoButton.svelte'
     import ProgBar from '$lib/components/misc/ProgBar.svelte'
-    import { Direction, tooltip } from '$lib/components/tooltips/tooltip.svelte'
+    import { tooltip } from '$lib/components/tooltips/tooltip.svelte'
     import SkillTooltip from '$lib/components/tooltips/SkillTooltip.svelte'
     import UnlockDrawer from '$lib/components/UnlockDrawer.svelte'
     import { formatNumber, formatTime, formatWhole } from '$lib/gamelogic/utils'
@@ -245,7 +245,7 @@
             <div style="display: flex; gap: 0rem">
                 {#each { length: skills.length }, rank}
                     {@const skill = skills[rank]}
-                    <button style="aspect-ratio:1; width: 60px;" use:tooltip={() => ({ data: skill, Component: SkillTooltip, direction: Direction.RIGHT })}>
+                    <button style="aspect-ratio:1; width: 60px;" use:tooltip={() => ({ data: skill, Component: SkillTooltip })}>
                         {skill.name.slice(0, 3)}
                     </button>
                 {/each}

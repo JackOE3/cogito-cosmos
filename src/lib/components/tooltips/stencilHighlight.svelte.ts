@@ -1,6 +1,6 @@
 import { gridCell, type Cell, type CellEffect, type Coordinate, type Stencil } from '$lib/store'
-import { isDefined, splitByFilter } from '$lib/gamelogic/utils'
-import { applyEffect, effectIsApplicable, getAllAffectedCells } from '$lib/gamelogic/cell-effects.svelte'
+import { isDefined } from '$lib/gamelogic/utils'
+import { effectIsApplicable, getAllAffectedCells } from '$lib/gamelogic/cell-effects.svelte'
 
 export type Options = {
     coord: Coordinate
